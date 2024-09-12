@@ -19,7 +19,7 @@ class DBLibraryShowRequest extends FormRequest
      public function rules() : array
      {
         return [
-            'modeltype', 'required',
+            'modeltype' => 'required',
         ];
      }
 }

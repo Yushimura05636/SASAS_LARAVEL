@@ -38,7 +38,7 @@ class PersonalityRepository implements PersonalityRepositoryInterface
         $Personality->email_address = $payload->email_address;
         $Personality->cellphone_no = $payload->cellphone_no;
 
-        #dli nako sure dre sas kay foreign key 
+        #dli nako sure dre sas kay foreign key
         $Personality->name_type_code = $payload->name_type_code;
         $Personality->personality_status_code = $payload->personality_status_code;
         $Personality->branch_id = $payload->branch_id;
@@ -71,7 +71,7 @@ class PersonalityRepository implements PersonalityRepositoryInterface
         $Personality->email_address = $payload->email_address;
         $Personality->cellphone_no = $payload->cellphone_no;
 
-        #dli nako sure dre sas kay foreign key 
+        #dli nako sure dre sas kay foreign key
         $Personality->name_type_code = $payload->name_type_code;
         $Personality->personality_status_code = $payload->personality_status_code;
         $Personality->branch_id = $payload->branch_id;

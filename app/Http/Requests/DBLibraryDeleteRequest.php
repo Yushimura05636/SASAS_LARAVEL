@@ -3,7 +3,7 @@
 namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 
-class DBLibraryUpdateRequest extends FormRequest
+class DBLibraryDeleteRequest extends FormRequest
 {
     public function authorize() : bool
     {
@@ -19,8 +19,7 @@ class DBLibraryUpdateRequest extends FormRequest
      public function rules() : array
      {
         return [
-            'modeltype' => 'required',  // Correctly assign the rule
-            'description' => 'required', // Correctly assign the rule
+            'modeltype' => 'required',
         ];
      }
 }

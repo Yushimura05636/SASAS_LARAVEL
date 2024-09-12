@@ -5,6 +5,7 @@ namespace App\Service;
 use App\Http\Resources\DBLibraryResource;
 use App\Interface\Repository\DBLibraryRepositoryInterface;
 use App\Interface\Service\DBLibraryServiceInterface;
+use Illuminate\Http\Response;
 
 class DBLibraryService implements DBLibraryServiceInterface
 {
@@ -21,29 +22,39 @@ class DBLibraryService implements DBLibraryServiceInterface
         return DBLibraryResource::collection($library);
     }
 
-    public function findEntry(object $payload, int $id)
+    public function findEntry(string $modeltype, int $id)
     {
-        $library = $this->dbLibraryRepository->findOneById($payload, $id);
-
+        // return response()->json([
+        //     'status' => 'error', // Or 'success' depending on your logic
+        //     'message' => $modeltype, // Assuming you want to return modeltype
+        //     'data' => [], // You can include additional data if needed
+        //     'errors' => [], // You can include any errors if applicable
+        // ], Response::HTTP_EXPECTATION_FAILED);
+        $library = $this->dbLibraryRepository->findOneById($modeltype, $id);
         return new DBLibraryResource($library);
     }
 
     public function createEntry(object $payload)
     {
+        // return response()->json([
+        //     'status' => 'error', // Or 'success' depending on your logic
+        //     'message' => ' here in createdEntryservice field', // Assuming you want to return modeltype
+        //     'data' => [], // You can include additional data if needed
+        //     'errors' => [], // You can include any errors if applicable
+        // ], Response::HTTP_EXPECTATION_FAILED);
         $library = $this->dbLibraryRepository->create($payload);
-
         return new DBLibraryResource($library);
     }
 
-    public function updateEntryById(string $modeltype, object $payload, int $id)
+    public function updateEntryById(object $payload, int $id)
     {
-        $library = $this->dbLibraryRepository->update($modeltype, $id, $payload);
+        $library = $this->dbLibraryRepository->update($id, $payload);
 
         return new dbLibraryResource($library);
     }
 
-    public function deleteEntryById(string $modeltype, int $id)
+    public function deleteEntryById(object $payload, int $id)
     {
-        $library = $this->dbLibraryRepository->delete($modeltype, $id);
+        return $library = $this->dbLibraryRepository->delete($payload, $id);
     }
 }

@@ -4,13 +4,13 @@ namespace App\Interface\Repository;
 
 interface DBLibraryRepositoryInterface
 {
-    public function findMany(string $modelType);
+    public function findMany(string $modeltype);
 
-    public function findOneById(object $payload, int $id);
+    public function findOneById(string $modeltype, int $id);
 
     public function create(object $payload);
 
-    public function update(string $modelType, int $id, object $payload);
+    public function update(int $id, object $payload);
 
-    public function delete(string $modelType, int $id);
+    public function delete(object $payload, int $id);
 }

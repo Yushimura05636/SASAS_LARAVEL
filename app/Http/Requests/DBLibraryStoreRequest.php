@@ -19,7 +19,8 @@ class DBLibraryStoreRequest extends FormRequest
      public function rules() : array
      {
         return [
-            'description', 'required',
+            'modeltype' => 'required',  // Correctly assign the rule
+            'description' => 'required', // Correctly assign the rule
         ];
      }
 }

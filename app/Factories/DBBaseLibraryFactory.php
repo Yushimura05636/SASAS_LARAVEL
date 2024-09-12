@@ -2,6 +2,8 @@
 
 namespace App\Factories;
 
+use App\Http\Requests\DBLibraryStoreRequest;
+use App\Http\Resources\DBLibraryResource;
 use App\Models\Barangay; #Done
 use App\Models\Branch; #Done
 use App\Models\City; #Done
@@ -16,6 +18,7 @@ use App\Models\Document_Map; #Done
 use App\Models\Document_Permission_Map; #Done
 use App\Models\Name_Type; #Done
 use App\Models\Customer_Group; #Done
+use Illuminate\Http\Response;
 
 /*
     KINI na section SA APP\\ dinhi pag pili ug unsa na model type ang gamit pang insert, delete, or create
@@ -32,49 +35,121 @@ use App\Models\Customer_Group; #Done
 
 class DBBaseLibraryFactory
 {
-    public static function createEntry($description)
-    {
-        echo $description->type;
+    private $modeltype;
+    public $id;
+    public $description;
+    private $action;
 
-        switch ($description->type) {
-            case 'barangay':
-                return Barangay::createEntry(['description' => $description->description]);
-            case 'branch':
-                return Branch::createEntry(['description' => $description->description]);
-            case 'city':
-                return City::createEntry(['description' => $description->description]);
-            case 'civil_status':
-                return Civil_Status::createEntry(['description' => $description->description]);
-            case 'gender_map':
-                return Gender_Map::createEntry(['description' => $description->description]);
-            case 'country':
-                return Country::createEntry(['description' => $description->description]);
-            case 'province':
-                return Province::createEntry(['description' => $description->description]);
-            case 'credit_status':
-                return Credit_Status::createEntry(['description' => $description->description]);
-            case 'personality_status_map':
-                return Personality_Status_Map::createEntry(['description' => $description->description]);
-            case 'user_account_status':
-                return User_Account_Status::createEntry(['description' => $description->descriptiondescription]);
-            case 'document_map':
-                return Document_Map::createEntry(['description' => $description->description]);
-            case 'document_permission_map':
-                return Document_Permission_Map::createEntry(['description' => $description->descriptiondescription]);
-            case 'name_type':
-                return Name_Type::createEntry(['description' => $description->description]);
-            case 'customer_group':
-                return Customer_Group::createEntry(['description' => $description->description]);
+    public $bool;
+
+    private $paginate;
+
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    public function getDescription()
+    {
+        return $this->description;
+    }
+    public function __construct(string $modeltype = null, object $payload = null, int $id = null, string $action = null)
+    {
+
+        //if the $modeltype variable is not null
+        if (!is_null($modeltype) && $modeltype !== '') {
+            $this->modeltype = $modeltype;
+        }
+
+        //check if $payload object is not null
+        if(!is_null($payload) && $payload !== '')
+        {
+            $this->description = $payload->input('description', 'default_value');
+            //else the $modeltype will use the object $payload->modeltype
+            $this->modeltype = $payload->input('modeltype', 'default_value');
+        }
+
+        $this->id = $id;
+        $this->action = $action;
+
+        switch($this->action)
+        {
+            case 'findOne':
+                $this->findOne($this->modeltype, $this->id);
+                'break';
+            case 'find':
+                $this->findMany($this->modeltype);
+                break;
+            case 'update':
+                $this->updateEntry($this->modeltype, $this->id, $this->description);
+                break;
+            case 'delete':
+                $this->bool = $this->deleteEntry($this->modeltype, $this->id);
+                break;
+            case 'create':
+                $this->createEntry($this->modeltype, $this->description);
+                break;
             default:
-                throw new \InvalidArgumentException("Unknown model type: ", $description->type);
+                'Error';
+        }
+    }
+    public static function createEntry($modeltype, $description)
+    {
+        // return response()->json([
+        //     'status' => 'error', // Or 'success' depending on your logic
+        //     'message' => $modeltype + ' here in createdEntryFinal field', // Assuming you want to return modeltype
+        //     'data' => [], // You can include additional data if needed
+        //     'errors' => [], // You can include any errors if applicable
+        // ], Response::HTTP_EXPECTATION_FAILED);
+
+        $fillable = [
+            'description' => $description,
+        ];
+
+        switch ($modeltype) {
+            case 'barangay':
+                return Barangay::createEntry($description);
+            case 'branch':
+                return Branch::createEntry($description);
+            case 'city':
+                City::createEntry($description);
+                return new City();
+            case 'civil_status':
+                return Civil_Status::createEntry($description);
+            case 'gender_map':
+                return Gender_Map::createEntry($description);
+            case 'country':
+                return Country::createEntry($description);
+            case 'province':
+                return Province::createEntry($description);
+            case 'credit_status':
+                return Credit_Status::createEntry($description);
+            case 'personality_status_map':
+                return Personality_Status_Map::createEntry($description);
+            case 'user_account_status':
+                return User_Account_Status::createEntry($description);
+            case 'document_map':
+                return Document_Map::createEntry($description);
+            case 'document_permission_map':
+                return Document_Permission_Map::createEntry($description);
+            case 'name_type':
+                return Name_Type::createEntry($description);
+            case 'customer_group':
+                return Customer_Group::createEntry($description);
+            default:
+                throw new \InvalidArgumentException("Unknown model type: ", $modeltype);
         }
     }
 
-    public static function findOne($payload, $id)
+    public static function findOne(string $modeltype, int $id)
     {
-        $type = $payload->modeltype;
-        echo 1;
-        switch ($type) {
+        // return response()->json([
+        //             'status' => 'error', // Or 'success' depending on your logic
+        //             'message' => $modeltype, // Assuming you want to return modeltype
+        //             'data' => [], // You can include additional data if needed
+        //             'errors' => [], // You can include any errors if applicable
+        //         ], Response::HTTP_EXPECTATION_FAILED);
+        switch ($modeltype) {
             case 'barangay':
                 return Barangay::findOne($id);
             case 'branch':
@@ -104,13 +179,13 @@ class DBBaseLibraryFactory
             case 'customer_group':
                 return Customer_Group::findOne($id);
             default:
-                throw new \InvalidArgumentException("Unknown model type: $type");
+                throw new \InvalidArgumentException("Unknown model type: $modeltype");
         }
     }
 
-    public static function findMany($modelType)
+    public static function findMany($modeltype)
     {
-        switch ($modelType) {
+        switch ($modeltype) {
             case 'barangay':
                 return Barangay::findMany();
             case 'branch':
@@ -140,11 +215,11 @@ class DBBaseLibraryFactory
             case 'customer_group':
                 return Customer_Group::findMany();
             default:
-                throw new \InvalidArgumentException("Unknown model type: $modelType");
+                throw new \InvalidArgumentException("Unknown model type: $modeltype");
         }
     }
 
-    public static function deleteEntry($modelType, $id)
+    public static function deleteEntry(string $modelType, int $id)
     {
         switch ($modelType) {
             case 'barangay':

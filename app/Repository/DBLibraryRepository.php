@@ -16,28 +16,53 @@ class DBLibraryRepository implements DBLibraryRepositoryInterface
         return $dblibrary::findMany($modeltype);
     }
 
-    public function findOneById(object $payload, int $id)
+    public function findOneById(string $modeltype, int $id)
     {
-        $dblibrary = new DBBaseLibraryFactory();
-        return $dblibrary::findOne($payload, $id);
+        // return response()->json([
+        //             'status' => 'error', // Or 'success' depending on your logic
+        //             'message' => $modeltype, // Assuming you want to return modeltype
+        //             'data' => [], // You can include additional data if needed
+        //             'errors' => [], // You can include any errors if applicable
+        //         ], Response::HTTP_EXPECTATION_FAILED);
+        $dblibrary = new DBBaseLibraryFactory($modeltype, null, $id, null);
+        return $dblibrary::findOne($modeltype, $id);
     }
 
     public function create(object $payload)
     {
-        $dblibrary = new DBBaseLibraryFactory();
-        return $dblibrary::createEntry($payload);
+        // return response()->json([
+        //     'status' => 'error', // Or 'success' depending on your logic
+        //     'message' => ' here in createdEntryrepository field', // Assuming you want to return modeltype
+        //     'data' => [], // You can include additional data if needed
+        //     'errors' => [], // You can include any errors if applicable
+        // ], Response::HTTP_EXPECTATION_FAILED);
+        return new DBBaseLibraryFactory(null, $payload, 0, "create");
     }
 
-    public function delete(string $modeltype, int $id)
+    public function update(int $id, object $payload)
     {
-        $dblibrary = new DBBaseLibraryFactory();
-        return $dblibrary::deleteEntry($dblibrary->$modeltype, $id);
+        return new DBBaseLibraryFactory(null, $payload, $id, 'update');
     }
 
-    public function update(string $modeltype, int $id, object $payload)
+    public function delete(object $payload, int $id)
     {
-        $dblibrary = new DBBaseLibraryFactory($modeltype, $payload);
-        $dblibrary::updateEntry($dblibrary->$modeltype, $id, $payload);
+        $object = new DBBaseLibraryFactory(null, $payload, $id, 'delete');
 
+        if($object->bool == true)
+        {
+            return response()->json([
+            'status' => 'success', // Or 'success' depending on your logic
+            'message' => ' successfully deleted!', // Assuming you want to return modeltype
+            'data' => [], // You can include additional data if needed
+            'errors' => [], // You can include any errors if applicable
+            ], Response::HTTP_OK);
+        }
+
+        return response()->json([
+            'status' => 'error', // Or 'success' depending on your logic
+            'message' => 'deletion error!', // Assuming you want to return modeltype
+            'data' => [], // You can include additional data if needed
+            'errors' => [], // You can include any errors if applicable
+        ], Response::HTTP_EXPECTATION_FAILED);
     }
 }

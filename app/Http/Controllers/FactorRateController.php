@@ -30,7 +30,7 @@ class FactorRateController extends Controller
     public function store(FactorRateStoreRequest $request)
     {
         return $this->factorRateService->createFactorRate($request);
-        
+
     }
 
     /**
@@ -39,7 +39,7 @@ class FactorRateController extends Controller
     public function show(int $id)
     {
         return $this->factorRateService->findFactorRateById($id);
-        
+
     }
 
     /**
@@ -48,7 +48,7 @@ class FactorRateController extends Controller
     public function update(FactorRateUpdateRequest $request, int $id)
     {
         return $this->factorRateService->updateFactorRate($request, $id);
-        
+
     }
 
     /**

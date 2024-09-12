@@ -12,7 +12,10 @@ Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanc
 
 Route::middleware('auth:sanctum')->prefix('libraries')->group(function () {
     Route::get('/{modeltype}', [DBLibraryController::class, 'index']);
-    Route::post('/find', [DBLibraryController::class,'show']);
+    Route::get('/findOne/{id}', [DBLibraryController::class, 'show']);
+    Route::post('/', [DBLibraryController::class, 'store']);
+    Route::put('/{id}', [DBLibraryController::class, 'update']);
+    Route::delete('/{id}', [DBLibraryController::class, 'destroy']);
 });
 
 Route::middleware('auth:sanctum')->prefix('customers')->group(function () {

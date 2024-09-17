@@ -34,7 +34,7 @@ class CustomerPersonalityController extends Controller
         $personalities = $this->personalityService->findPersonality();
 
         return [
-            'customers' => $customers,
+            'customer' => $customers,
             'personality' => $personalities
         ];
     }
@@ -49,6 +49,12 @@ class CustomerPersonalityController extends Controller
         $customerData = $request->input('customer');
         $personalityData = $request->input('personality');
 
+        // return response()->json([
+        //     'message' => 'data',
+        //     'data' => $personalityData,
+        //     'error' => '',
+        // ], Response::HTTP_BAD_REQUEST);
+
         // Merge data for validation
         $datas = array_merge($customerData, $personalityData);
         $rules = array_merge($customerStoreRequest->rules(), $personalityStoreRequest->rules());
@@ -61,7 +67,7 @@ class CustomerPersonalityController extends Controller
                 'message' => 'Validation error!',
                 'data' => $datas,
                 'error' => $validate->errors(),
-            ], Response::HTTP_BAD_REQUEST);
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
 
         try {

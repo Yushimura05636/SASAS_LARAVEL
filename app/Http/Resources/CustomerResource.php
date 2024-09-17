@@ -19,7 +19,7 @@ class CustomerResource extends JsonResource
             'group_id' => $this->group_id,
             'passbook_no' => $this->loan_count,
             'enable_mortuary' => $this->enable_mortuary,
-            'mortuary_coveragae_start' => $this->mortuary_coverate_start,
+            'mortuary_coverage_start' => $this->mortuary_coverate_start,
             'mortuary_coverage_end' => $this->mortuary_coverage_end,
             'personality_id' => $this->personality_id,
         ];

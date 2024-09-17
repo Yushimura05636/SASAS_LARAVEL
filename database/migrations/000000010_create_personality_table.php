@@ -15,7 +15,7 @@ return new class extends Migration
             $table->bigIncrements('id'); #primary key
             //$table->dateTime('datetime_created'); redundant to timestamps();
             //$table->dateTime('datetime_last_modified'); thiso one too;
-            $table->dateTime('datetime_registered');
+            $table->date('datetime_registered');
             $table->string('family_name');
             $table->string('middle_name');
             $table->string('first_name');

@@ -43,20 +43,7 @@ class DatabaseSeeder extends Seeder
        $this->c = 500;
         $this->f = 1;
 
-        for($i = 0; $i < 100; $i++)
-        {
-            echo "Created";
-            Spouse::create([
-                'family_name'=>$faker->name(),
-                'first_name'=>$faker->name(),
-                'middle_name'=>$faker->name(),
-                'gender_code'=>$faker->numberBetween(1,2),
-                'email_address'=>$faker->email(),
-                'cellphone_no'=>$faker->phoneNumber(),
-            ]);
-        }
-
-        for($i = 0; $i < 100; $i++)
+        for($i = 0; $i < 2; $i++)
         {
             Personality::create([
                 'datetime_registered'=>now(),
@@ -89,20 +76,51 @@ class DatabaseSeeder extends Seeder
             'barangay',
             'branch',
             'city',
-            'civil_status',
-            'gender_map',
             'country',
             'province',
-            'credit_status',
-            'personality_status_map',
-            'user_account_status',
             'document_map',
-            'document_permission_map',
-            'name_type',
             'customer_group'
         ];
 
-        while ($this->c > 0) {
+        // Defining unique value arrays beforehand
+        $civilStatusNames = ['Married', 'Widowed', 'Single'];
+        $genderNames = ['Male', 'Female'];
+        $creditStatusNames = ['Active', 'Inactive', 'Suspended', 'Blacklisted'];
+        $userAccountStatusNames = ['Active', 'Inactive'];
+        $documentPermissionNames = ['create', 'update', 'delete', 'view'];
+        $nameTypes = ['Employee', 'Customer'];
+
+        // Civil Status entries
+        foreach ($civilStatusNames as $name) {
+            Civil_Status::createEntry($name); // No duplicates, direct array iteration
+        }
+
+        // Gender Map entries
+        foreach ($genderNames as $name) {
+            Gender_Map::createEntry($name); // No duplicates, direct array iteration
+        }
+
+        // Credit Status entries
+        foreach ($creditStatusNames as $name) {
+            Credit_Status::createEntry($name); // No duplicates, direct array iteration
+        }
+
+        // User Account Status entries
+        foreach ($userAccountStatusNames as $name) {
+            User_Account_Status::createEntry($name); // No duplicates, direct array iteration
+        }
+
+        // Document Permission Map entries
+        foreach ($documentPermissionNames as $name) {
+            Document_Permission_Map::createEntry($name); // No duplicates, direct array iteration
+        }
+
+        // Name Type entries
+        foreach ($nameTypes as $name) {
+            Name_Type::createEntry($name); // No duplicates, direct array iteration
+        }
+
+        for($i = 0; $i < 200; $i++) {
             echo "1"; echo $this->f+1;
             $modeltype = $faker->randomElement($modelTypes);
             $description = $faker->sentence(10);
@@ -110,43 +128,25 @@ class DatabaseSeeder extends Seeder
 
             switch ($modeltype) {
                 case 'barangay':
-                    Barangay::createEntry($description);
+                    Barangay::createEntry($faker->unique()->streetName());
                     break;
                 case 'branch':
                     Branch::createEntry($description);
                     break;
                 case 'city':
-                    City::createEntry($description);
-                    break;
-                case 'civil_status':
-                    Civil_Status::createEntry($description);
-                    break;
-                case 'gender_map':
-                    Gender_Map::createEntry($description);
+                    City::createEntry($faker->unique()->city());
                     break;
                 case 'country':
-                    Country::createEntry($description);
+                    Country::createEntry($faker->unique()->country());
                     break;
                 case 'province':
-                    Province::createEntry($description);
-                    break;
-                case 'credit_status':
-                    Credit_Status::createEntry($description);
+                    Province::createEntry($faker->unique()->state());
                     break;
                 case 'personality_status_map':
                     Personality_Status_Map::createEntry($description);
                     break;
-                case 'user_account_status':
-                    User_Account_Status::createEntry($description);
-                    break;
                 case 'document_map':
                     Document_Map::createEntry($description);
-                    break;
-                case 'document_permission_map':
-                    Document_Permission_Map::createEntry($description);
-                    break;
-                case 'name_type':
-                    Name_Type::createEntry($description);
                     break;
                 case 'customer_group':
                     Customer_Group::createEntry($description);
@@ -154,9 +154,6 @@ class DatabaseSeeder extends Seeder
                 default:
                     throw new \InvalidArgumentException("Unknown model type: $modeltype");
             }
-
-            $this->c--;
-            $this->f++;
         }
 
         Employee::create([
@@ -165,7 +162,7 @@ class DatabaseSeeder extends Seeder
             'tin_no' => $faker->randomDigit(),
             'datetime_hired' => $faker->date(),
             'datetime_resigned' => $faker->date(),
-            'personality_id' => $faker->numberBetween(1,100),
+            'personality_id' => 1,
         ]);
 
         Customer::create([
@@ -175,13 +172,8 @@ class DatabaseSeeder extends Seeder
             'enable_mortuary' => $faker->numberBetween(1,2),
             'mortuary_coverage_start' => null,
             'mortuary_coverage_end' => null,
-            'personality_id' => 1,
+            'personality_id' => 2,
         ]);
-
-        User_Account_Status::create([
-            'description' => $faker->name(['Active', 'Not Active']),
-        ]);
-
 
         User_Account::create([
             'last_name' => 'Sasas',

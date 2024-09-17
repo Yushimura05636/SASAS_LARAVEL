@@ -26,8 +26,9 @@ class CustomerUpdateRequest extends FormRequest
             'passbook_no' => ['required', 'integer'],
             'loan_count' => ['required', 'integer'],
             'enable_mortuary' => ['required', 'integer'],
-            'mortuary_coverage_start' => ['required', 'date'],
-            'motuary_coverage_end' => ['required', 'date']
+            'mortuary_coverage_start' => ['nullable', 'date'],
+            'motuary_coverage_end' => ['nullable', 'date'],
+            'personality_id' => ['nullable', 'integer'],
         ];
     }
 }

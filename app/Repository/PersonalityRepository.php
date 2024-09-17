@@ -27,7 +27,7 @@ class PersonalityRepository implements PersonalityRepositoryInterface
         $Personality->family_name = $payload->family_name;
         $Personality->middle_name = $payload->middle_name;
         $Personality->first_name = $payload->first_name;
-        $Personality->description = $payload->description;
+        //$Personality->description = $payload->description;
         $Personality->birthday = $payload->birthday;
         $Personality->civil_status = $payload->civil_status;
         $Personality->gender_code = $payload->gender_code;
@@ -41,12 +41,12 @@ class PersonalityRepository implements PersonalityRepositoryInterface
         #dli nako sure dre sas kay foreign key
         $Personality->name_type_code = $payload->name_type_code;
         $Personality->personality_status_code = $payload->personality_status_code;
-        $Personality->branch_id = $payload->branch_id;
+        //$Personality->branch_id = $payload->branch_id;
         $Personality->barangay_id = $payload->barangay_id;
         $Personality->city_id = $payload->city_id;
         $Personality->country_id = $payload->country_id;
         $Personality->province_id = $payload->province_id;
-        $Personality->spouse_id = $payload->spouse_id;
+        //$Personality->spouse_id = $payload->spouse_id;
         $Personality->credit_status_id = $payload->credit_status_id;
 
         $Personality->save();
@@ -60,7 +60,7 @@ class PersonalityRepository implements PersonalityRepositoryInterface
         $Personality->family_name = $payload->family_name;
         $Personality->middle_name = $payload->middle_name;
         $Personality->first_name = $payload->first_name;
-        $Personality->description = $payload->description;
+        //$Personality->description = $payload->description;
         $Personality->birthday = $payload->birthday;
         $Personality->civil_status = $payload->civil_status;
         $Personality->gender_code = $payload->gender_code;
@@ -74,12 +74,12 @@ class PersonalityRepository implements PersonalityRepositoryInterface
         #dli nako sure dre sas kay foreign key
         $Personality->name_type_code = $payload->name_type_code;
         $Personality->personality_status_code = $payload->personality_status_code;
-        $Personality->branch_id = $payload->branch_id;
+        //$Personality->branch_id = $payload->branch_id;
         $Personality->barangay_id = $payload->barangay_id;
         $Personality->city_id = $payload->city_id;
         $Personality->country_id = $payload->country_id;
         $Personality->province_id = $payload->province_id;
-        $Personality->spouse_id = $payload->spouse_id;
+        //$Personality->spouse_id = $payload->spouse_id;
         $Personality->credit_status_id = $payload->credit_status_id;
 
         $Personality->save();

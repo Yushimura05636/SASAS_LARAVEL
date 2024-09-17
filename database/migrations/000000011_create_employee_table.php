@@ -16,11 +16,16 @@ return new class extends Migration
             $table->string('sss_no');
             $table->string('phic_no');
             $table->string('tin_no');
-            $table->dateTime('datetime_hired');
-            $table->dateTime('datetime_resigned');
+            $table->dateTime('datetime_hired')->nullable();
+            $table->dateTime('datetime_resigned')->nullable();
             $table->unsignedBigInteger('personality_id'); #foreign key
 
             #constraints
+            $table->unique('sss_no');
+            $table->unique('phic_no');
+            $table->unique('tin_no');
+
+            #foreign
             $table->foreign('personality_id')->references('id')->on('personality')->onDelete('cascade');
             $table->timestamps();
         });

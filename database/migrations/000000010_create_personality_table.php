@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('family_name');
             $table->string('middle_name');
             $table->string('first_name');
-            $table->string('description');
+            //$table->string('description'); not needed
             $table->date('birthday');
             $table->string('civil_status');
             $table->string('gender_code');
@@ -33,12 +33,12 @@ return new class extends Migration
             #foregin key
             $table->unsignedBigInteger('name_type_code');
             $table->unsignedBigInteger('personality_status_code'); #foregin key
-            $table->unsignedBigInteger('branch_id'); #foregin key
+            //$table->unsignedBigInteger('branch_id'); #foregin key
             $table->unsignedBigInteger('barangay_id'); #foregin key
             $table->unsignedBigInteger('city_id'); #foregin key
             $table->unsignedBigInteger('country_id'); #foregin key
             $table->unsignedBigInteger('province_id'); #foregin key
-            $table->unsignedBigInteger('spouse_id'); #foregin key
+            //$table->unsignedBigInteger('spouse_id'); #foregin key; not needed
             $table->unsignedBigInteger('credit_status_id'); #foregin key
 
             #constraints

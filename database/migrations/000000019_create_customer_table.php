@@ -19,8 +19,8 @@ return new class extends Migration
             $table->unsignedBigInteger('passbook_no');
             $table->unsignedBigInteger('loan_count');
             $table->boolean('enable_mortuary');
-            $table->dateTime('mortuary_coverage_start');
-            $table->dateTime('mortuary_coverage_end');
+            $table->dateTime('mortuary_coverage_start')->nullable();
+            $table->dateTime('mortuary_coverage_end')->nullable();
             $table->unsignedBigInteger('personality_id'); #foreign key
 
             #constraints

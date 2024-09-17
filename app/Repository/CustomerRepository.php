@@ -25,7 +25,7 @@ class CustomerRepository implements CustomerRepositoryInterface
     public function create(object $payload)
     {
         $customer = new Customer();
-        $customer->gorup_id = $payload->group_id;
+        $customer->group_id = $payload->group_id;
         $customer->passbook_no = $payload->passbook_no;
         $customer->loan_count = $payload->loan_count;
         $customer->enable_mortuary = $payload->enable_mortuary;
@@ -40,7 +40,7 @@ class CustomerRepository implements CustomerRepositoryInterface
     public function update(object $payload, int $id)
     {
         $customer = Customer::findOrFail($id);
-        $customer->gorup_id = $payload->group_id;
+        $customer->group_id = $payload->group_id;
         $customer->passbook_no = $payload->passbook_no;
         $customer->loan_count = $payload->loan_count;
         $customer->enable_mortuary = $payload->enable_mortuary;

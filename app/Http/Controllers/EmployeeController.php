@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Http\Requests\EmployeeStoreRequest;
 use App\Http\Requests\EmployeeUpdateRequest;
 use App\Interface\Service\EmployeeServiceInterface;
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Validator;
 
 class EmployeeController extends Controller
 {
@@ -20,7 +23,7 @@ class EmployeeController extends Controller
         return $this->employeeService->findEmployees();
     }
 
-    public function store(EmployeeStoreRequest $request)
+    public function store(Request $request)
     {
         return $this->employeeService->createEmployee($request);
     }
@@ -30,7 +33,7 @@ class EmployeeController extends Controller
         return $this->employeeService->findEmlpoyeeById($id);
     }
 
-    public function update(EmployeeUpdateRequest $request, int $id)
+    public function update(Request $request, int $id)
     {
         return $this->employeeService->updateEmployee($request, $id);
     }

@@ -5,7 +5,7 @@ namespace App\Service;
 use App\Http\Resources\PersonalityResource;
 use App\Interface\Repository\PersonalityRepositoryInterface;
 use App\Interface\Service\PersonalityServiceInterface;
-
+use Illuminate\Http\Response;
 
 class PersonalityService implements PersonalityServiceInterface
 {

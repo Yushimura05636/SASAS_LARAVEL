@@ -23,8 +23,8 @@ class EmployeeRepository implements EmployeeRepositoryInterface
         $employee->sss_no = $payload->sss_no;
         $employee->phic_no = $payload->phic_no;
         $employee->tin_no = $payload->tin_no;
-        $employee->date_hired = $payload->date_hired;
-        $employee->date_resigned = $payload->date_resigned;
+        $employee->datetime_hired = $payload->datetime_hired;
+        $employee->datetime_resigned = $payload->datetime_resigned;
         $employee->personality_id = $payload->personality_id;
         $employee->save();
 
@@ -37,8 +37,8 @@ class EmployeeRepository implements EmployeeRepositoryInterface
         $employee->sss_no = $payload->sss_no;
         $employee->phic_no = $payload->phic_no;
         $employee->tin_no = $payload->tin_no;
-        $employee->date_hired = $payload->date_hired;
-        $employee->date_resigned = $payload->date_resigned;
+        $employee->datetime_hired = $payload->datetime_hired;
+        $employee->datetime_resigned = $payload->datetime_resigned;
         $employee->personality_id = $payload->personality_id;
         $employee->save();
 

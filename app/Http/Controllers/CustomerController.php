@@ -6,6 +6,8 @@ use App\Http\Requests\CustomerStoreRequest;
 use App\Http\Requests\CustomerUpdateRequest;
 use App\Interface\Service\CustomerServiceInterface;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Validator;
 
 class CustomerController extends Controller
 {
@@ -21,7 +23,7 @@ class CustomerController extends Controller
         return $this->customerService->findCustomers();
     }
 
-    public function store(CustomerStoreRequest $request)
+    public function store(Request $request)
     {
         return $this->customerService->createCustomer($request);
     }
@@ -31,7 +33,7 @@ class CustomerController extends Controller
         return $this->customerService->findCustomerById($id);
     }
 
-    public function update(CustomerUpdateRequest $request, int $id)
+    public function update(Request $request, int $id)
     {
         return $this->customerService->updateCustomer($request, $id);
     }

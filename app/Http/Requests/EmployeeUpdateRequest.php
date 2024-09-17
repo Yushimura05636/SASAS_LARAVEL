@@ -25,8 +25,8 @@ class EmployeeUpdateRequest extends FormRequest
             'sss_no' => ['required', 'integer'],
             'phic_no' => ['required', 'integer'],
             'tin_no' => ['required', 'integer'],
-            'date_hired' => ['required', 'date'],
-            'date_resigned' => ['required', 'date'],
+            'datetime_hired' => ['required', 'date'],
+            'datetime_resigned' => ['required', 'date'],
             'personality_id' => ['required', 'integer']
         ];
     }

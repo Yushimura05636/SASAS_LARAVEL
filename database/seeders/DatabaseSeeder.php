@@ -19,6 +19,7 @@ use App\Models\Gender_Map; #Done
 use App\Models\Country; #Done
 use App\Models\Province; #Done
 use App\Models\Credit_Status; #Done
+use App\Models\Customer;
 use App\Models\Personality_Status_Map; #Done
 use App\Models\User_Account_Status; #Done
 use App\Models\Document_Map; #Done
@@ -62,7 +63,7 @@ class DatabaseSeeder extends Seeder
                 'family_name'=>$faker->name(),
                 'middle_name'=>$faker->name(),
                 'first_name'=>$faker->name(),
-                'description'=>$faker->sentence(6),
+                //'description'=>$faker->sentence(6),
                 'birthday'=>now(),
                 'civil_status'=>$faker->sentence(6),
                 'gender_code'=>$faker->numberBetween(1,2),
@@ -74,12 +75,12 @@ class DatabaseSeeder extends Seeder
                 'cellphone_no'=> $faker->phoneNumber(),
                 'name_type_code'=>$faker->numberBetween(1,2),
                 'personality_status_code'=>1,
-                'branch_id'=>$faker->numberBetween(1,10),
+                //'branch_id'=>$faker->numberBetween(1,10),
                 'barangay_id'=>$faker->numberBetween(1,10),
                 'city_id'=>$faker->numberBetween(1,10),
                 'country_id'=>$faker->numberBetween(1,10),
                 'province_id'=>$faker->numberBetween(1,10),
-                'spouse_id'=>$faker->numberBetween(1,10),
+                //'spouse_id'=>$faker->numberBetween(1,10),
                 'credit_status_id'=>$faker->numberBetween(1,10),
             ]);
         }
@@ -167,6 +168,16 @@ class DatabaseSeeder extends Seeder
             'personality_id' => $faker->numberBetween(1,100),
         ]);
 
+        Customer::create([
+            'group_id' => $faker->randomDigit(),
+            'passbook_no' => $faker->randomDigit(),
+            'loan_count' => $faker->randomDigit(),
+            'enable_mortuary' => $faker->numberBetween(1,2),
+            'mortuary_coverage_start' => null,
+            'mortuary_coverage_end' => null,
+            'personality_id' => 1,
+        ]);
+
         User_Account_Status::create([
             'description' => $faker->name(['Active', 'Not Active']),
         ]);
@@ -181,11 +192,5 @@ class DatabaseSeeder extends Seeder
             'employee_id' => 1,
             'status_id' => 1,
         ]);
-
-        $personality = Personality::findOrFail(1);
-        echo 'employee id get: ', $personality->id;
-        echo 'empoyee name get: ', $personality->family_name;
-        echo 'empoyee name get: ', $personality->middle_name;
-        echo 'empoyee name get: ', $personality->first_name;
     }
 }

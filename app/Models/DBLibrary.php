@@ -34,7 +34,7 @@ abstract class DBLibrary extends Model
 
     public static function findMany()
     {
-        $entry = self::paginate(10);
+        $entry = self::paginate(100);
         return $entry;
     }
 

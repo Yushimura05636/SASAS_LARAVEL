@@ -35,7 +35,7 @@ use Illuminate\Http\Response;
 
 class DBBaseLibraryFactory
 {
-    private $modeltype;
+    public $modeltype;
     public $id;
     public $description;
     private $action;
@@ -64,9 +64,9 @@ class DBBaseLibraryFactory
         //check if $payload object is not null
         if(!is_null($payload) && $payload !== '')
         {
-            $this->description = $payload->input('description', 'default_value');
+            $this->description = $payload->description;
             //else the $modeltype will use the object $payload->modeltype
-            $this->modeltype = $payload->input('modeltype', 'default_value');
+            $this->modeltype = $payload->modeltype;
         }
 
         $this->id = $id;
@@ -74,9 +74,12 @@ class DBBaseLibraryFactory
 
         switch($this->action)
         {
+            case 'create':
+                $this->createEntry($this->modeltype, $this->description);
+                break;
             case 'findOne':
                 $this->findOne($this->modeltype, $this->id);
-                'break';
+                break;
             case 'find':
                 $this->findMany($this->modeltype);
                 break;
@@ -86,9 +89,6 @@ class DBBaseLibraryFactory
             case 'delete':
                 $this->bool = $this->deleteEntry($this->modeltype, $this->id);
                 break;
-            case 'create':
-                $this->createEntry($this->modeltype, $this->description);
-                break;
             default:
                 'Error';
         }
@@ -97,7 +97,7 @@ class DBBaseLibraryFactory
     {
         // return response()->json([
         //     'status' => 'error', // Or 'success' depending on your logic
-        //     'message' => $modeltype + ' here in createdEntryFinal field', // Assuming you want to return modeltype
+        //     'message' => $modeltype, // Assuming you want to return modeltype
         //     'data' => [], // You can include additional data if needed
         //     'errors' => [], // You can include any errors if applicable
         // ], Response::HTTP_EXPECTATION_FAILED);

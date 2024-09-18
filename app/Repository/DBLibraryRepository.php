@@ -33,10 +33,10 @@ class DBLibraryRepository implements DBLibraryRepositoryInterface
         // return response()->json([
         //     'status' => 'error', // Or 'success' depending on your logic
         //     'message' => ' here in createdEntryrepository field', // Assuming you want to return modeltype
-        //     'data' => [], // You can include additional data if needed
+        //     'data' => $payload->modeltype, // You can include additional data if needed
         //     'errors' => [], // You can include any errors if applicable
         // ], Response::HTTP_EXPECTATION_FAILED);
-        return new DBBaseLibraryFactory(null, $payload, 0, "create");
+        return new DBBaseLibraryFactory(null, $payload, 0, 'create');
     }
 
     public function update(int $id, object $payload)

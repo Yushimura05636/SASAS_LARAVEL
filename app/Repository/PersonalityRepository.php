@@ -10,7 +10,7 @@ class PersonalityRepository implements PersonalityRepositoryInterface
 {
     public function findMany()
     {
-        return Personality::all();
+        return Personality::orderBy('id')->get();
     }
 
     public function findOneById(int $id)

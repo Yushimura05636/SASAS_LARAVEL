@@ -9,7 +9,7 @@ class CustomerRepository implements CustomerRepositoryInterface
 {
     public function findMany()
     {
-        return Customer::paginate(10);
+        return Customer::orderBy('personality_id')->get();
     }
 
     public function findOneById($id)

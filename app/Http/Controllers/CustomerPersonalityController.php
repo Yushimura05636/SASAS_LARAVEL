@@ -29,15 +29,37 @@ class CustomerPersonalityController extends Controller
     }
 
     public function index()
-    {
-        $customers = $this->customerService->findCustomers();
-        $personalities = $this->personalityService->findPersonality();
+{
+    // Fetch customers and personalities from their respective services
+    $customers = $this->customerService->findCustomers();
+    $personalities = $this->personalityService->findPersonality();
 
-        return [
-            'customer' => $customers,
-            'personality' => $personalities
+    // Create an associative array (lookup) for personalities using personality_id as key
+    $personalityMap = [];
+    foreach ($personalities as $personality) {
+        $personalityMap[$personality->id] = $personality;
+    }
+
+    // Loop through customers and pair them with their respective personality
+    $customersWithPersonality = [];
+    foreach ($customers as $customer) {
+        $personalityId = $customer->personality_id;
+        // Find the corresponding personality using the personality_id
+        $personality = $personalityMap[$personalityId] ?? null;
+
+        // Pair the customer with their personality
+        $customersWithPersonality[] = [
+            'customer' => $customer,
+            'personality' => $personality
         ];
     }
+
+    // Return the paired customers and personalities
+    return [
+        'data' => $customersWithPersonality
+    ];
+}
+
 
     public function store(Request $request, CustomerController $customerController, PersonalityController $personalityController)
     {

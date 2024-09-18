@@ -33,15 +33,36 @@ class EmployeePersonalityController extends Controller
     }
 
     public function index()
-    {
-        $employees = $this->employeeService->findEmployees();
-        $personalities = $this->personalityService->findPersonality();
+{
+    // Fetch employees and personalities from their respective services
+    $employees = $this->employeeService->findEmployees(); // Assuming findCustomers returns employees
+    $personalities = $this->personalityService->findPersonality();
 
-        return [
-            'employees' => $employees,
-            'personality' => $personalities
+    // Create an associative array (lookup) for personalities using personality_id as key
+    $personalityMap = [];
+    foreach ($personalities as $personality) {
+        $personalityMap[$personality->id] = $personality;
+    }
+
+    // Loop through employees and pair them with their respective personality
+    $employeesWithPersonality = [];
+    foreach ($employees as $employee) {
+        $personalityId = $employee->personality_id;
+        // Find the corresponding personality using the personality_id
+        $personality = $personalityMap[$personalityId] ?? null;
+
+        // Pair the employee with their personality
+        $employeesWithPersonality[] = [
+            'employee' => $employee,
+            'personality' => $personality
         ];
     }
+
+    // Return the paired employees and personalities
+    return [
+        'data' => $employeesWithPersonality
+    ];
+}
 
     public function store(Request $request, EmployeeController $employeeController, PersonalityController $personalityController)
     {
@@ -134,7 +155,7 @@ class EmployeePersonalityController extends Controller
 
             return response()->json([
                 'message' => 'Both Employee and Personality retrieved successfully',
-                'customer' => $employee, // Use resource class
+                'employee' => $employee, // Use resource class
                 'personality' => $personality, // Use resource class
             ], Response::HTTP_OK);
 

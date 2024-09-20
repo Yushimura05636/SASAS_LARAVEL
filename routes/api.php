@@ -6,6 +6,7 @@ use App\Http\Controllers\CustomerPersonalityController;
 use App\Http\Controllers\DBLibraryController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\EmployeePersonalityController;
+use App\Http\Controllers\LoanCountController;
 use App\Http\Controllers\PersonalityController;
 use App\Http\Controllers\StudentController;
 use Illuminate\Http\Request;
@@ -45,3 +46,12 @@ Route::middleware('auth:sanctum')->prefix('customers')->group(function () {
     Route::put('/{id}', [CustomerPersonalityController::class,'update']);
     Route::delete('/{id}', [CustomerPersonalityController::class, 'destroy']);
 });
+
+Route::prefix('loancounts')->group(function () {
+    Route::get('/', [LoanCountController::class, 'index']);
+    Route::get('/{id}', [LoanCountController::class, 'show']);
+    Route::post('/', [LoanCountController::class, 'store']);
+    Route::put('/{id}', [LoanCountController::class,'update']);
+    Route::delete('/{id}', [LoanCountController::class, 'destroy']);
+});
+

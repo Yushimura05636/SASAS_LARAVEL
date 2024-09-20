@@ -16,7 +16,7 @@ class PaymentScheduleRepository implements PaymentScheduleRepositoryInterface
 
     public function findOneById($id)
     {
-        return Payment_Schedule::find($id);
+        return Payment_Schedule::findOrFail($id);
     }
 
     public function create(object $payload)

@@ -26,6 +26,7 @@ use App\Models\Document_Map; #Done
 use App\Models\Document_Permission_Map; #Done
 use App\Models\Name_Type; #Done
 use App\Models\Customer_Group; #Done
+use App\Models\Loan_Count;
 use App\Models\Personality; #Done
 use App\Models\Spouse;
 
@@ -165,10 +166,16 @@ class DatabaseSeeder extends Seeder
             'personality_id' => 1,
         ]);
 
+        Loan_Count::create([
+            'loan_count' => 1,
+            'min_amount' => 5000.00,
+            'max_amount' => 15000.00,
+        ]);
+
         Customer::create([
             'group_id' => $faker->randomDigit(),
             'passbook_no' => $faker->randomDigit(),
-            'loan_count' => $faker->randomDigit(),
+            'loan_count_id' => 1,
             'enable_mortuary' => $faker->numberBetween(1,2),
             'mortuary_coverage_start' => null,
             'mortuary_coverage_end' => null,

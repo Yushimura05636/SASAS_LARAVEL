@@ -8,6 +8,8 @@ interface UserServiceInterface
 
     public function findUserById(int $id);
 
+    // public function findUserByEmail(string $email);
+
     public function createUser(object $payload);
 
     public function updateUser(object $payload, int $id);

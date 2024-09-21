@@ -2,13 +2,11 @@
 
 namespace App\Interface\Repository;
 
-interface UserRepositoryInterface
+interface DocumentPermissionMapRepositoryInterface
 {
     public function findMany();
 
-    public function findOneById(int $id);
-
-    public function findByEmail(string $email);
+    public function findOneById($id);
 
     public function create(object $payload);
 

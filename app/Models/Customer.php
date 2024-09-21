@@ -28,7 +28,7 @@ class Customer extends Model
     protected $fillable = [
         'group_id',
         'passbook_no',
-        'loan_count_id',
+        'loan_count',
         'enable_motuary',
         'motuary_coverage_start',
         'mortuary_coverage_end',
@@ -41,11 +41,6 @@ class Customer extends Model
     public function customerGroup(): BelongsTo
     {
         return $this->belongsTo(Customer_Group::class, 'group_id', 'id');
-    }
-
-    public function loanCount(): BelongsTo
-    {
-        return $this->belongsTo(Loan_Count::class, 'loan_count_id', 'id');
     }
 
     public function personality(): BelongsTo

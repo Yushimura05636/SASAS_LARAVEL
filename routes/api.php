@@ -4,11 +4,15 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\CustomerPersonalityController;
 use App\Http\Controllers\DBLibraryController;
+use App\Http\Controllers\DocumentMapController;
+use App\Http\Controllers\DocumentPermissionMapController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\EmployeePersonalityController;
-use App\Http\Controllers\LoanCountController;
 use App\Http\Controllers\PersonalityController;
 use App\Http\Controllers\StudentController;
+use App\Http\Controllers\UserController;
+use App\Models\Document_Permission;
+use App\Models\Document_Permission_Map;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -47,11 +51,17 @@ Route::middleware('auth:sanctum')->prefix('customers')->group(function () {
     Route::delete('/{id}', [CustomerPersonalityController::class, 'destroy']);
 });
 
-Route::prefix('loancounts')->group(function () {
-    Route::get('/', [LoanCountController::class, 'index']);
-    Route::get('/{id}', [LoanCountController::class, 'show']);
-    Route::post('/', [LoanCountController::class, 'store']);
-    Route::put('/{id}', [LoanCountController::class,'update']);
-    Route::delete('/{id}', [LoanCountController::class, 'destroy']);
-});
 
+Route::get('/permission', [DocumentPermissionMapController::class, 'index']);
+Route::get('/documentMap', [DocumentMapController::class, 'index']);
+Route::get('/users', [UserController::class, 'index']);
+Route::get('/users/{id}', [UserController::class, 'show']);
+
+
+// Route::prefix('users')->group(function () {
+//     Route::get('/', [UserController::class, 'index']);
+//     Route::get('/{id}', [UserController::class, 'show']);
+//     Route::post('/', [UserController::class, 'store']);
+//     Route::put('/{id}', [UserController::class,'update']);
+//     Route::delete('/{id}', [UserController::class, 'destroy']);
+// });

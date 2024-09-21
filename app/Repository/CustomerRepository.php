@@ -27,7 +27,7 @@ class CustomerRepository implements CustomerRepositoryInterface
         $customer = new Customer();
         $customer->group_id = $payload->group_id;
         $customer->passbook_no = $payload->passbook_no;
-        $customer->loan_count_id = $payload->loan_count_id;
+        $customer->loan_count = $payload->loan_count;
         $customer->enable_mortuary = $payload->enable_mortuary;
         $customer->mortuary_coverage_start = $payload->mortuary_coverage_start;
         $customer->mortuary_coverage_end = $payload->mortuary_coverage_end;
@@ -42,7 +42,7 @@ class CustomerRepository implements CustomerRepositoryInterface
         $customer = Customer::findOrFail($id);
         $customer->group_id = $payload->group_id;
         $customer->passbook_no = $payload->passbook_no;
-        $customer->loan_count_id = $payload->loan_count_id;
+        $customer->loan_count = $payload->loan_count;
         $customer->enable_mortuary = $payload->enable_mortuary;
         $customer->mortuary_coverage_start = $payload->mortuary_coverage_start;
         $customer->mortuary_coverage_end = $payload->mortuary_coverage_end;

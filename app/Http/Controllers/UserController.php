@@ -3,17 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\UserStoreRequest;
+use App\Http\Requests\UserUpdateRequest;
 use App\Interface\Service\UserServiceInterface;
 use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
 
-
     private $userService;
+
     public function __construct(UserServiceInterface $userService)
     {
-        $this->$userService = $userService;
+        $this->userService = $userService;
     }
     /**
      * Display a listing of the resource.
@@ -36,7 +37,7 @@ class UserController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(int $id)
     {
         return $this->userService->findUserById($id);
 
@@ -44,7 +45,7 @@ class UserController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UserStoreRequest $request, string $id)
+    public function update(UserUpdateRequest $request, string $id)
     {
         return $this->userService->updateUser($request, $id);
     }

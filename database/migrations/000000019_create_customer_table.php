@@ -17,14 +17,13 @@ return new class extends Migration
             $table->bigIncrements('id');
             $table->unsignedBigInteger('group_id'); #foregin key
             $table->unsignedBigInteger('passbook_no');
-            $table->unsignedBigInteger('loan_count_id');
+            $table->unsignedBigInteger('loan_count');
             $table->boolean('enable_mortuary');
             $table->dateTime('mortuary_coverage_start')->nullable();
             $table->dateTime('mortuary_coverage_end')->nullable();
             $table->unsignedBigInteger('personality_id'); #foreign key
 
             #constraints
-            $table->foreign('loan_count_id')->on('loan_count')->references('id')->onDelete('cascade');
             $table->foreign('group_id')->references('id')->on('customer_group')->onDelete('cascade');
             $table->foreign('personality_id')->references('id')->on('personality')->onDelete('cascade');
 

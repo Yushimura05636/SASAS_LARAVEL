@@ -10,11 +10,6 @@ use Illuminate\Support\Facades\Hash;
 
 class UserRepository implements UserRepositoryInterface
 {
-    public function findByEmail(string $email)
-    {
-        return User_Account::where('email', $email)->first();
-    }
-
     public function findOneById(int $id)
     {
         return User_Account::findOrFail($id);
@@ -23,6 +18,11 @@ class UserRepository implements UserRepositoryInterface
     public function findMany()
     {
         return User_Account::paginate(10);
+    }
+
+    public function findByEmail(string $email)
+    {
+        return User_Account::where('email', $email)->first();
     }
 
     public function create(object $payload)

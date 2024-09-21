@@ -26,7 +26,6 @@ use App\Models\Document_Map; #Done
 use App\Models\Document_Permission_Map; #Done
 use App\Models\Name_Type; #Done
 use App\Models\Customer_Group; #Done
-use App\Models\Loan_Count;
 use App\Models\Personality; #Done
 use App\Models\Spouse;
 
@@ -44,7 +43,7 @@ class DatabaseSeeder extends Seeder
        $this->c = 500;
         $this->f = 1;
 
-        for($i = 0; $i < 2; $i++)
+        for($i = 0; $i < 4; $i++)
         {
             Personality::create([
                 'datetime_registered'=>now(),
@@ -79,7 +78,7 @@ class DatabaseSeeder extends Seeder
             'city',
             'country',
             'province',
-            'document_map',
+            // 'document_map',
             'customer_group'
         ];
 
@@ -88,9 +87,14 @@ class DatabaseSeeder extends Seeder
         $genderNames = ['Male', 'Female'];
         $creditStatusNames = ['Active', 'Inactive', 'Suspended', 'Blacklisted'];
         $userAccountStatusNames = ['Active', 'Inactive'];
-        $documentPermissionNames = ['create', 'update', 'delete', 'view'];
+        $documentPermissionNames = ['Create', 'Update', 'Delete', 'View'];
         $nameTypes = ['Employee', 'Customer'];
+        $documentMap = ['UserAccount', 'Libraries'];
 
+
+        foreach ($documentMap as $name) {
+            Document_Map::createEntry($name); // No duplicates, direct array iteration
+        }
         // Civil Status entries
         foreach ($civilStatusNames as $name) {
             Civil_Status::createEntry($name); // No duplicates, direct array iteration
@@ -146,9 +150,9 @@ class DatabaseSeeder extends Seeder
                 case 'personality_status_map':
                     Personality_Status_Map::createEntry($description);
                     break;
-                case 'document_map':
-                    Document_Map::createEntry($description);
-                    break;
+                // case 'document_map':
+                //     Document_Map::createEntry($description);
+                //     break;
                 case 'customer_group':
                     Customer_Group::createEntry($description);
                     break;
@@ -165,21 +169,23 @@ class DatabaseSeeder extends Seeder
             'datetime_resigned' => $faker->date(),
             'personality_id' => 1,
         ]);
-
-        Loan_Count::create([
-            'loan_count' => 1,
-            'min_amount' => 5000.00,
-            'max_amount' => 15000.00,
+        Employee::create([
+            'sss_no' => $faker->randomDigit(),
+            'phic_no' => $faker->randomDigit(),
+            'tin_no' => $faker->randomDigit(),
+            'datetime_hired' => $faker->date(),
+            'datetime_resigned' => $faker->date(),
+            'personality_id' => 2,
         ]);
 
         Customer::create([
             'group_id' => $faker->randomDigit(),
             'passbook_no' => $faker->randomDigit(),
-            'loan_count_id' => 1,
+            'loan_count' => $faker->randomDigit(),
             'enable_mortuary' => $faker->numberBetween(1,2),
             'mortuary_coverage_start' => null,
             'mortuary_coverage_end' => null,
-            'personality_id' => 2,
+            'personality_id' => 3,
         ]);
 
         User_Account::create([
@@ -189,6 +195,15 @@ class DatabaseSeeder extends Seeder
             'email' => 'Sasas@email.com',
             'password' => Hash::make('password'),
             'employee_id' => 1,
+            'status_id' => 1,
+        ]);
+        User_Account::create([
+            'last_name' => 'Eric',
+            'first_name' => 'Eric',
+            'middle_name' => 'Eric',
+            'email' => 'Eric@email.com',
+            'password' => Hash::make('password'),
+            'employee_id' => 2,
             'status_id' => 1,
         ]);
     }

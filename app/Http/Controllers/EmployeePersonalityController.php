@@ -33,7 +33,7 @@ class EmployeePersonalityController extends Controller
     }
 
     public function index()
-{
+    {
     // Fetch employees and personalities from their respective services
     $employees = $this->employeeService->findEmployees(); // Assuming findCustomers returns employees
     $personalities = $this->personalityService->findPersonality();

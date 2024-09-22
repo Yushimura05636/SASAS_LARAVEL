@@ -56,7 +56,10 @@ Route::middleware('auth:sanctum')->prefix('customers')->group(function () {
 Route::get('/permission', [DocumentPermissionMapController::class, 'index']);
 Route::get('/documentMap', [DocumentMapController::class, 'index']);
 Route::get('/documentpermission', [DocumentPermissionController::class, 'index']);
+Route::get('/documentpermission/{id}', [DocumentPermissionController::class, 'show']);
 Route::post('/documentpermission', [DocumentPermissionController::class, 'store']);
+Route::put('/documentpermission/{id}', [DocumentPermissionController::class, 'update']);
+Route::delete('/documentpermission/{id}', [DocumentPermissionController::class, 'destroy']);
 Route::get('/users', [UserController::class, 'index']);
 Route::get('/users/{id}', [UserController::class, 'show']);
 

@@ -27,7 +27,7 @@ class DocumentPermissionService implements DocumentPermissionServiceInterface
     public function findDocumentPermissionById(int $id)
     {
         $documentPermission = $this->documentPermissionRepository->findOneById($id);
-        return new DocumentPermissionResource($documentPermission);
+        return DocumentPermissionResource::collection($documentPermission);
 
     }
 

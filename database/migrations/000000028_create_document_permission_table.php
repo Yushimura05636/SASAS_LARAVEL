@@ -27,7 +27,7 @@ return new class extends Migration
             $table->foreign('document_permission')->references('id')->on('document_permission_map');
 
             // Unique constraint with a shorter name
-            $table->unique(['user_id', 'document_map_code', 'document_permission'], 'unique_doc_perm');
+            //$table->unique(['user_id', 'document_map_code', 'document_permission'], 'unique_doc_perm');
         });
     }
 

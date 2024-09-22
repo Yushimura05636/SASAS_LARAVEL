@@ -15,7 +15,7 @@ class DocumentPermissionRepository implements DocumentPermissionRepositoryInterf
 
     public function findOneById($id)
     {
-        return Document_Permission::findOrFail($id);
+        return Document_Permission::where('user_id', $id)->get();
     }
 
     public function findOneByValue(string $value)
@@ -37,7 +37,6 @@ class DocumentPermissionRepository implements DocumentPermissionRepositoryInterf
     public function update(object $payload, int $id)
     {
         $documentPermission = Document_Permission::findOrFail($id);
-        $documentPermission->user_id = $payload->user_id;
         $documentPermission->document_map_code = $payload->document_map_code;
         $documentPermission->document_permission = $payload->document_permission;
         $documentPermission->datetime_granted = $payload->datetime_granted;
@@ -47,7 +46,7 @@ class DocumentPermissionRepository implements DocumentPermissionRepositoryInterf
 
     public function delete(int $id)
     {
-        $documentPermission = Document_Permission::findOrFail($id);
+        $documentPermission = Document_Permission::where('user_id', $id);
         $documentPermission->delete();
 
         return response()->json([

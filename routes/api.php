@@ -14,11 +14,15 @@ use App\Http\Controllers\StudentController;
 use App\Http\Controllers\UserController;
 use App\Models\Document_Permission;
 use App\Models\Document_Permission_Map;
+use App\Models\User_Account;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
+
+//registration
+Route::post('/register', [UserController::class, 'store']);
 
 Route::middleware('auth:sanctum')->prefix('libraries')->group(function () {
     Route::get('/{modeltype}', [DBLibraryController::class, 'index']);
@@ -62,6 +66,11 @@ Route::put('/documentpermission/{id}', [DocumentPermissionController::class, 'up
 Route::delete('/documentpermission/{id}', [DocumentPermissionController::class, 'destroy']);
 Route::get('/users', [UserController::class, 'index']);
 Route::get('/users/{id}', [UserController::class, 'show']);
+
+Route::middleware('auth:sanctum')->prefix('users')->group(function () {
+    Route::get('/', [UserController::class, 'index']);
+    Route::post('/', [UserController::class, 'store']);
+});
 
 
 // Route::prefix('users')->group(function () {

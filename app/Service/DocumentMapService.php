@@ -9,7 +9,7 @@ use App\Interface\Service\DocumentMapServiceInterface;
 class DocumentMapService implements DocumentMapServiceInterface
 {
 
-    
+
     private $documentMapRepository;
 
     public function __construct(DocumentMapRepositoryInterface $documentMapRepository)
@@ -30,6 +30,12 @@ class DocumentMapService implements DocumentMapServiceInterface
         $documentMap = $this->documentMapRepository->findOneById($id);
         return new DocumentMapResource($documentMap);
 
+    }
+
+    public function findDocumentMapByValue(string $value)
+    {
+        $documentMap = $this->documentMapRepository->findOneByValue($value);
+        return new DocumentMapResource($documentMap);
     }
 
     public function createDocumentMap(object $payload)

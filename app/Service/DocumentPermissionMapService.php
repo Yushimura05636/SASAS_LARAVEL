@@ -9,7 +9,7 @@ use App\Interface\Service\DocumentPermissionMapServiceInterface;
 class DocumentPermissionMapService implements DocumentPermissionMapServiceInterface
 {
 
-    
+
     private $documentPermissionMapRepository;
 
     public function __construct(DocumentPermissionMapRepositoryInterface $documentPermissionMapRepository)
@@ -29,6 +29,12 @@ class DocumentPermissionMapService implements DocumentPermissionMapServiceInterf
         $documentMap = $this->documentPermissionMapRepository->findOneById($id);
         return new DocumentPermissionMapResource($documentMap);
 
+    }
+
+    public function findDocumentPermissionMapByValue(string $value)
+    {
+        $documentMap = $this->documentPermissionMapRepository->findOneByValue($value);
+        return new DocumentPermissionMapResource($documentMap);
     }
 
     public function createDocumentPermissionMap(object $payload)

@@ -9,7 +9,7 @@ use App\Repository\DocumentPermissionRepository;
 class DocumentPermissionService implements DocumentPermissionServiceInterface
 {
 
-    
+
     private $documentPermissionRepository;
 
     public function __construct(DocumentPermissionRepository $documentPermissionRepository)

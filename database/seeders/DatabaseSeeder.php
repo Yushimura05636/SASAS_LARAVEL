@@ -89,7 +89,7 @@ class DatabaseSeeder extends Seeder
         $userAccountStatusNames = ['Active', 'Inactive'];
         $documentPermissionNames = ['Create', 'Update', 'Delete', 'View'];
         $nameTypes = ['Employee', 'Customer'];
-        $documentMap = ['UserAccount', 'Libraries'];
+        $documentMap = ['UserAccount', 'Libraries', 'Customers', 'Employee'];
 
 
         foreach ($documentMap as $name) {
@@ -128,7 +128,7 @@ class DatabaseSeeder extends Seeder
         for($i = 0; $i < 200; $i++) {
             echo "1"; echo $this->f+1;
             $modeltype = $faker->randomElement($modelTypes);
-            $description = $faker->sentence(10);
+            $description = $faker->unique()->sentence(3);
             echo $modeltype;
 
             switch ($modeltype) {
@@ -179,7 +179,7 @@ class DatabaseSeeder extends Seeder
         ]);
 
         Customer::create([
-            'group_id' => $faker->randomDigit(),
+            'group_id' => 1,
             'passbook_no' => $faker->randomDigit(),
             'loan_count' => $faker->randomDigit(),
             'enable_mortuary' => $faker->numberBetween(1,2),

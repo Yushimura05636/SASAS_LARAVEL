@@ -18,12 +18,17 @@ class DocumentPermissionRepository implements DocumentPermissionRepositoryInterf
         return Document_Permission::findOrFail($id);
     }
 
+    public function findOneByValue(string $value)
+    {
+        return Document_Permission::where('description', $value);
+    }
+
     public function create(object $payload)
     {
         $documentPermission = new Document_Permission();
         $documentPermission->user_id = $payload->user_id;
-        $documentPermission->document_map_code = $payload->document_map_code;
-        $documentPermission->document_permission = $payload->document_permission;
+        $documentPermission->document_map_code = $payload->document_id;
+        $documentPermission->document_permission = $payload->permission_id;
         $documentPermission->datetime_granted = $payload->datetime_granted;
         $documentPermission->save();
         return $documentPermission->refresh();

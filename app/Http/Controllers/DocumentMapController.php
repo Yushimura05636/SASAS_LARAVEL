@@ -30,7 +30,7 @@ class DocumentMapController extends Controller
     public function store(DocumentMapStoreRequest $request)
     {
         return $this->documentMapService->createDocumentMap($request);
-        
+
     }
 
     /**
@@ -39,7 +39,12 @@ class DocumentMapController extends Controller
     public function show(int $id)
     {
         return $this->documentMapService->findDocumentMapById($id);
-        
+
+    }
+
+    public function look(string $value)
+    {
+        return $this->documentMapService->findDocumentMapByValue($value);
     }
 
     /**
@@ -48,7 +53,7 @@ class DocumentMapController extends Controller
     public function update(DocumentMapUpdateRequest $request, int $id)
     {
         return $this->documentMapService->updateDocumentMap($request, $id);
-        
+
     }
 
     /**

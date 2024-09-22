@@ -2,11 +2,13 @@
 
 namespace App\Interface\Repository;
 
-interface DocumentPermissionMapRepositoryInterface
+interface DocumentPermissionMapRepository
 {
     public function findMany();
 
     public function findOneById($id);
+
+    public function findOneByValue(string $value);
 
     public function create(object $payload);
 

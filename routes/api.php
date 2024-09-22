@@ -5,6 +5,7 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\CustomerPersonalityController;
 use App\Http\Controllers\DBLibraryController;
 use App\Http\Controllers\DocumentMapController;
+use App\Http\Controllers\DocumentPermissionController;
 use App\Http\Controllers\DocumentPermissionMapController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\EmployeePersonalityController;
@@ -54,6 +55,8 @@ Route::middleware('auth:sanctum')->prefix('customers')->group(function () {
 
 Route::get('/permission', [DocumentPermissionMapController::class, 'index']);
 Route::get('/documentMap', [DocumentMapController::class, 'index']);
+Route::get('/documentpermission', [DocumentPermissionController::class, 'index']);
+Route::post('/documentpermission', [DocumentPermissionController::class, 'store']);
 Route::get('/users', [UserController::class, 'index']);
 Route::get('/users/{id}', [UserController::class, 'show']);
 

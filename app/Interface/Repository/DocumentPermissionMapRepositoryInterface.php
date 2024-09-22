@@ -8,6 +8,8 @@ interface DocumentPermissionMapRepositoryInterface
 
     public function findOneById($id);
 
+    public function findOneByValue(string $value);
+
     public function create(object $payload);
 
     public function update(object $payload, int $id);

@@ -19,7 +19,7 @@ class DocumentPermissionMapController extends Controller
     /**
      * Display a listing of the resource.
      */
-    
+
     public function index()
     {
         return $this->documentPermissionMapService->findDocumentPermissionMap();
@@ -41,6 +41,12 @@ class DocumentPermissionMapController extends Controller
     {
         return $this->documentPermissionMapService->findDocumentPermissionMapById($id);
 
+    }
+
+    //look means singe string
+    public function look(string $value)
+    {
+        return $this->documentPermissionMapService->findDocumentPermissionMapByValue($value);
     }
 
     /**

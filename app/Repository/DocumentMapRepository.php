@@ -18,6 +18,11 @@ class DocumentMapRepository implements DocumentMapRepositoryInterface
         return Document_Map::findOrFail($id);
     }
 
+    public function findOneByValue(string $value)
+    {
+        return Document_Map::where('description', $value)->first();
+    }
+
     public function create(object $payload)
     {
         $documentMap = new Document_Map();

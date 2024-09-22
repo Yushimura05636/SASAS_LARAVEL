@@ -18,6 +18,11 @@ class DocumentPermissionMapRepository implements DocumentPermissionMapRepository
         return Document_Permission_Map::findOrFail($id);
     }
 
+    public function findOneByValue(string $value)
+    {
+        return Document_Permission_Map::where('description', $value)->first();
+    }
+
     public function create(object $payload)
     {
         $documentPermissionMap = new Document_Permission_Map();

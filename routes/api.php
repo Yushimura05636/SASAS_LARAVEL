@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\CustomerGroupController;
 use App\Http\Controllers\CustomerPersonalityController;
 use App\Http\Controllers\DBLibraryController;
 use App\Http\Controllers\DocumentMapController;
@@ -62,7 +63,6 @@ Route::middleware('auth:sanctum')->prefix('customers')->group(function () {
     Route::delete('/{id}', [CustomerPersonalityController::class, 'destroy'])->middleware('document_access:3, delete');
 });
 
-
 Route::get('/permission', [DocumentPermissionMapController::class, 'index']);
 Route::get('/documentMap', [DocumentMapController::class, 'index']);
 Route::get('/documentpermission', [DocumentPermissionController::class, 'index']);
@@ -70,9 +70,9 @@ Route::get('/documentpermission/{id}', [DocumentPermissionController::class, 'sh
 Route::post('/documentpermission', [DocumentPermissionController::class, 'store']);
 Route::put('/documentpermission/{id}', [DocumentPermissionController::class, 'update']);
 Route::delete('/documentpermission/{id}', [DocumentPermissionController::class, 'destroy']);
+
 Route::get('/users', [UserController::class, 'index']);
 Route::get('/users/{id}', [UserController::class, 'show']);
-
 
 Route::get('/emplooyeid', [EmployeeController::class, 'findEmpIDnotExist']);
 Route::get('get-user', [UserController::class, 'index']);
@@ -83,10 +83,12 @@ Route::middleware('auth:sanctum')->prefix('users')->group(function () {
     Route::post('/', [UserController::class, 'store']);
 });
 
+Route::get('group', [CustomerGroupController::class, 'index']);
 
 Route::get('frequency', [PaymentFrequencyController::class, 'index']);
 Route::get('duration', [PaymentDurationController::class, 'index']);
 //Route::post('factorRate', [FactorRateController::class, 'store'])->middleware('document_access:5,create'); //five (5) means its factorate that should be access by the user and has should be create permission
+
 
 Route::middleware('auth:sanctum')->prefix('factorRate')->group(function () {
     Route::post('/', [FactorRateController::class, 'store'])->middleware('document_access:5, create');

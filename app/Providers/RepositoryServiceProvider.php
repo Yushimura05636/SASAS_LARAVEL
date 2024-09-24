@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Http\Controllers\LoanApplicationCoMaker;
+use App\Interface\Repository\CustomerGroupRepositoryInterface;
 use App\Interface\Repository\CustomerRepositoryInterface;
 use App\Interface\Repository\DBLibraryRepositoryInterface;
 use App\Interface\Repository\DocumentMapRepositoryInterface;
@@ -24,6 +25,7 @@ use App\Interface\Repository\PersonalityRepositoryInterface;
 use App\Interface\Repository\SpouseRepositoryInterface;
 use App\Interface\Repository\UserRepositoryInterface;
 use App\Interface\Service\AuthenticationServiceInterface;
+use App\Interface\Service\CustomerGroupServiceInterface;
 use App\Interface\Service\CustomerServiceInterface;
 use App\Interface\Service\DBLibraryServiceInterface;
 use App\Interface\Service\DocumentMapServiceInterface;
@@ -43,6 +45,7 @@ use App\Interface\Service\PaymentServiceInterface;
 use App\Interface\Service\PersonalityServiceInterface;
 use App\Interface\Service\SpouseServiceInterface;
 use App\Interface\Service\UserServiceInterface;
+use App\Repository\CustomerGroupRepository;
 use App\Repository\CustomerRepository;
 use App\Repository\DBLibraryRepository;
 use App\Repository\DocumentMapRepository;
@@ -63,6 +66,7 @@ use App\Repository\PersonalityRepository;
 use App\Repository\SpouseRepository;
 use App\Repository\UserRepository;
 use App\Service\AuthenticationService;
+use App\Service\CustomerGroupService;
 use App\Service\CustomerService;
 use App\Service\DBLibraryService;
 use App\Service\DocumentMapService;
@@ -116,6 +120,9 @@ class RepositoryServiceProvider extends ServiceProvider
         $this->app->bind(CustomerRepositoryInterface::class, CustomerRepository::class);
         $this->app->bind(EmployeeRepositoryInterface::class, EmployeeRepository::class);
 
+        $this->app->bind(CustomerGroupRepositoryInterface::class, CustomerGroupRepository::class);
+
+
         //Service
         $this->app->bind(SpouseServiceInterface::class, SpouseService::class);
         $this->app->bind(PaymentServiceInterface::class, PaymentService::class);
@@ -138,6 +145,8 @@ class RepositoryServiceProvider extends ServiceProvider
         $this->app->bind(DBLibraryServiceInterface::class, DBLibraryService::class);
         $this->app->bind(AuthenticationServiceInterface::class, AuthenticationService::class);
         $this->app->bind(UserServiceInterface::class, UserService::class);
+
+        $this->app->bind(CustomerGroupServiceInterface::class, CustomerGroupService::class);
     }
 
     /**

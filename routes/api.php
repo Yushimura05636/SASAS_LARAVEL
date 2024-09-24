@@ -78,7 +78,11 @@ Route::get('/users/{id}', [UserController::class, 'show']);
 Route::get('/emplooyeid', [EmployeeController::class, 'findEmpIDnotExist']);
 Route::get('get-user', [UserController::class, 'index']);
 
-Route::post('/loancount', [LoanCountController::class, 'index']);
+Route::get('/loancount', [LoanCountController::class, 'index']);
+Route::get('/loancount/{id}', [LoanCountController::class, 'show']);
+Route::post('/loancount', [LoanCountController::class, 'store']);
+Route::put('/loancount/{id}', [LoanCountController::class, 'update']);
+
 
 Route::middleware('auth:sanctum')->prefix('users')->group(function () {
     Route::get('/', [UserController::class, 'index']);

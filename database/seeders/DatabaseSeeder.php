@@ -26,6 +26,8 @@ use App\Models\Document_Map; #Done
 use App\Models\Document_Permission_Map; #Done
 use App\Models\Name_Type; #Done
 use App\Models\Customer_Group; #Done
+use App\Models\Payment_Duration;
+use App\Models\Payment_Frequency;
 use App\Models\Personality; #Done
 use App\Models\Spouse;
 
@@ -87,9 +89,19 @@ class DatabaseSeeder extends Seeder
         $genderNames = ['Male', 'Female'];
         $creditStatusNames = ['Active', 'Inactive', 'Suspended', 'Blacklisted'];
         $userAccountStatusNames = ['Active', 'Inactive'];
-        $documentPermissionNames = ['Create', 'Update', 'Delete', 'View'];
+        $documentPermissionNames = ['Create', 'Update', 'Delete', 'View', 'Assisst'];
         $nameTypes = ['Employee', 'Customer'];
-        $documentMap = ['UserAccount', 'Libraries', 'Customers', 'Employee'];
+
+        $documentMap = [
+        'UserAccount', # 1
+        'Libraries',
+        'Customers',
+        'Employee',
+        'FactorRate', #5
+        'PaymentDuration', #6
+        'PaymentFrequency', #7
+
+        ];
 
 
         foreach ($documentMap as $name) {
@@ -205,6 +217,51 @@ class DatabaseSeeder extends Seeder
             'password' => Hash::make('password'),
             'employee_id' => 2,
             'status_id' => 1,
+        ]);
+
+        //there are four (4) predefined duration in the database
+        Payment_Frequency::create([
+            'description' => 'Weekly',
+            'days_interval' => 7,
+            'notes' => 'Weekly Payments',
+        ]);
+
+        Payment_Frequency::create([
+            'description' => 'Monthly',
+            'days_interval' => 30, // Or 31 depending on the month
+            'notes' => 'Monthly Payments',
+        ]);
+
+        Payment_Frequency::create([
+            'description' => 'Quarterly',
+            'days_interval' => 90, // Or 91, 92 depending on the quarter
+            'notes' => 'Quarterly Payments',
+        ]);
+
+        Payment_Frequency::create([
+            'description' => 'Annual',
+            'days_interval' => 365, // Or 366 in leap years
+            'notes' => 'Annual Payments',
+        ]);
+
+
+        //there are three (3) predefined frequency in the database
+        Payment_Duration::create([
+            'description' => '12 Weeks',
+            'number_of_payments' => 12,
+            'notes' => 'For 12 Weekly Payments',
+        ]);
+
+        Payment_Duration::create([
+            'description' => '6 Months',
+            'number_of_payments' => 26, // Assuming 4 weeks per month
+            'notes' => 'For 6 Monthly Payments',
+        ]);
+
+        Payment_Duration::create([
+            'description' => '1 Year',
+            'number_of_payments' => 52, // Assuming 4 weeks per month
+            'notes' => 'For 12 Monthly Payments',
         ]);
     }
 }

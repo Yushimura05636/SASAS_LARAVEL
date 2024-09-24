@@ -16,7 +16,7 @@ class PaymentFrequencyResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'description' => $this->loan_application_id, // This maps 'loan_application_id' to 'description'
+            'description' => $this->description, // This maps 'loan_application_id' to 'description'
             'days_interval' => $this->days_interval,     // Assuming 'days_interval' should be mapped from $this->days_interval
             'notes' => $this->notes,                     // Assuming 'notes' should be mapped from $this->notes
             'created_at' => $this->created_at,

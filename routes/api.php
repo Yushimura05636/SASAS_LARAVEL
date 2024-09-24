@@ -89,16 +89,13 @@ Route::middleware('auth:sanctum')->prefix('users')->group(function () {
     Route::post('/', [UserController::class, 'store']);
 });
 
-Route::get('group', [CustomerGroupController::class, 'index']);
 
 Route::get('frequency', [PaymentFrequencyController::class, 'index']);
 Route::get('duration', [PaymentDurationController::class, 'index']);
 //Route::post('factorRate', [FactorRateController::class, 'store'])->middleware('document_access:5,create'); //five (5) means its factorate that should be access by the user and has should be create permission
-
-
-Route::middleware('auth:sanctum')->prefix('factorRate')->group(function () {
-    Route::post('/', [FactorRateController::class, 'store'])->middleware('document_access:5, create');
-});
+// Route::middleware('auth:sanctum')->prefix('factorRate')->group(function () {
+//     Route::post('/', [FactorRateController::class, 'store'])->middleware('document_access:5, create');
+// });
 
 Route::middleware('auth:sanctum')->prefix('auth')->group(function () {
     Route::post('/', function () {
@@ -108,6 +105,22 @@ Route::middleware('auth:sanctum')->prefix('auth')->group(function () {
         ]);
     })->middleware('document_access');
 });
+
+Route::get('factorRate', [FactorRateController::class, 'index']);
+Route::post('factorRate', [FactorRateController::class, 'store']);
+
+
+Route::get('frequency', [PaymentFrequencyController::class, 'index']);
+Route::post('frequency', [PaymentFrequencyController::class, 'store']);
+Route::put('/frequency/{id}', [PaymentFrequencyController::class, 'update']);
+
+
+Route::get('duration', [PaymentDurationController::class, 'index']);
+Route::post('duration', [PaymentDurationController::class, 'store']);
+Route::put('/duration/{id}', [PaymentDurationController::class, 'update']);
+
+
+Route::get('group', [CustomerGroupController::class, 'index']);
 
 
 

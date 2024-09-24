@@ -24,6 +24,7 @@ class PaymentFrequencyStoreRequest extends FormRequest
         return [
             'description' => ['required', 'string'],
             'days_interval' => ['required', 'integer'],
+            'notes' => ['required', 'string'],
         ];
     }
 }

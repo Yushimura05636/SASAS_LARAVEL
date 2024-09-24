@@ -15,6 +15,7 @@ use App\Interface\Repository\FeeRepositoryInterface;
 use App\Interface\Repository\LoanApplicationCoMakerRepositoryInterface;
 use App\Interface\Repository\LoanApplicationFeeRepositoryInterface;
 use App\Interface\Repository\LoanApplicationRepositoryInterface;
+use App\Interface\Repository\LoanCountRepositoryInterface;
 use App\Interface\Repository\LoanReleaseRepositoryInterface;
 use App\Interface\Repository\PaymentDurationRepositoryInterface;
 use App\Interface\Repository\PaymentFrequencyRepositoryInterface;
@@ -36,6 +37,7 @@ use App\Interface\Service\FactorRateServiceInterface;
 use App\Interface\Service\LoanApplicationCoMakerServiceInterface;
 use App\Interface\Service\LoanApplicationFeeServiceInterface;
 use App\Interface\Service\LoanApplicationServiceInterface;
+use App\Interface\Service\LoanCountServiceInterface;
 use App\Interface\Service\LoanReleaseServiceInterface;
 use App\Interface\Service\PaymentDurationServiceInterface;
 use App\Interface\Service\PaymentFrequencyServiceInterface;
@@ -57,6 +59,7 @@ use App\Repository\FeeRepository;
 use App\Repository\LoanApplicationCoMakerRepository;
 use App\Repository\LoanApplicationFeeRepository;
 use App\Repository\LoanApplicationRepository;
+use App\Repository\LoanCountRepository;
 use App\Repository\LoanReleaseRepositority;
 use App\Repository\PaymentDurationRepository;
 use App\Repository\PaymentFrequencyRepository;
@@ -78,6 +81,7 @@ use App\Service\FeeService;
 use App\Service\LoanApplicationCoMakerService;
 use App\Service\LoanApplicationFeeService;
 use App\Service\LoanApplicationService;
+use App\Service\LoanCountService;
 use App\Service\LoanReleaseService;
 use App\Service\PaymentDurationService;
 use App\Service\PaymentFrequencyService;
@@ -97,6 +101,7 @@ class RepositoryServiceProvider extends ServiceProvider
     public function register(): void
     {
         //Repository
+        $this->app->bind(LoanCountRepositoryInterface::class, LoanCountRepository::class);
         $this->app->bind(SpouseRepositoryInterface::class, SpouseRepository::class);
         $this->app->bind(PaymentRepositoryInterface::class, PaymentRepository::class);
         $this->app->bind(PaymentLineRepositoryInterface::class, PaymentLineRepository::class);
@@ -124,6 +129,7 @@ class RepositoryServiceProvider extends ServiceProvider
 
 
         //Service
+        $this->app->bind(LoanCountServiceInterface::class, LoanCountService::class);
         $this->app->bind(SpouseServiceInterface::class, SpouseService::class);
         $this->app->bind(PaymentServiceInterface::class, PaymentService::class);
         $this->app->bind(PaymentLineServiceInterface::class, PaymentLineService::class);

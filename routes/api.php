@@ -11,6 +11,7 @@ use App\Http\Controllers\DocumentPermissionMapController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\EmployeePersonalityController;
 use App\Http\Controllers\FactorRateController;
+use App\Http\Controllers\LoanCountController;
 use App\Http\Controllers\PaymentDurationController;
 use App\Http\Controllers\PaymentFrequencyController;
 use App\Http\Controllers\PersonalityController;
@@ -77,6 +78,7 @@ Route::get('/users/{id}', [UserController::class, 'show']);
 Route::get('/emplooyeid', [EmployeeController::class, 'findEmpIDnotExist']);
 Route::get('get-user', [UserController::class, 'index']);
 
+Route::post('/loancount', [LoanCountController::class, 'index']);
 
 Route::middleware('auth:sanctum')->prefix('users')->group(function () {
     Route::get('/', [UserController::class, 'index']);

@@ -26,6 +26,8 @@ use App\Models\Document_Map; #Done
 use App\Models\Document_Permission_Map; #Done
 use App\Models\Name_Type; #Done
 use App\Models\Customer_Group; #Done
+use App\Models\Document_Permission;
+use App\Models\Loan_Count;
 use App\Models\Payment_Duration;
 use App\Models\Payment_Frequency;
 use App\Models\Personality; #Done
@@ -81,7 +83,8 @@ class DatabaseSeeder extends Seeder
             'country',
             'province',
             // 'document_map',
-            'customer_group'
+            'customer_group',
+            'personality_status_map',
         ];
 
         // Defining unique value arrays beforehand
@@ -160,7 +163,7 @@ class DatabaseSeeder extends Seeder
                     Province::createEntry($faker->unique()->state());
                     break;
                 case 'personality_status_map':
-                    Personality_Status_Map::createEntry($description);
+                    Personality_Status_Map::createEntry($faker->unique()->sentence(6));
                     break;
                 // case 'document_map':
                 //     Document_Map::createEntry($description);
@@ -219,6 +222,24 @@ class DatabaseSeeder extends Seeder
             'status_id' => 1,
         ]);
 
+        Loan_Count::created([
+            'loan_count' => 1,
+            'min_amount' => 5000.00,
+            'max_amount' => 15000.00,
+        ]);
+
+        Loan_Count::created([
+            'loan_count' => 2,
+            'min_amount' => 15000.00,
+            'max_amount' => 30000.00,
+        ]);
+
+        Loan_Count::created([
+            'loan_count' => 3,
+            'min_amount' => 30000.00,
+            'max_amount' => 60000.00,
+        ]);
+
         //there are four (4) predefined duration in the database
         Payment_Frequency::create([
             'description' => 'Weekly',
@@ -262,6 +283,27 @@ class DatabaseSeeder extends Seeder
             'description' => '1 Year',
             'number_of_payments' => 52, // Assuming 4 weeks per month
             'notes' => 'For 12 Monthly Payments',
+        ]);
+
+        Document_Permission::created([
+            'user_id' => 1,
+            'document_map_code' => 1,
+            'document_permission' => 4,
+            'datetime_granted' => '01-01-2001'
+        ]);
+
+        Document_Permission::created([
+            'user_id' => 1,
+            'document_map_code' => 1,
+            'document_permission' => 1,
+            'datetime_granted' => '01-01-2001'
+        ]);
+
+        Document_Permission::created([
+            'user_id' => 1,
+            'document_map_code' => 1,
+            'document_permission' => 2,
+            'datetime_granted' => '01-01-2001'
         ]);
     }
 }

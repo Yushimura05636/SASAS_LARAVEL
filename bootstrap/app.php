@@ -12,7 +12,11 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        //
+        $middleware->alias([
+
+        'document_access' => \App\Http\Middleware\DocumentAccess::class,
+
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

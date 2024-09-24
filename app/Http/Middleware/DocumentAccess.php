@@ -25,12 +25,19 @@ class DocumentAccess
 
         $userId = auth()->user()->id;
 
+        // Assuming $requiredPermission might have leading/trailing spaces
+        $requiredPermission = trim($requiredPermission);
+
         $permissionMap = [
             'create' => 1,
             'view' => 4,   // Updated to 4 for reading
             'update' => 2,
             'delete' => 3,
+            'assisst' => 5,
         ];
+
+        // If stored as a comma-separated string
+        //$userPermissions = explode(',', $requiredPermission->document_permission);
 
         // Get the required permission numeric value based on the passed permission
         $requiredPermissionValue = $permissionMap[$requiredPermission] ?? 4;  // Default to 'read'
@@ -39,6 +46,16 @@ class DocumentAccess
         $permission = Document_Permission::where('user_id', $userId)
             ->where('document_map_code', $documentId)
             ->first();
+
+//         // Log the permission data for debugging purposes
+// return response()->json([
+//     'user' => $userId,
+//     'doc' => $documentId,
+//     'required_permission' => $requiredPermissionValue,
+//     'user_permissions' => $permission->document_permission,
+//     'req' => $requiredPermission,
+// ], Response::HTTP_INTERNAL_SERVER_ERROR);
+
 
         // Check if the user's permission value is greater than or equal to the required permission
         if (!$permission || $permission->document_permission < $requiredPermissionValue) {

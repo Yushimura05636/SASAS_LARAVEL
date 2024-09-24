@@ -86,9 +86,11 @@ Route::middleware('auth:sanctum')->prefix('users')->group(function () {
 
 Route::get('frequency', [PaymentFrequencyController::class, 'index']);
 Route::get('duration', [PaymentDurationController::class, 'index']);
-Route::post('factorRate', [FactorRateController::class, 'store'])->middleware('auth:sanctum')->middleware('document_access:5, create'); //five (5) means its factorate that should be access by the user and has should be create permission
+//Route::post('factorRate', [FactorRateController::class, 'store'])->middleware('document_access:5,create'); //five (5) means its factorate that should be access by the user and has should be create permission
 
-
+Route::middleware('auth:sanctum')->prefix('factorRate')->group(function () {
+    Route::post('/', [FactorRateController::class, 'store'])->middleware('document_access:5, create');
+});
 
 
 

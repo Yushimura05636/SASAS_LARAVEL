@@ -6,6 +6,8 @@ namespace App\Http\Controllers;
 use App\Http\Requests\FactorRateStoreRequest;
 use App\Http\Requests\FactorRateUpdateRequest;
 use App\Interface\Service\FactorRateServiceInterface;
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 class FactorRateController extends Controller
 {
@@ -30,7 +32,6 @@ class FactorRateController extends Controller
     public function store(FactorRateStoreRequest $request)
     {
         return $this->factorRateService->createFactorRate($request);
-
     }
 
     /**

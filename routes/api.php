@@ -92,6 +92,15 @@ Route::middleware('auth:sanctum')->prefix('factorRate')->group(function () {
     Route::post('/', [FactorRateController::class, 'store'])->middleware('document_access:5, create');
 });
 
+Route::middleware('auth:sanctum')->prefix('auth')->group(function () {
+    Route::post('/', function () {
+        // You are authenticated, return a response or perform logic here
+        return response()->json([
+            'message' => 'Authenticated!', // Optionally, return the authenticated user data
+        ]);
+    })->middleware('document_access');
+});
+
 
 
 // Route::prefix('users')->group(function () {

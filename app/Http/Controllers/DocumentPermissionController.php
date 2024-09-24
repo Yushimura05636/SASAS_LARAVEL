@@ -145,17 +145,19 @@ class DocumentPermissionController extends Controller
                         'document_map_code' => $documentId,
                         'document_permission' => $mapPerm->id,
                         'datetime_granted' => $dateGranted,
-
                     ];
 
                     // Insert or update the record as necessary
                     Document_Permission::updateOrCreate(
-                        ['user_id' => $user['id'], 'document_map_code' => $documentId, 'document_permission' => $mapPerm->id, 'datetime_granted' => $dateGranted],
+                        ['user_id' => $user['id'], 'document_map_code' => $documentId, 'document_permission' => $mapPerm->id],
                         $payload
                     );
                 }
             }
         }
+
+        // Step to remove duplicates: Find and delete any duplicates after the update.
+        $this->removeDuplicates($user['id']);
 
         // Commit the transaction
         DB::commit();
@@ -175,6 +177,37 @@ class DocumentPermissionController extends Controller
         ], 500);
     }
 }
+
+/**
+ * Helper function to remove duplicates.
+ * This function scans for duplicates in the Document_Permission table based on user_id, document_map_code, and document_permission.
+ */
+private function removeDuplicates($userId)
+{
+    // Get all the records for this user, grouped by document_map_code and document_permission
+    $duplicates = Document_Permission::select('user_id', 'document_map_code', 'document_permission', DB::raw('COUNT(*) as count'))
+        ->where('user_id', $userId)
+        ->groupBy('user_id', 'document_map_code', 'document_permission')
+        ->having('count', '>', 1)
+        ->get();
+
+    // Loop over each set of duplicates and delete the extras
+    foreach ($duplicates as $duplicate) {
+        // Fetch all records with the same user_id, document_map_code, and document_permission
+        $duplicateRecords = Document_Permission::where('user_id', $duplicate->user_id)
+            ->where('document_map_code', $duplicate->document_map_code)
+            ->where('document_permission', $duplicate->document_permission)
+            ->orderBy('id') // Order by ID to keep the first occurrence
+            ->get();
+
+        // Skip the first record and delete the rest
+        $duplicateRecords->shift(); // Remove the first occurrence
+        foreach ($duplicateRecords as $record) {
+            $record->delete(); // Delete the duplicate record
+        }
+    }
+}
+
 
 
 

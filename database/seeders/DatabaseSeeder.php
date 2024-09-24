@@ -89,7 +89,7 @@ class DatabaseSeeder extends Seeder
         $genderNames = ['Male', 'Female'];
         $creditStatusNames = ['Active', 'Inactive', 'Suspended', 'Blacklisted'];
         $userAccountStatusNames = ['Active', 'Inactive'];
-        $documentPermissionNames = ['Create', 'Update', 'Delete', 'View', 'Assisst'];
+        $documentPermissionNames = ['Create', 'Update', 'Delete', 'View'];
         $nameTypes = ['Employee', 'Customer'];
 
         $documentMap = [
@@ -174,26 +174,26 @@ class DatabaseSeeder extends Seeder
         }
 
         Employee::create([
-            'sss_no' => $faker->randomDigit(),
-            'phic_no' => $faker->randomDigit(),
-            'tin_no' => $faker->randomDigit(),
-            'datetime_hired' => $faker->date(),
-            'datetime_resigned' => $faker->date(),
+            'sss_no' => $faker->unique()->randomDigit(),
+            'phic_no' => $faker->unique()->randomDigit(),
+            'tin_no' => $faker->unique()->randomDigit(),
+            'datetime_hired' => $faker->unique()->date(),
+            'datetime_resigned' => $faker->unique()->date(),
             'personality_id' => 1,
         ]);
         Employee::create([
-            'sss_no' => $faker->randomDigit(),
-            'phic_no' => $faker->randomDigit(),
-            'tin_no' => $faker->randomDigit(),
-            'datetime_hired' => $faker->date(),
-            'datetime_resigned' => $faker->date(),
+            'sss_no' => $faker->unique()->randomDigit(),
+            'phic_no' => $faker->unique()->randomDigit(),
+            'tin_no' => $faker->unique()->randomDigit(),
+            'datetime_hired' => $faker->unique()->date(),
+            'datetime_resigned' => $faker->unique()->date(),
             'personality_id' => 2,
         ]);
 
         Customer::create([
             'group_id' => 1,
-            'passbook_no' => $faker->randomDigit(),
-            'loan_count' => $faker->randomDigit(),
+            'passbook_no' => $faker->unique()->randomDigit(),
+            'loan_count' => $faker->unique()->randomDigit(),
             'enable_mortuary' => $faker->numberBetween(1,2),
             'mortuary_coverage_start' => null,
             'mortuary_coverage_end' => null,

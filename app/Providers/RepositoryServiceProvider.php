@@ -34,6 +34,7 @@ use App\Interface\Service\DocumentPermissionMapServiceInterface;
 use App\Interface\Service\DocumentPermissionServiceInterface;
 use App\Interface\Service\EmployeeServiceInterface;
 use App\Interface\Service\FactorRateServiceInterface;
+use App\Interface\Service\FeeServiceInterface;
 use App\Interface\Service\LoanApplicationCoMakerServiceInterface;
 use App\Interface\Service\LoanApplicationFeeServiceInterface;
 use App\Interface\Service\LoanApplicationServiceInterface;
@@ -118,7 +119,9 @@ class RepositoryServiceProvider extends ServiceProvider
         $this->app->bind(PaymentFrequencyRepositoryInterface::class, PaymentFrequencyRepository::class);
         $this->app->bind(LoanApplicationCoMakerRepositoryInterface::class, LoanApplicationCoMakerRepository::class);
         $this->app->bind(LoanApplicationFeeRepositoryInterface::class, LoanApplicationFeeRepository::class);
+
         $this->app->bind(FeeRepositoryInterface::class, FeeRepository::class);
+
         $this->app->bind(PersonalityRepositoryInterface::class, PersonalityRepository::class);
         $this->app->bind(UserRepositoryInterface::class, UserRepository::class);
         $this->app->bind(DBLibraryRepositoryInterface::class, DBLibraryRepository::class);
@@ -144,7 +147,9 @@ class RepositoryServiceProvider extends ServiceProvider
         $this->app->bind(PaymentFrequencyServiceInterface::class, PaymentFrequencyService::class);
         $this->app->bind(LoanApplicationCoMakerServiceInterface::class, LoanApplicationCoMakerService::class);
         $this->app->bind(LoanApplicationFeeServiceInterface::class, LoanApplicationFeeService::class);
-        $this->app->bind(FeeRepositoryInterface::class, FeeService::class);
+
+        $this->app->bind(FeeServiceInterface::class, FeeService::class);
+
         $this->app->bind(PersonalityServiceInterface::class, PersonalityService::class);
         $this->app->bind(EmployeeServiceInterface::class, EmployeeService::class);
         $this->app->bind(CustomerServiceInterface::class, CustomerService::class);

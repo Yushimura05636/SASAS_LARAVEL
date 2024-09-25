@@ -25,7 +25,7 @@ class FactorRateUpdateRequest extends FormRequest
             'payment_frequency_id' => ['required', 'integer'],
             'payment_duration_id' => ['required', 'integer'],
             'description' => ['required', 'string'],
-            'value' => ['required', 'numeric'], // Change 'float' to 'numeric' for better validation
+            'value' => ['required', 'integer'],
             'notes' => ['required', 'string'],
         ];
     }

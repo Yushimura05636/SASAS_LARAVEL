@@ -11,6 +11,7 @@ use App\Http\Controllers\DocumentPermissionMapController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\EmployeePersonalityController;
 use App\Http\Controllers\FactorRateController;
+use App\Http\Controllers\FeeController;
 use App\Http\Controllers\LoanCountController;
 use App\Http\Controllers\PaymentDurationController;
 use App\Http\Controllers\PaymentFrequencyController;
@@ -131,6 +132,11 @@ Route::middleware('auth:sanctum')->prefix('frequency')->group(function () {
 });
 
 Route::get('group', [CustomerGroupController::class, 'index']);
+
+
+Route::get('fee', [FeeController::class, 'index']);
+Route::post('fee', [FeeController::class, 'store']);
+Route::put('/fee/{id}', [FeeController::class, 'update']);
 
 
 

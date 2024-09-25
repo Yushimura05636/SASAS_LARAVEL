@@ -28,6 +28,7 @@ class UserRepository implements UserRepositoryInterface
     public function create(object $payload)
     {
         $user = new User_Account();
+        $user->employee_id = $payload->employee_id;
         $user->email = $payload->email;
         $user->last_name = $payload->last_name;
         $user->first_name = $payload->first_name;
@@ -43,11 +44,10 @@ class UserRepository implements UserRepositoryInterface
     public function update(object $payload, int $id)
     {
         $user = User_Account::findOrFail($id);
-        $user->email = $payload->email;
-        $user->last_name = $payload->last_name;
-        $user->first_name = $payload->first_name;
-        $user->middle_name = $payload->middle_name;
-        $user->password = Hash::make($payload->password);
+        if(!$payload->password && !$payload->password == "")
+        {
+            $user->password = Hash::make($payload->password);
+        }
         $user->status_id = $payload->status_id;
         $user->save();
 

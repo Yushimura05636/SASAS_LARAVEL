@@ -18,7 +18,7 @@ return new class extends Migration
             $table->unsignedBigInteger('status_id'); // Foreign key column
             $table->string('last_name');
             $table->string('first_name');
-            $table->string('middle_name')->nullable();
+            $table->string('middle_name');
             $table->string('password');
             $table->string('email')->unique();
             $table->unsignedBigInteger('employee_id');
@@ -26,6 +26,7 @@ return new class extends Migration
             //$table->foreign('status_id')->references('id')->on('user_account_status')->onDelete('cascade');
             $table->foreign('employee_id')->references('id')->on('employee')->onDelete('cascade');
 
+            $table->unique(['last_name', 'middle_name', 'first_name']);
             $table->timestamps();
         });
 

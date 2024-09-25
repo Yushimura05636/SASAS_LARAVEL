@@ -78,24 +78,29 @@ Route::get('/users/{id}', [UserController::class, 'show']);
 Route::get('/emplooyeid', [EmployeeController::class, 'findEmpIDnotExist']);
 Route::get('get-user', [UserController::class, 'index']);
 
-Route::get('/loancount', [LoanCountController::class, 'index']);
-Route::get('/loancount/{id}', [LoanCountController::class, 'show']);
-Route::post('/loancount', [LoanCountController::class, 'store']);
-Route::put('/loancount/{id}', [LoanCountController::class, 'update']);
+Route::middleware('auth:sanctum')->prefix('loancount')->group(function () {
+    Route::get('/', [LoanCountController::class, 'index'])->middleware('document_access:3, view');
+    Route::get('/{id}', [LoanCountController::class, 'show'])->middleware('document_access:3, view');
+    Route::post('/', [LoanCountController::class, 'store'])->middleware('document_access:3, create');
+    Route::put('/{id}', [LoanCountController::class,'update'])->middleware('document_access:3, update');
+    Route::delete('/{id}', [LoanCountController::class, 'destroy'])->middleware('document_access:3, delete');
+});
 
 
 Route::middleware('auth:sanctum')->prefix('users')->group(function () {
     Route::get('/', [UserController::class, 'index']);
     Route::post('/', [UserController::class, 'store']);
+    Route::put('/{id}', [UserController::class, 'update']);
 });
 
-
-Route::get('frequency', [PaymentFrequencyController::class, 'index']);
-Route::get('duration', [PaymentDurationController::class, 'index']);
 //Route::post('factorRate', [FactorRateController::class, 'store'])->middleware('document_access:5,create'); //five (5) means its factorate that should be access by the user and has should be create permission
-// Route::middleware('auth:sanctum')->prefix('factorRate')->group(function () {
-//     Route::post('/', [FactorRateController::class, 'store'])->middleware('document_access:5, create');
-// });
+
+Route::middleware('auth:sanctum')->prefix('factorRate')->group(function () {
+    Route::get('/', [FactorRateController::class, 'index'])->middleware('document_access');
+    Route::get('/{id}', [FactorRateController::class, 'show'])->middleware('document_access');
+    Route::post('/', [FactorRateController::class, 'store'])->middleware('document_access');
+    Route::put('/{id}', [FactorRateController::class, 'update'])->middleware('document_access');
+});
 
 Route::middleware('auth:sanctum')->prefix('auth')->group(function () {
     Route::post('/', function () {
@@ -106,19 +111,24 @@ Route::middleware('auth:sanctum')->prefix('auth')->group(function () {
     })->middleware('document_access');
 });
 
-Route::get('factorRate', [FactorRateController::class, 'index']);
-Route::post('factorRate', [FactorRateController::class, 'store']);
 
+// Route::get('frequency', [PaymentFrequencyController::class, 'index']);
+// Route::post('frequency', [PaymentFrequencyController::class, 'store']);
+// Route::put('/frequency/{id}', [PaymentFrequencyController::class, 'update']);
 
-Route::get('frequency', [PaymentFrequencyController::class, 'index']);
-Route::post('frequency', [PaymentFrequencyController::class, 'store']);
-Route::put('/frequency/{id}', [PaymentFrequencyController::class, 'update']);
+Route::middleware('auth:sanctum')->prefix('duration')->group(function () {
+    Route::get('/', [PaymentDurationController::class, 'index'])->middleware('document_access');
+    Route::get('/{id}', [PaymentDurationController::class, 'show'])->middleware('document_access');
+    Route::post('/', [PaymentDurationController::class, 'store'])->middleware('document_access');
+    Route::put('/{id}', [PaymentDurationController::class, 'update'])->middleware('document_access');
+});
 
-
-Route::get('duration', [PaymentDurationController::class, 'index']);
-Route::post('duration', [PaymentDurationController::class, 'store']);
-Route::put('/duration/{id}', [PaymentDurationController::class, 'update']);
-
+Route::middleware('auth:sanctum')->prefix('frequency')->group(function () {
+    Route::get('/', [PaymentFrequencyController::class, 'index'])->middleware('document_access');
+    Route::get('/{id}', [PaymentFrequencyController::class, 'show'])->middleware('document_access');
+    Route::post('/', [PaymentFrequencyController::class, 'store'])->middleware('document_access');
+    Route::put('/{id}', [PaymentFrequencyController::class, 'update'])->middleware('document_access');
+});
 
 Route::get('group', [CustomerGroupController::class, 'index']);
 

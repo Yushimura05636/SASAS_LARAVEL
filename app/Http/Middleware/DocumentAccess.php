@@ -67,7 +67,7 @@ class DocumentAccess
             ->where('document_permission', $requiredPermissionValue) // Ensure user's permission meets required level
             ->first();
 
-            //return response()->json(['message' => $userPermission]);
+            // return response()->json(['message' => $userPermission]);
 
 
             // If no matching permission is found, deny access

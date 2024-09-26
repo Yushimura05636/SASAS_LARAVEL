@@ -103,14 +103,13 @@ class DatabaseSeeder extends Seeder
             'CUSTOMER_GROUPS',
             'EMPLOYEES',
             'FACTOR_RATES', #5
-            'PAYMENT_DURATION', #6
+            'PAYMENT_DURATIONS', #6
             'PAYMENT_FREQUENCIES', #7
             'PERSONALITIES',
             'DOCUMENT_MAPS',
             'DOCUMENT_MAP_PERMISSIONS',
             'DOCUMENT_PERMISSIONS',
-            'LOAN_COUNT',
-            'FACTOR_RATE',
+            'LOAN_COUNTS',
             'FEES'
         ];
 

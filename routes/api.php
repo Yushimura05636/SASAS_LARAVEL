@@ -32,8 +32,8 @@ Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanc
 Route::post('/createUser', [UserController::class, 'store'])->middleware('auth:sanctum');
 
 Route::middleware('auth:sanctum')->prefix('libraries')->group(function () {
-    Route::get('/{modeltype}', [DBLibraryController::class, 'index'])->middleware('document_access:2, view');
-    Route::get('/findOne/{id}', [DBLibraryController::class, 'show'])->middleware('document_access:2, view');
+    Route::get('/{modeltype}', [DBLibraryController::class, 'index'])->middleware('document_access:2, 4');
+    Route::get('/findOne/{id}', [DBLibraryController::class, 'show'])->middleware('document_access:2, 4');
     Route::post('/', [DBLibraryController::class, 'store'])->middleware('document_access:2, create');
     Route::put('/{id}', [DBLibraryController::class, 'update'])->middleware('document_access:2, update');
     Route::delete('/{id}', [DBLibraryController::class, 'destroy'])->middleware('document_access:2, delete');
@@ -73,18 +73,18 @@ Route::post('/documentpermission', [DocumentPermissionController::class, 'store'
 Route::put('/documentpermission/{id}', [DocumentPermissionController::class, 'update']);
 Route::delete('/documentpermission/{id}', [DocumentPermissionController::class, 'destroy']);
 
-Route::get('/users', [UserController::class, 'index']);
+Route::get('/users', [UserController::class, 'index'])->middleware('auth:sanctum')->middleware('document_access:1,4');
 Route::get('/users/{id}', [UserController::class, 'show']);
 
 Route::get('/emplooyeid', [EmployeeController::class, 'findEmpIDnotExist']);
 Route::get('get-user', [UserController::class, 'index']);
 
 Route::middleware('auth:sanctum')->prefix('loancount')->group(function () {
-    Route::get('/', [LoanCountController::class, 'index'])->middleware('document_access:3, view');
-    Route::get('/{id}', [LoanCountController::class, 'show'])->middleware('document_access:3, view');
-    Route::post('/', [LoanCountController::class, 'store'])->middleware('document_access:3, create');
-    Route::put('/{id}', [LoanCountController::class,'update'])->middleware('document_access:3, update');
-    Route::delete('/{id}', [LoanCountController::class, 'destroy'])->middleware('document_access:3, delete');
+    Route::get('/', [LoanCountController::class, 'index'])->middleware('document_access:3,4');
+    Route::get('/{id}', [LoanCountController::class, 'show'])->middleware('document_access:3,4');
+    Route::post('/', [LoanCountController::class, 'store'])->middleware('document_access:3,1');
+    Route::put('/{id}', [LoanCountController::class,'update'])->middleware('document_access:3,2');
+    Route::delete('/{id}', [LoanCountController::class, 'destroy'])->middleware('document_access:3,3');
 });
 
 

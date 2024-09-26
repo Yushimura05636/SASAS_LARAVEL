@@ -4,20 +4,22 @@ namespace App\Http\Middleware;
 
 use App\Models\Document_Permission;
 use App\Models\Document_Permission_Map;
-use App\Models\Permission;  // Assuming you have a Permission model
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Symfony\Component\HttpFoundation\Response;
 
 class DocumentAccess
 {
     /**
      * Handle an incoming request.
      *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \Closure  $next
+     * @param  int  $requiredPermissionValue  The numeric permission value (e.g. 4 for view)
+     * @param  int  $requiredDocId            The document ID
+     * @return mixed
      */
-    public function handle(Request $request, Closure $next)
+    public function handle(Request $request, Closure $next, $requiredDocId, $requiredPermissionValue)
     {
         // Ensure user is authenticated
         if (!Auth::check()) {
@@ -28,30 +30,36 @@ class DocumentAccess
         $userId = auth()->user()->id;
 
         // Retrieve docId and perm from the request (either POST body or GET parameters)
-        $documentId = $request->input('docId');
-        $requiredPermission = $request->input('perm', 'view'); // Default to 'view' if not provided
+        (int) $documentId = $request->input('docId');
+        (int) $clientSentPermissionValue = $request->input('perm'); // Client-sent permission (e.g., 4)
 
-        // Clean up permission string
-        $requiredPermission = trim($requiredPermission);
+        $requiredPermissionValue = (int) trim($requiredPermissionValue);
+        $requiredDocId = (int) trim($requiredDocId);
 
-        // Fetch the dynamic permission mapping from the database
-        $permission = Document_Permission_Map::where('description', $requiredPermission)->first();
+        // Fetch the dynamic permission mapping from the database (client-sent)
+        $permission = Document_Permission_Map::where('id', (int) $requiredPermissionValue)->first();
 
-        // If no permission mapping is found in the database, default to view permission
-        if (!$permission) {
-            return response()->json(['message' => 'Invalid permission type'], 400);
+        //return response()->json([$requiredPermissionValue, $clientSentPermissionValue, $requiredDocId, $permission]);
+
+        //if the document permission exist in database
+        if($permission)
+        {
+            // Check if client-sent permission and docId match the numeric middleware parameters
+            if ($clientSentPermissionValue != $requiredPermissionValue || $documentId != $requiredDocId) {
+                return response()->json([
+                    'message' => 'Client-sent permission or document ID does not match the required permission'
+                ], 403);
+            }
         }
-
-        $requiredPermissionValue = $permission->id; // Assuming `id` is the numeric value of permission
 
         // Query the Document_Permission table to check user's permissions for the document
         $userPermission = Document_Permission::where('user_id', $userId)
-            ->where('document_map_code', $documentId)
-            ->where('document_permission', $requiredPermissionValue)
+            ->where('document_map_code', '>=', (int) $requiredDocId)
+            ->where('document_permission', '>=', (int) $requiredPermissionValue) // Ensure user's permission meets required level
             ->first();
 
-        // Check if the user's permission level is sufficient for the requested action
-        if (!$userPermission || $userPermission->document_permission < $requiredPermissionValue) {
+        // If no matching permission is found, deny access
+        if (!$userPermission) {
             return response()->json(['message' => 'Access Denied'], 403);
         }
 

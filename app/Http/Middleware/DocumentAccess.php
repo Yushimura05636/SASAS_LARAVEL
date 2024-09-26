@@ -41,7 +41,7 @@ class DocumentAccess
         $permission = Document_Permission_Map::where('id', (int) $requiredPermissionValue)->first();
         $document = Document_Map::where('id', (int) $requiredDocId)->first();
 
-        //return response()->json([$requiredPermissionValue, $clientSentPermissionValue, $requiredDocId, $permission]);
+        //return response()->json([$clientSentPermissionValue, $requiredPermissionValue, $documentId, $requiredDocId, $permission, $document]);
 
         //if the document permission exist in database
         if($permission && $document)
@@ -52,20 +52,24 @@ class DocumentAccess
                     'message' => 'Client-sent permission or document ID does not match the required permission'
                 ], 403);
             }
-        }
 
-        // Query the Document_Permission table to check user's permissions for the document
-        $userPermission = Document_Permission::where('user_id', $userId)
+            // Query the Document_Permission table to check user's permissions for the document
+            $userPermission = Document_Permission::where('user_id', $userId)
             ->where('document_map_code', '>=', (int) $requiredDocId)
             ->where('document_permission', '>=', (int) $requiredPermissionValue) // Ensure user's permission meets required level
             ->first();
 
-        // If no matching permission is found, deny access
-        if (!$userPermission) {
-            return response()->json(['message' => 'Access Denied'], 403);
-        }
+            // If no matching permission is found, deny access
+            if (!$userPermission) {
+                return response()->json(['message' => 'Access Denied'], 403);
+            }
 
-        // Proceed if user has the necessary permission
-        return $next($request);
+            // Proceed if user has the necessary permission
+            return $next($request);
+        }
+        else
+        {
+            return response()->json(['message' => 'Missing permission or document']);
+        }
     }
 }

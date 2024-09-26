@@ -1,5 +1,4 @@
 <?php
-
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\CustomerGroupController;
@@ -19,6 +18,7 @@ use App\Http\Controllers\PersonalityController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserController2;
+use App\Models\AuthPermission;
 use App\Models\Document_Permission;
 use App\Models\Document_Permission_Map;
 use App\Models\Payment_Duration;
@@ -27,123 +27,174 @@ use GuzzleHttp\Middleware;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+// Initialized
+if (AuthPermission::initialize())
+{
+    // Define permission constants
+$LIBRARIES = AuthPermission::LIBRARIES();
+$USER_ACCOUNTS = AuthPermission::USER_ACCOUNTS();
+$CUSTOMERS = AuthPermission::CUSTOMERS();
+$CUSTOMER_GROUPS = AuthPermission::CUSTOMER_GROUPS();
+$EMPLOYEES = AuthPermission::EMPLOYEES();
+$FACTORRATES = AuthPermission::FACTOR_RATES();
+$PAYMENT_DURATIONS = AuthPermission::PAYMENT_DURATIONS();
+$PAYMENT_FREQUENCIES = AuthPermission::PAYMENT_FREQUENCIES();
+$DOCUMENT_PERMISSIONS = AuthPermission::DOCUMENT_PERMISSIONS();
+$DOCUMENT_MAPS = AuthPermission::DOCUMENT_MAPS();
+$DOCUMENT_MAP_PERMISSIONS = AuthPermission::DOCUMENT_MAP_PERMISSIONS();
+$LOAN_COUNTS = AuthPermission::LOAN_COUNTS();
+$FEES = AuthPermission::FEES();
+$PERSONALITIES = AuthPermission::PERSONALITIES();
+
+$VIEW = AuthPermission::VIEW_PERM();
+$CREATE = AuthPermission::CREATE_PERM();
+$UPDATE = AuthPermission::UPDATE_PERM();
+$DELETE = AuthPermission::DELETE_PERM();
+
+// User Auth routes
+Route::middleware('auth:sanctum')->prefix('USER_AUTH')->group(function () use ($USER_ACCOUNTS, $VIEW, $CREATE, $UPDATE, $DELETE) {
+    Route::get('/', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$USER_ACCOUNTS, $VIEW");
+
+    Route::get('/{id}', function ($id) {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$USER_ACCOUNTS, $VIEW");
+
+    Route::post('/', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$USER_ACCOUNTS, $CREATE");
+
+    Route::put('/{id}', function ($id) {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$USER_ACCOUNTS, $UPDATE");
+
+    Route::delete('/{id}', function ($id) {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$USER_ACCOUNTS, $DELETE");
+});
+
+// Authentication routes
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 Route::post('/createUser', [UserController::class, 'store'])->middleware('auth:sanctum');
 
-Route::middleware('auth:sanctum')->prefix('libraries')->group(function () {
-    Route::get('/{modeltype}', [DBLibraryController::class, 'index'])->middleware('document_access:2, 4');
-    Route::get('/findOne/{id}', [DBLibraryController::class, 'show'])->middleware('document_access:2, 4');
-    Route::post('/', [DBLibraryController::class, 'store'])->middleware('document_access:2, create');
-    Route::put('/{id}', [DBLibraryController::class, 'update'])->middleware('document_access:2, update');
-    Route::delete('/{id}', [DBLibraryController::class, 'destroy'])->middleware('document_access:2, delete');
+// Libraries routes
+Route::middleware('auth:sanctum')->prefix('LIBRARIES')->group(function () use ($LIBRARIES, $VIEW, $CREATE, $UPDATE, $DELETE) {
+    Route::get('/{modeltype}', [DBLibraryController::class, 'index'])->middleware("document_access:$LIBRARIES, $VIEW");
+    Route::get('/findOne/{id}', [DBLibraryController::class, 'show'])->middleware("document_access:$LIBRARIES, $VIEW");
+    Route::post('/', [DBLibraryController::class, 'store'])->middleware("document_access:$LIBRARIES, $CREATE");
+    Route::put('/{id}', [DBLibraryController::class, 'update'])->middleware("document_access:$LIBRARIES, $UPDATE");
+    Route::delete('/{id}', [DBLibraryController::class, 'destroy'])->middleware("document_access:$LIBRARIES, $DELETE");
 });
 
-Route::middleware('auth:sanctum')->prefix('personalities')->group(function () {
-    Route::get('/', [PersonalityController::class, 'index']);
-    Route::get('/{id}', [PersonalityController::class,'show']);
-    Route::post('/', [PersonalityController::class, 'store']);
-    Route::put('/{id}', [PersonalityController::class,'update']);
-    Route::delete('/{id}', [PersonalityController::class,'destroy']);
+// Employee routes
+Route::middleware('auth:sanctum')->prefix('EMPLOYEES')->group(function () use ($EMPLOYEES, $VIEW, $CREATE, $UPDATE, $DELETE) {
+    Route::get('/', [EmployeePersonalityController::class, 'index'])->middleware("document_access:$EMPLOYEES, $VIEW");
+    Route::get('/{id}', [EmployeePersonalityController::class, 'show'])->middleware("document_access:$EMPLOYEES, $VIEW");
+    Route::post('/', [EmployeePersonalityController::class, 'store'])->middleware("document_access:$EMPLOYEES, $CREATE");
+    Route::put('/{id}', [EmployeePersonalityController::class, 'update'])->middleware("document_access:$EMPLOYEES, $UPDATE");
+    Route::delete('/{id}', [EmployeePersonalityController::class, 'destroy'])->middleware("document_access:$EMPLOYEES, $DELETE");
 });
 
-// Employee routes with authentication and document access
-Route::middleware('auth:sanctum')->prefix('employees')->group(function () {
-    Route::get('/', [EmployeePersonalityController::class, 'index'])->middleware('document_access:4, view');// Apply document access only to this route
-    Route::get('/{id}', [EmployeePersonalityController::class, 'show'])->middleware('document_access:4, view');
-    Route::post('/', [EmployeePersonalityController::class, 'store'])->middleware('document_access:4, create'); // Adjust as necessary
-    Route::put('/{id}', [EmployeePersonalityController::class, 'update'])->middleware('document_access:4, update'); // Dynamic ID
-    Route::delete('/{id}', [EmployeePersonalityController::class, 'destroy'])->middleware('document_access:4, delete'); // Dynamic ID
+// Customers routes
+Route::middleware('auth:sanctum')->prefix('CUSTOMERS')->group(function () use ($CUSTOMERS, $VIEW, $CREATE, $UPDATE, $DELETE) {
+    Route::get('/', [CustomerPersonalityController::class, 'index'])->middleware("document_access:$CUSTOMERS, $VIEW");
+    Route::get('/{id}', [CustomerPersonalityController::class, 'show'])->middleware("document_access:$CUSTOMERS, $VIEW");
+    Route::post('/', [CustomerPersonalityController::class, 'store'])->middleware("document_access:$CUSTOMERS, $CREATE");
+    Route::put('/{id}', [CustomerPersonalityController::class, 'update'])->middleware("document_access:$CUSTOMERS, $UPDATE");
+    Route::delete('/{id}', [CustomerPersonalityController::class, 'destroy'])->middleware("document_access:$CUSTOMERS, $DELETE");
+});
+
+// Personalities routes
+Route::middleware('auth:sanctum')->prefix('PERSONALITIES')->group(function () use ($PERSONALITIES, $VIEW, $CREATE, $UPDATE, $DELETE) {
+    Route::get('/', [PersonalityController::class, 'index'])->middleware("document_access:$PERSONALITIES, $VIEW");
+    Route::get('/{id}', [PersonalityController::class, 'show'])->middleware("document_access:$PERSONALITIES, $VIEW");
+    Route::post('/', [PersonalityController::class, 'store'])->middleware("document_access:$PERSONALITIES, $CREATE");
+    Route::put('/{id}', [PersonalityController::class, 'update'])->middleware("document_access:$PERSONALITIES, $UPDATE");
+    Route::delete('/{id}', [PersonalityController::class, 'destroy'])->middleware("document_access:$PERSONALITIES, $DELETE");
+});
+
+// Document Map Permission routes
+Route::middleware('auth:sanctum')->prefix('DOCUMENT_MAP_PERMISSIONS')->group(function () use ($DOCUMENT_MAP_PERMISSIONS, $VIEW, $CREATE, $UPDATE, $DELETE) {
+    Route::get('/', [DocumentPermissionMapController::class, 'index'])->middleware("document_access:$DOCUMENT_MAP_PERMISSIONS, $VIEW");
+    Route::get('/{id}', [DocumentPermissionMapController::class, 'show'])->middleware("document_access:$DOCUMENT_MAP_PERMISSIONS, $VIEW");
+    Route::post('/', [DocumentPermissionMapController::class, 'store'])->middleware("document_access:$DOCUMENT_MAP_PERMISSIONS, $CREATE");
+    Route::put('/{id}', [DocumentPermissionMapController::class, 'update'])->middleware("document_access:$DOCUMENT_MAP_PERMISSIONS, $UPDATE");
+    Route::delete('/{id}', [DocumentPermissionMapController::class, 'destroy'])->middleware("document_access:$DOCUMENT_MAP_PERMISSIONS, $DELETE");
+});
+
+// Document Map routes
+Route::middleware('auth:sanctum')->prefix('DOCUMENT_MAPS')->group(function () use ($DOCUMENT_MAPS, $VIEW, $CREATE, $UPDATE, $DELETE) {
+    Route::get('/', [DocumentMapController::class, 'index'])->middleware("document_access:$DOCUMENT_MAPS, $VIEW");
+    Route::get('/{id}', [DocumentMapController::class, 'show'])->middleware("document_access:$DOCUMENT_MAPS, $VIEW");
+    Route::post('/', [DocumentMapController::class, 'store'])->middleware("document_access:$DOCUMENT_MAPS, $CREATE");
+    Route::put('/{id}', [DocumentMapController::class, 'update'])->middleware("document_access:$DOCUMENT_MAPS, $UPDATE");
+    Route::delete('/{id}', [DocumentMapController::class, 'destroy'])->middleware("document_access:$DOCUMENT_MAPS, $DELETE");
+});
+
+// Document Permission routes
+Route::middleware('auth:sanctum')->prefix('DOCUMENT_PERMISSIONS')->group(function () use ($DOCUMENT_PERMISSIONS, $VIEW, $CREATE, $UPDATE, $DELETE) {
+    Route::get('/', [DocumentPermissionController::class, 'index'])->middleware("document_access:$DOCUMENT_PERMISSIONS, $VIEW");
+    Route::get('/{id}', [DocumentPermissionController::class, 'show'])->middleware("document_access:$DOCUMENT_PERMISSIONS, $VIEW");
+    Route::post('/', [DocumentPermissionController::class, 'store'])->middleware("document_access:$DOCUMENT_PERMISSIONS, $CREATE");
+    Route::put('/{id}', [DocumentPermissionController::class, 'update'])->middleware("document_access:$DOCUMENT_PERMISSIONS, $UPDATE");
+    Route::delete('/{id}', [DocumentPermissionController::class, 'destroy'])->middleware("document_access:$DOCUMENT_PERMISSIONS, $DELETE");
+});
+
+// Loan Count routes
+Route::middleware('auth:sanctum')->prefix('LOAN_COUNTS')->group(function () use ($LOAN_COUNTS, $VIEW, $CREATE, $UPDATE, $DELETE) {
+    Route::get('/', [LoanCountController::class, 'index'])->middleware("document_access:$LOAN_COUNTS, $VIEW");
+    Route::get('/{id}', [LoanCountController::class, 'show'])->middleware("document_access:$LOAN_COUNTS, $VIEW");
+    Route::post('/', [LoanCountController::class, 'store'])->middleware("document_access:$LOAN_COUNTS, $CREATE");
+    Route::put('/{id}', [LoanCountController::class, 'update'])->middleware("document_access:$LOAN_COUNTS, $UPDATE");
+    Route::delete('/{id}', [LoanCountController::class, 'destroy'])->middleware("document_access:$LOAN_COUNTS, $DELETE");
+});
+
+// Factor Rate routes
+Route::middleware('auth:sanctum')->prefix('FACTOR_RATES')->group(function () use ($FACTORRATES, $VIEW, $CREATE, $UPDATE, $DELETE) {
+    Route::get('/', [FactorRateController::class, 'index'])->middleware("document_access:$FACTORRATES, $VIEW");
+    Route::get('/{id}', [FactorRateController::class, 'show'])->middleware("document_access:$FACTORRATES, $VIEW");
+    Route::post('/', [FactorRateController::class, 'store'])->middleware("document_access:$FACTORRATES, $CREATE");
+    Route::put('/{id}', [FactorRateController::class, 'update'])->middleware("document_access:$FACTORRATES, $UPDATE");
+    Route::delete('/{id}', [FactorRateController::class, 'destroy'])->middleware("document_access:$FACTORRATES, $DELETE");
+});
+
+// Payment Duration routes
+Route::middleware('auth:sanctum')->prefix('PAYMENT_DURATIONS')->group(function () use ($PAYMENT_DURATIONS, $VIEW, $CREATE, $UPDATE, $DELETE) {
+    Route::get('/', [PaymentDurationController::class, 'index'])->middleware("document_access:$PAYMENT_DURATIONS, $VIEW");
+    Route::get('/{id}', [PaymentDurationController::class, 'show'])->middleware("document_access:$PAYMENT_DURATIONS, $VIEW");
+    Route::post('/', [PaymentDurationController::class, 'store'])->middleware("document_access:$PAYMENT_DURATIONS, $CREATE");
+    Route::put('/{id}', [PaymentDurationController::class, 'update'])->middleware("document_access:$PAYMENT_DURATIONS, $UPDATE");
+    Route::delete('/{id}', [PaymentDurationController::class, 'destroy'])->middleware("document_access:$PAYMENT_DURATIONS, $DELETE");
+});
+
+// Payment Frequency routes
+Route::middleware('auth:sanctum')->prefix('PAYMENT_FREQUENCIES')->group(function () use ($PAYMENT_FREQUENCIES, $VIEW, $CREATE, $UPDATE, $DELETE) {
+    Route::get('/', [PaymentFrequencyController::class, 'index'])->middleware("document_access:$PAYMENT_FREQUENCIES, $VIEW");
+    Route::get('/{id}', [PaymentFrequencyController::class, 'show'])->middleware("document_access:$PAYMENT_FREQUENCIES, $VIEW");
+    Route::post('/', [PaymentFrequencyController::class, 'store'])->middleware("document_access:$PAYMENT_FREQUENCIES, $CREATE");
+    Route::put('/{id}', [PaymentFrequencyController::class, 'update'])->middleware("document_access:$PAYMENT_FREQUENCIES, $UPDATE");
+    Route::delete('/{id}', [PaymentFrequencyController::class, 'destroy'])->middleware("document_access:$PAYMENT_FREQUENCIES, $DELETE");
+});
+
+// Group routes
+Route::middleware('auth:sanctum')->prefix('CUSTOMER_GROUPS')->group(function () use ($CUSTOMER_GROUPS, $VIEW, $CREATE, $UPDATE, $DELETE) {
+    Route::get('/', [CustomerGroupController::class, 'index'])->middleware("document_access:$CUSTOMER_GROUPS, $VIEW");
+    Route::get('/{id}', [CustomerGroupController::class, 'show'])->middleware("document_access:$CUSTOMER_GROUPS, $VIEW");
+    Route::post('/', [CustomerGroupController::class, 'store'])->middleware("document_access:$CUSTOMER_GROUPS, $CREATE");
+    Route::put('/{id}', [CustomerGroupController::class, 'update'])->middleware("document_access:$CUSTOMER_GROUPS, $UPDATE");
+    Route::delete('/{id}', [CustomerGroupController::class, 'destroy'])->middleware("document_access:$CUSTOMER_GROUPS, $DELETE");
 });
 
 
-Route::middleware('auth:sanctum')->prefix('customers')->group(function () {
-    Route::get('/', [CustomerPersonalityController::class, 'index'])->middleware('document_access:3, view');
-    Route::get('/{id}', [CustomerPersonalityController::class, 'show'])->middleware('document_access:3, view');
-    Route::post('/', [CustomerPersonalityController::class, 'store'])->middleware('document_access:3, create');
-    Route::put('/{id}', [CustomerPersonalityController::class,'update'])->middleware('document_access:3, update');
-    Route::delete('/{id}', [CustomerPersonalityController::class, 'destroy'])->middleware('document_access:3, delete');
+// Users routes
+Route::middleware('auth:sanctum')->prefix('USERS')->group(function () use ($USER_ACCOUNTS, $VIEW, $CREATE, $UPDATE, $DELETE) {
+    Route::get('/', [UserController::class, 'index'])->middleware("document_access:$USER_ACCOUNTS, $VIEW");
+    Route::get('/{id}', [UserController::class, 'show'])->middleware("document_access:$USER_ACCOUNTS, $VIEW");
+    Route::post('/', [UserController::class, 'store'])->middleware("document_access:$USER_ACCOUNTS, $CREATE");
+    Route::put('/{id}', [UserController::class, 'update'])->middleware("document_access:$USER_ACCOUNTS, $UPDATE");
+    Route::delete('/{id}', [UserController::class, 'destroy'])->middleware("document_access:$USER_ACCOUNTS, $DELETE");
 });
 
-Route::get('/permission', [DocumentPermissionMapController::class, 'index']);
-Route::get('/documentMap', [DocumentMapController::class, 'index']);
-Route::get('/documentpermission', [DocumentPermissionController::class, 'index']);
-Route::get('/documentpermission/{id}', [DocumentPermissionController::class, 'show']);
-Route::post('/documentpermission', [DocumentPermissionController::class, 'store']);
-Route::put('/documentpermission/{id}', [DocumentPermissionController::class, 'update']);
-Route::delete('/documentpermission/{id}', [DocumentPermissionController::class, 'destroy']);
-
-Route::get('/users', [UserController::class, 'index'])->middleware('auth:sanctum')->middleware('document_access:1,4');
-Route::get('/users/{id}', [UserController::class, 'show']);
-
-Route::get('/emplooyeid', [EmployeeController::class, 'findEmpIDnotExist']);
-Route::get('get-user', [UserController::class, 'index']);
-
-Route::middleware('auth:sanctum')->prefix('loancount')->group(function () {
-    Route::get('/', [LoanCountController::class, 'index'])->middleware('document_access:3,4');
-    Route::get('/{id}', [LoanCountController::class, 'show'])->middleware('document_access:3,4');
-    Route::post('/', [LoanCountController::class, 'store'])->middleware('document_access:3,1');
-    Route::put('/{id}', [LoanCountController::class,'update'])->middleware('document_access:3,2');
-    Route::delete('/{id}', [LoanCountController::class, 'destroy'])->middleware('document_access:3,3');
-});
-
-
-Route::middleware('auth:sanctum')->prefix('users')->group(function () {
-    Route::get('/', [UserController::class, 'index']);
-    Route::post('/', [UserController::class, 'store']);
-    Route::put('/{id}', [UserController::class, 'update']);
-});
-
-//Route::post('factorRate', [FactorRateController::class, 'store'])->middleware('document_access:5,create'); //five (5) means its factorate that should be access by the user and has should be create permission
-
-Route::middleware('auth:sanctum')->prefix('factorRate')->group(function () {
-    Route::get('/', [FactorRateController::class, 'index'])->middleware('document_access');
-    Route::get('/{id}', [FactorRateController::class, 'show'])->middleware('document_access');
-    Route::post('/', [FactorRateController::class, 'store'])->middleware('document_access');
-    Route::put('/{id}', [FactorRateController::class, 'update'])->middleware('document_access');
-});
-
-Route::middleware('auth:sanctum')->prefix('auth')->group(function () {
-    Route::post('/', function () {
-        // You are authenticated, return a response or perform logic here
-        return response()->json([
-            'message' => 'Authenticated!', // Optionally, return the authenticated user data
-        ]);
-    })->middleware('document_access');
-});
-
-
-// Route::get('frequency', [PaymentFrequencyController::class, 'index']);
-// Route::post('frequency', [PaymentFrequencyController::class, 'store']);
-// Route::put('/frequency/{id}', [PaymentFrequencyController::class, 'update']);
-
-Route::middleware('auth:sanctum')->prefix('duration')->group(function () {
-    Route::get('/', [PaymentDurationController::class, 'index'])->middleware('document_access');
-    Route::get('/{id}', [PaymentDurationController::class, 'show'])->middleware('document_access');
-    Route::post('/', [PaymentDurationController::class, 'store'])->middleware('document_access');
-    Route::put('/{id}', [PaymentDurationController::class, 'update'])->middleware('document_access');
-});
-
-Route::middleware('auth:sanctum')->prefix('frequency')->group(function () {
-    Route::get('/', [PaymentFrequencyController::class, 'index'])->middleware('document_access');
-    Route::get('/{id}', [PaymentFrequencyController::class, 'show'])->middleware('document_access');
-    Route::post('/', [PaymentFrequencyController::class, 'store'])->middleware('document_access');
-    Route::put('/{id}', [PaymentFrequencyController::class, 'update'])->middleware('document_access');
-});
-
-Route::get('group', [CustomerGroupController::class, 'index']);
-
-
-Route::get('fee', [FeeController::class, 'index']);
-Route::post('fee', [FeeController::class, 'store']);
-Route::put('/fee/{id}', [FeeController::class, 'update']);
-
-
-
-// Route::prefix('users')->group(function () {
-//     Route::get('/', [UserController::class, 'index']);
-//     Route::get('/{id}', [UserController::class, 'show']);
-//     Route::post('/', [UserController::class, 'store']);
-//     Route::put('/{id}', [UserController::class,'update']);
-//     Route::delete('/{id}', [UserController::class, 'destroy']);
-// });
+}

@@ -92,18 +92,25 @@ class DatabaseSeeder extends Seeder
         $genderNames = ['Male', 'Female'];
         $creditStatusNames = ['Active', 'Inactive', 'Suspended', 'Blacklisted'];
         $userAccountStatusNames = ['Active', 'Inactive'];
-        $documentPermissionNames = ['Create', 'Update', 'Delete', 'View'];
+        $documentPermissionNames = ['CREATE', 'UPDATE', 'DELETE', 'VIEW'];
         $nameTypes = ['Employee', 'Customer'];
 
         $documentMap = [
-        'UserAccount', # 1
-        'Libraries',
-        'Customers',
-        'Employee',
-        'FactorRate', #5
-        'PaymentDuration', #6
-        'PaymentFrequency', #7
-
+            'USER_ACCOUNTS', # 1
+            'LIBRARIES',
+            'CUSTOMERS',
+            'CUSTOMER_GROUPS',
+            'EMPLOYEES',
+            'FACTOR_RATES', #5
+            'PAYMENT_DURATION', #6
+            'PAYMENT_FREQUENCIES', #7
+            'PERSONALITIES',
+            'DOCUMENT_MAPS',
+            'DOCUMENT_MAP_PERMISSIONS',
+            'DOCUMENT_PERMISSIONS',
+            'LOAN_COUNT',
+            'FACTOR_RATE',
+            'FEES'
         ];
 
 

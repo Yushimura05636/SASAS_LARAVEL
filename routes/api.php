@@ -45,6 +45,7 @@ $DOCUMENT_MAP_PERMISSIONS = AuthPermission::DOCUMENT_MAP_PERMISSIONS();
 $LOAN_COUNTS = AuthPermission::LOAN_COUNTS();
 $FEES = AuthPermission::FEES();
 $PERSONALITIES = AuthPermission::PERSONALITIES();
+$BUTTON_AUTHORIZATIONS = AuthPermission::BUTTON_AUTHORIZATIONS();
 
 $VIEW = AuthPermission::VIEW_PERM();
 $CREATE = AuthPermission::CREATE_PERM();
@@ -52,26 +53,46 @@ $UPDATE = AuthPermission::UPDATE_PERM();
 $DELETE = AuthPermission::DELETE_PERM();
 
 // User Auth routes
-Route::middleware('auth:sanctum')->prefix('USER_AUTH')->group(function () use ($USER_ACCOUNTS, $VIEW, $CREATE, $UPDATE, $DELETE) {
-    Route::get('/', function () {
-        return response()->json(['message' => 'Access granted']);
-    })->middleware("document_access:$USER_ACCOUNTS, $VIEW");
-
-    Route::get('/{id}', function ($id) {
-        return response()->json(['message' => 'Access granted']);
-    })->middleware("document_access:$USER_ACCOUNTS, $VIEW");
-
+Route::middleware('auth:sanctum')->prefix('USER_AUTH')->group(function () use ($BUTTON_AUTHORIZATIONS, $CREATE, $UPDATE) {
     Route::post('/', function () {
         return response()->json(['message' => 'Access granted']);
-    })->middleware("document_access:$USER_ACCOUNTS, $CREATE");
+    })->middleware("document_access:$BUTTON_AUTHORIZATIONS, $CREATE");
 
-    Route::put('/{id}', function ($id) {
+    Route::put('/', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$BUTTON_AUTHORIZATIONS, $UPDATE");
+});
+
+// User Auth routes
+Route::middleware('auth:sanctum')->prefix('USER_AUTH')->group(function () use ($BUTTON_AUTHORIZATIONS, $CREATE, $UPDATE) {
+    Route::post('/', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$BUTTON_AUTHORIZATIONS, $CREATE");
+
+    Route::put('/', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$BUTTON_AUTHORIZATIONS, $UPDATE");
+});
+
+// Users routes
+Route::middleware('auth:sanctum')->prefix('USERS')->group(function () use ($USER_ACCOUNTS, $VIEW, $CREATE, $UPDATE, $DELETE) {
+    Route::get('/', [UserController::class, 'index'])->middleware("document_access:$USER_ACCOUNTS, $VIEW");
+    Route::get('/{id}', [UserController::class, 'show'])->middleware("document_access:$USER_ACCOUNTS, $VIEW");
+    Route::post('/', [UserController::class, 'store'])->middleware("document_access:$USER_ACCOUNTS, $CREATE");
+
+    // Empty update route with PATCH
+    Route::patch('/update', function () {
         return response()->json(['message' => 'Access granted']);
     })->middleware("document_access:$USER_ACCOUNTS, $UPDATE");
 
-    Route::delete('/{id}', function ($id) {
+    // Empty create route with PATCH
+    Route::patch('/create', function () {
         return response()->json(['message' => 'Access granted']);
-    })->middleware("document_access:$USER_ACCOUNTS, $DELETE");
+    })->middleware("document_access:$USER_ACCOUNTS, $CREATE");
+
+    Route::put('/{id}', [UserController::class, 'update'])->middleware("document_access:$USER_ACCOUNTS, $UPDATE");
+    Route::patch('/{id}', [UserController::class, 'update'])->middleware("document_access:$USER_ACCOUNTS, $UPDATE"); // PATCH method
+    Route::delete('/{id}', [UserController::class, 'destroy'])->middleware("document_access:$USER_ACCOUNTS, $DELETE");
 });
 
 // Authentication routes
@@ -84,7 +105,19 @@ Route::middleware('auth:sanctum')->prefix('LIBRARIES')->group(function () use ($
     Route::get('/{modeltype}', [DBLibraryController::class, 'index'])->middleware("document_access:$LIBRARIES, $VIEW");
     Route::get('/findOne/{id}', [DBLibraryController::class, 'show'])->middleware("document_access:$LIBRARIES, $VIEW");
     Route::post('/', [DBLibraryController::class, 'store'])->middleware("document_access:$LIBRARIES, $CREATE");
+
+    // Empty update route with PATCH
+    Route::patch('/update', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$LIBRARIES, $UPDATE");
+
+    // Empty create route with PATCH
+    Route::patch('/create', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$LIBRARIES, $CREATE");
+
     Route::put('/{id}', [DBLibraryController::class, 'update'])->middleware("document_access:$LIBRARIES, $UPDATE");
+    Route::patch('/{id}', [DBLibraryController::class, 'update'])->middleware("document_access:$LIBRARIES, $UPDATE"); // PATCH method
     Route::delete('/{id}', [DBLibraryController::class, 'destroy'])->middleware("document_access:$LIBRARIES, $DELETE");
 });
 
@@ -93,7 +126,19 @@ Route::middleware('auth:sanctum')->prefix('EMPLOYEES')->group(function () use ($
     Route::get('/', [EmployeePersonalityController::class, 'index'])->middleware("document_access:$EMPLOYEES, $VIEW");
     Route::get('/{id}', [EmployeePersonalityController::class, 'show'])->middleware("document_access:$EMPLOYEES, $VIEW");
     Route::post('/', [EmployeePersonalityController::class, 'store'])->middleware("document_access:$EMPLOYEES, $CREATE");
+
+    // Empty update route with PATCH
+    Route::patch('/update', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$EMPLOYEES, $UPDATE");
+
+    // Empty create route with PATCH
+    Route::patch('/create', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$EMPLOYEES, $CREATE");
+
     Route::put('/{id}', [EmployeePersonalityController::class, 'update'])->middleware("document_access:$EMPLOYEES, $UPDATE");
+    Route::patch('/{id}', [EmployeePersonalityController::class, 'update'])->middleware("document_access:$EMPLOYEES, $UPDATE"); // PATCH method
     Route::delete('/{id}', [EmployeePersonalityController::class, 'destroy'])->middleware("document_access:$EMPLOYEES, $DELETE");
 });
 
@@ -102,7 +147,19 @@ Route::middleware('auth:sanctum')->prefix('CUSTOMERS')->group(function () use ($
     Route::get('/', [CustomerPersonalityController::class, 'index'])->middleware("document_access:$CUSTOMERS, $VIEW");
     Route::get('/{id}', [CustomerPersonalityController::class, 'show'])->middleware("document_access:$CUSTOMERS, $VIEW");
     Route::post('/', [CustomerPersonalityController::class, 'store'])->middleware("document_access:$CUSTOMERS, $CREATE");
+
+    // Empty update route with PATCH
+    Route::patch('/update', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$CUSTOMERS, $UPDATE");
+
+    // Empty create route with PATCH
+    Route::patch('/create', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$CUSTOMERS, $CREATE");
+
     Route::put('/{id}', [CustomerPersonalityController::class, 'update'])->middleware("document_access:$CUSTOMERS, $UPDATE");
+    Route::patch('/{id}', [CustomerPersonalityController::class, 'update'])->middleware("document_access:$CUSTOMERS, $UPDATE"); // PATCH method
     Route::delete('/{id}', [CustomerPersonalityController::class, 'destroy'])->middleware("document_access:$CUSTOMERS, $DELETE");
 });
 
@@ -113,6 +170,16 @@ Route::middleware('auth:sanctum')->prefix('PERSONALITIES')->group(function () us
     Route::post('/', [PersonalityController::class, 'store'])->middleware("document_access:$PERSONALITIES, $CREATE");
     Route::put('/{id}', [PersonalityController::class, 'update'])->middleware("document_access:$PERSONALITIES, $UPDATE");
     Route::delete('/{id}', [PersonalityController::class, 'destroy'])->middleware("document_access:$PERSONALITIES, $DELETE");
+
+    // Empty update route with PATCH
+    Route::patch('/update', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$PERSONALITIES, $UPDATE");
+
+    // Empty create route with PATCH
+    Route::patch('/create', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$PERSONALITIES, $CREATE");
 });
 
 // Document Map Permission routes
@@ -122,6 +189,16 @@ Route::middleware('auth:sanctum')->prefix('DOCUMENT_MAP_PERMISSIONS')->group(fun
     Route::post('/', [DocumentPermissionMapController::class, 'store'])->middleware("document_access:$DOCUMENT_MAP_PERMISSIONS, $CREATE");
     Route::put('/{id}', [DocumentPermissionMapController::class, 'update'])->middleware("document_access:$DOCUMENT_MAP_PERMISSIONS, $UPDATE");
     Route::delete('/{id}', [DocumentPermissionMapController::class, 'destroy'])->middleware("document_access:$DOCUMENT_MAP_PERMISSIONS, $DELETE");
+
+    // Empty update route with PATCH
+    Route::patch('/update', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$DOCUMENT_MAP_PERMISSIONS, $UPDATE");
+
+    // Empty create route with PATCH
+    Route::patch('/create', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$DOCUMENT_MAP_PERMISSIONS, $CREATE");
 });
 
 // Document Map routes
@@ -131,6 +208,16 @@ Route::middleware('auth:sanctum')->prefix('DOCUMENT_MAPS')->group(function () us
     Route::post('/', [DocumentMapController::class, 'store'])->middleware("document_access:$DOCUMENT_MAPS, $CREATE");
     Route::put('/{id}', [DocumentMapController::class, 'update'])->middleware("document_access:$DOCUMENT_MAPS, $UPDATE");
     Route::delete('/{id}', [DocumentMapController::class, 'destroy'])->middleware("document_access:$DOCUMENT_MAPS, $DELETE");
+
+    // Empty update route with PATCH
+    Route::patch('/update', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$DOCUMENT_MAPS, $UPDATE");
+
+    // Empty create route with PATCH
+    Route::patch('/create', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$DOCUMENT_MAPS, $CREATE");
 });
 
 // Document Permission routes
@@ -140,6 +227,16 @@ Route::middleware('auth:sanctum')->prefix('DOCUMENT_PERMISSIONS')->group(functio
     Route::post('/', [DocumentPermissionController::class, 'store'])->middleware("document_access:$DOCUMENT_PERMISSIONS, $CREATE");
     Route::put('/{id}', [DocumentPermissionController::class, 'update'])->middleware("document_access:$DOCUMENT_PERMISSIONS, $UPDATE");
     Route::delete('/{id}', [DocumentPermissionController::class, 'destroy'])->middleware("document_access:$DOCUMENT_PERMISSIONS, $DELETE");
+
+    // Empty update route with PATCH
+    Route::patch('/update', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$DOCUMENT_PERMISSIONS, $UPDATE");
+
+    // Empty create route with PATCH
+    Route::patch('/create', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$DOCUMENT_PERMISSIONS, $CREATE");
 });
 
 // Loan Count routes
@@ -149,6 +246,16 @@ Route::middleware('auth:sanctum')->prefix('LOAN_COUNTS')->group(function () use 
     Route::post('/', [LoanCountController::class, 'store'])->middleware("document_access:$LOAN_COUNTS, $CREATE");
     Route::put('/{id}', [LoanCountController::class, 'update'])->middleware("document_access:$LOAN_COUNTS, $UPDATE");
     Route::delete('/{id}', [LoanCountController::class, 'destroy'])->middleware("document_access:$LOAN_COUNTS, $DELETE");
+
+    // Empty update route with PATCH
+    Route::patch('/update', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$LOAN_COUNTS, $UPDATE");
+
+    // Empty create route with PATCH
+    Route::patch('/create', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$LOAN_COUNTS, $CREATE");
 });
 
 // Factor Rate routes
@@ -158,6 +265,16 @@ Route::middleware('auth:sanctum')->prefix('FACTOR_RATES')->group(function () use
     Route::post('/', [FactorRateController::class, 'store'])->middleware("document_access:$FACTORRATES, $CREATE");
     Route::put('/{id}', [FactorRateController::class, 'update'])->middleware("document_access:$FACTORRATES, $UPDATE");
     Route::delete('/{id}', [FactorRateController::class, 'destroy'])->middleware("document_access:$FACTORRATES, $DELETE");
+
+    // Empty update route with PATCH
+    Route::patch('/update', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$FACTORRATES, $UPDATE");
+
+    // Empty create route with PATCH
+    Route::patch('/create', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$FACTORRATES, $CREATE");
 });
 
 // Payment Duration routes
@@ -167,6 +284,16 @@ Route::middleware('auth:sanctum')->prefix('PAYMENT_DURATIONS')->group(function (
     Route::post('/', [PaymentDurationController::class, 'store'])->middleware("document_access:$PAYMENT_DURATIONS, $CREATE");
     Route::put('/{id}', [PaymentDurationController::class, 'update'])->middleware("document_access:$PAYMENT_DURATIONS, $UPDATE");
     Route::delete('/{id}', [PaymentDurationController::class, 'destroy'])->middleware("document_access:$PAYMENT_DURATIONS, $DELETE");
+
+    // Empty update route with PATCH
+    Route::patch('/update', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$PAYMENT_DURATIONS, $UPDATE");
+
+    // Empty create route with PATCH
+    Route::patch('/create', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$PAYMENT_DURATIONS, $CREATE");
 });
 
 // Payment Frequency routes
@@ -176,6 +303,16 @@ Route::middleware('auth:sanctum')->prefix('PAYMENT_FREQUENCIES')->group(function
     Route::post('/', [PaymentFrequencyController::class, 'store'])->middleware("document_access:$PAYMENT_FREQUENCIES, $CREATE");
     Route::put('/{id}', [PaymentFrequencyController::class, 'update'])->middleware("document_access:$PAYMENT_FREQUENCIES, $UPDATE");
     Route::delete('/{id}', [PaymentFrequencyController::class, 'destroy'])->middleware("document_access:$PAYMENT_FREQUENCIES, $DELETE");
+
+    // Empty update route with PATCH
+    Route::patch('/update', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$PAYMENT_FREQUENCIES, $UPDATE");
+
+    // Empty create route with PATCH
+    Route::patch('/create', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$PAYMENT_FREQUENCIES, $CREATE");
 });
 
 // Group routes
@@ -185,16 +322,16 @@ Route::middleware('auth:sanctum')->prefix('CUSTOMER_GROUPS')->group(function () 
     Route::post('/', [CustomerGroupController::class, 'store'])->middleware("document_access:$CUSTOMER_GROUPS, $CREATE");
     Route::put('/{id}', [CustomerGroupController::class, 'update'])->middleware("document_access:$CUSTOMER_GROUPS, $UPDATE");
     Route::delete('/{id}', [CustomerGroupController::class, 'destroy'])->middleware("document_access:$CUSTOMER_GROUPS, $DELETE");
-});
 
+    // Empty update route with PATCH
+    Route::patch('/update', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$CUSTOMER_GROUPS, $UPDATE");
 
-// Users routes
-Route::middleware('auth:sanctum')->prefix('USERS')->group(function () use ($USER_ACCOUNTS, $VIEW, $CREATE, $UPDATE, $DELETE) {
-    Route::get('/', [UserController::class, 'index'])->middleware("document_access:$USER_ACCOUNTS, $VIEW");
-    Route::get('/{id}', [UserController::class, 'show'])->middleware("document_access:$USER_ACCOUNTS, $VIEW");
-    Route::post('/', [UserController::class, 'store'])->middleware("document_access:$USER_ACCOUNTS, $CREATE");
-    Route::put('/{id}', [UserController::class, 'update'])->middleware("document_access:$USER_ACCOUNTS, $UPDATE");
-    Route::delete('/{id}', [UserController::class, 'destroy'])->middleware("document_access:$USER_ACCOUNTS, $DELETE");
+    // Empty create route with PATCH
+    Route::patch('/create', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$CUSTOMER_GROUPS, $CREATE");
 });
 
 }

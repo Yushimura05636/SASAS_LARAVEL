@@ -97,6 +97,7 @@ class DatabaseSeeder extends Seeder
 
         $documentMap = [
             'USER_ACCOUNTS', # 1
+            'BUTTON_AUTHORIZARIONS',
             'LIBRARIES',
             'CUSTOMERS',
             'CUSTOMER_GROUPS',
@@ -191,6 +192,7 @@ class DatabaseSeeder extends Seeder
             'datetime_resigned' => $faker->unique()->date(),
             'personality_id' => 1,
         ]);
+
         Employee::create([
             'sss_no' => $faker->unique()->randomDigit(),
             'phic_no' => $faker->unique()->randomDigit(),
@@ -219,6 +221,7 @@ class DatabaseSeeder extends Seeder
             'employee_id' => 1,
             'status_id' => 1,
         ]);
+
         User_Account::create([
             'last_name' => 'Eric',
             'first_name' => 'Eric',
@@ -229,19 +232,38 @@ class DatabaseSeeder extends Seeder
             'status_id' => 1,
         ]);
 
-        Loan_Count::created([
+        //here is the permission
+        // Fetch all document maps
+        $documentMaps = Document_Map::all();
+
+        // Fetch all document permissions
+        $documentPermissions = Document_Permission_Map::all();
+
+        // Loop through each document map and permission, and assign to user_id 1
+        foreach ($documentMaps as $documentMap) {
+            foreach ($documentPermissions as $documentPermission) {
+                Document_Permission::create([
+                    'user_id' => 1, // Assuming you are granting permissions to user with ID 1
+                    'document_map_code' => $documentMap->id, // Use document map id as code
+                    'document_permission' => $documentPermission->id, // Use document permission id
+                    'datetime_granted' => now() // Current timestamp
+                ]);
+            }
+        }
+
+        Loan_Count::create([
             'loan_count' => 1,
             'min_amount' => 5000.00,
             'max_amount' => 15000.00,
         ]);
 
-        Loan_Count::created([
+        Loan_Count::create([
             'loan_count' => 2,
             'min_amount' => 15000.00,
             'max_amount' => 30000.00,
         ]);
 
-        Loan_Count::created([
+        Loan_Count::create([
             'loan_count' => 3,
             'min_amount' => 30000.00,
             'max_amount' => 60000.00,
@@ -290,27 +312,6 @@ class DatabaseSeeder extends Seeder
             'description' => '1 Year',
             'number_of_payments' => 52, // Assuming 4 weeks per month
             'notes' => 'For 12 Monthly Payments',
-        ]);
-
-        Document_Permission::created([
-            'user_id' => 1,
-            'document_map_code' => 1,
-            'document_permission' => 4,
-            'datetime_granted' => '01-01-2001'
-        ]);
-
-        Document_Permission::created([
-            'user_id' => 1,
-            'document_map_code' => 1,
-            'document_permission' => 1,
-            'datetime_granted' => '01-01-2001'
-        ]);
-
-        Document_Permission::created([
-            'user_id' => 1,
-            'document_map_code' => 1,
-            'document_permission' => 2,
-            'datetime_granted' => '01-01-2001'
         ]);
     }
 }

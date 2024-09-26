@@ -7,6 +7,7 @@ use App\Models\Document_Permission;
 use App\Models\Document_Permission_Map;
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 
 class DocumentAccess
@@ -41,10 +42,10 @@ class DocumentAccess
         $requiredDocId = (int) trim($requiredDocId);
 
         // Fetch the dynamic permission mapping from the database (client-sent)
-        $permission = Document_Permission_Map::where('id', (int) $requiredPermissionValue)->first();
-        $document = Document_Map::where('id', (int) $requiredDocId)->first();
+        $permission = Document_Permission_Map::where('id', $requiredPermissionValue)->first();
+        $document = Document_Map::where('id', $requiredDocId)->first();
 
-        //return response()->json([$clientSentPermissionValue, $requiredPermissionValue, $documentId, $requiredDocId, $permission, $document]);
+        //return response()->json([$requiredPermissionValue, $requiredDocId, $permission, $document]);
 
         //if the document permission exist in database
         if($permission && $document)
@@ -56,19 +57,22 @@ class DocumentAccess
                 if ($clientSentPermissionValue != $requiredPermissionValue || $documentId != $requiredDocId) {
                     return response()->json([
                         'message' => 'Client-sent permission or document ID does not match the required permission'
-                    ], 403);
+                    ], Response::HTTP_FORBIDDEN);
                 }
             }
 
             // Query the Document_Permission table to check user's permissions for the document
             $userPermission = Document_Permission::where('user_id', $userId)
-            ->where('document_map_code', '>=', (int) $requiredDocId)
-            ->where('document_permission', '>=', (int) $requiredPermissionValue) // Ensure user's permission meets required level
+            ->where('document_map_code', $requiredDocId)
+            ->where('document_permission', $requiredPermissionValue) // Ensure user's permission meets required level
             ->first();
+
+            //return response()->json(['message' => $userPermission]);
+
 
             // If no matching permission is found, deny access
             if (!$userPermission) {
-                return response()->json(['message' => 'Access Denied'], 403);
+                return response()->json(['message' => 'Access Denied'], Response::HTTP_FORBIDDEN);
             }
 
             // Proceed if user has the necessary permission
@@ -76,7 +80,7 @@ class DocumentAccess
         }
         else
         {
-            return response()->json(['message' => 'Missing permission or document']);
+            return response()->json(['message' => 'Missing permission or document'], Response::HTTP_FORBIDDEN);
         }
     }
 }

@@ -30,9 +30,12 @@ class DocumentAccess
         // Get the user ID from the authenticated user
         $userId = auth()->user()->id;
 
-        // Retrieve docId and perm from the request (either POST body or GET parameters)
-        (int) $documentId = $request->input('docId');
-        (int) $clientSentPermissionValue = $request->input('perm'); // Client-sent permission (e.g., 4)
+        if($request->input('docId') && $request->input('perm'))
+        {
+           // Retrieve docId and perm from the request (either POST body or GET parameters)
+            $documentId = $request->input('docId');
+            $clientSentPermissionValue = $request->input('perm'); // Client-sent permission (e.g., 4)
+        }
 
         $requiredPermissionValue = (int) trim($requiredPermissionValue);
         $requiredDocId = (int) trim($requiredDocId);
@@ -46,11 +49,15 @@ class DocumentAccess
         //if the document permission exist in database
         if($permission && $document)
         {
-            // Check if client-sent permission and docId match the numeric middleware parameters
-            if ($clientSentPermissionValue != $requiredPermissionValue || $documentId != $requiredDocId) {
-                return response()->json([
-                    'message' => 'Client-sent permission or document ID does not match the required permission'
-                ], 403);
+            //if ang client side nag throw ug docId and perm kini ang mu read
+            if($request->input('docId') && $request->input('perm'))
+            {
+                // Check if client-sent permission and docId match the numeric middleware parameters
+                if ($clientSentPermissionValue != $requiredPermissionValue || $documentId != $requiredDocId) {
+                    return response()->json([
+                        'message' => 'Client-sent permission or document ID does not match the required permission'
+                    ], 403);
+                }
             }
 
             // Query the Document_Permission table to check user's permissions for the document

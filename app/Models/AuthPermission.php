@@ -47,7 +47,7 @@ class AuthPermission extends Model
         self::$CUSTOMER_GROUPS = self::getPermissionId('CUSTOMER_GROUPS', Document_Map::class);
         self::$EMPLOYEES = self::getPermissionId('EMPLOYEES', Document_Map::class);
         self::$FACTOR_RATES = self::getPermissionId('FACTOR_RATES', Document_Map::class);
-        self::$PAYMENT_DURATIONS = self::getPermissionId('PAYMENT_DURATION', Document_Map::class);
+        self::$PAYMENT_DURATIONS = self::getPermissionId('PAYMENT_DURATIONS', Document_Map::class);
         self::$PAYMENT_FREQUENCIES = self::getPermissionId('PAYMENT_FREQUENCIES', Document_Map::class);
         self::$PERSONALITIES = self::getPermissionId('PERSONALITIES', Document_Map::class);
         self::$DOCUMENT_PERMISSIONS = self::getPermissionId('DOCUMENT_PERMISSIONS', Document_Map::class); // Corrected

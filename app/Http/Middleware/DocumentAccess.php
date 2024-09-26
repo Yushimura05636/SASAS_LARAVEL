@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Document_Map;
 use App\Models\Document_Permission;
 use App\Models\Document_Permission_Map;
 use Closure;
@@ -38,11 +39,12 @@ class DocumentAccess
 
         // Fetch the dynamic permission mapping from the database (client-sent)
         $permission = Document_Permission_Map::where('id', (int) $requiredPermissionValue)->first();
+        $document = Document_Map::where('id', (int) $requiredDocId)->first();
 
         //return response()->json([$requiredPermissionValue, $clientSentPermissionValue, $requiredDocId, $permission]);
 
         //if the document permission exist in database
-        if($permission)
+        if($permission && $document)
         {
             // Check if client-sent permission and docId match the numeric middleware parameters
             if ($clientSentPermissionValue != $requiredPermissionValue || $documentId != $requiredDocId) {

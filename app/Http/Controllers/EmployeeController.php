@@ -23,6 +23,11 @@ class EmployeeController extends Controller
         return $this->employeeService->findEmployees();
     }
 
+    public function noUserIndex()
+    {
+        return $this->employeeService->findNoUserEmployees();
+    }
+
     public function store(Request $request)
     {
         return $this->employeeService->createEmployee($request);

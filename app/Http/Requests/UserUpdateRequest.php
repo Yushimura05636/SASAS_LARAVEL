@@ -23,6 +23,7 @@ class UserUpdateRequest extends FormRequest
     {
         return [
             'status_id' => ['required', 'integer'],
+            'password' => ['required', 'string'],
         ];
     }
 }

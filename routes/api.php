@@ -77,6 +77,7 @@ Route::middleware('auth:sanctum')->prefix('USER_AUTH')->group(function () use ($
 // Users routes
 Route::middleware('auth:sanctum')->prefix('USERS')->group(function () use ($USER_ACCOUNTS, $VIEW, $CREATE, $UPDATE, $DELETE) {
     Route::get('/', [UserController::class, 'index'])->middleware("document_access:$USER_ACCOUNTS, $VIEW");
+    Route::get('/NoUSERID', [UserController::class, '']);
     Route::get('/{id}', [UserController::class, 'show'])->middleware("document_access:$USER_ACCOUNTS, $VIEW");
     Route::post('/', [UserController::class, 'store'])->middleware("document_access:$USER_ACCOUNTS, $CREATE");
 
@@ -103,6 +104,8 @@ Route::post('/createUser', [UserController::class, 'store'])->middleware('auth:s
 // Libraries routes
 Route::middleware('auth:sanctum')->prefix('LIBRARIES')->group(function () use ($LIBRARIES, $VIEW, $CREATE, $UPDATE, $DELETE) {
     Route::get('/{modeltype}', [DBLibraryController::class, 'index'])->middleware("document_access:$LIBRARIES, $VIEW");
+    Route::get('/NoAUTH/{modeltype}', [DBLibraryController::class, 'index']);
+    Route::get('/NoAUTH/findOne/{id}', [DBLibraryController::class, 'show']);
     Route::get('/findOne/{id}', [DBLibraryController::class, 'show'])->middleware("document_access:$LIBRARIES, $VIEW");
     Route::post('/', [DBLibraryController::class, 'store'])->middleware("document_access:$LIBRARIES, $CREATE");
 
@@ -116,6 +119,9 @@ Route::middleware('auth:sanctum')->prefix('LIBRARIES')->group(function () use ($
         return response()->json(['message' => 'Access granted']);
     })->middleware("document_access:$LIBRARIES, $CREATE");
 
+    //Empty view route with PATCH with no docoument middle for viewing only in other form
+    Route::patch('/{modeltype}', [DBLibraryController::class, 'index']);
+
     Route::put('/{id}', [DBLibraryController::class, 'update'])->middleware("document_access:$LIBRARIES, $UPDATE");
     Route::patch('/{id}', [DBLibraryController::class, 'update'])->middleware("document_access:$LIBRARIES, $UPDATE"); // PATCH method
     Route::delete('/{id}', [DBLibraryController::class, 'destroy'])->middleware("document_access:$LIBRARIES, $DELETE");
@@ -124,6 +130,10 @@ Route::middleware('auth:sanctum')->prefix('LIBRARIES')->group(function () use ($
 // Employee routes
 Route::middleware('auth:sanctum')->prefix('EMPLOYEES')->group(function () use ($EMPLOYEES, $VIEW, $CREATE, $UPDATE, $DELETE) {
     Route::get('/', [EmployeePersonalityController::class, 'index'])->middleware("document_access:$EMPLOYEES, $VIEW");
+    Route::get('/NoUser', [EmployeePersonalityController::class, 'look'])->middleware("document_access:$EMPLOYEES, $VIEW");
+    Route::get('/NoAUTH/findMany/', [EmployeePersonalityController::class, 'index']);
+    Route::get('/NoAUTH/find/{id}', [EmployeePersonalityController::class, 'show']);
+    Route::get('/NoAUTH/findMany/findNoUser/', [EmployeePersonalityController::class, 'look']);
     Route::get('/{id}', [EmployeePersonalityController::class, 'show'])->middleware("document_access:$EMPLOYEES, $VIEW");
     Route::post('/', [EmployeePersonalityController::class, 'store'])->middleware("document_access:$EMPLOYEES, $CREATE");
 
@@ -145,6 +155,8 @@ Route::middleware('auth:sanctum')->prefix('EMPLOYEES')->group(function () use ($
 // Customers routes
 Route::middleware('auth:sanctum')->prefix('CUSTOMERS')->group(function () use ($CUSTOMERS, $VIEW, $CREATE, $UPDATE, $DELETE) {
     Route::get('/', [CustomerPersonalityController::class, 'index'])->middleware("document_access:$CUSTOMERS, $VIEW");
+    Route::get('/NoAUTH', [CustomerPersonalityController::class, 'index']);
+    Route::get('/NoAUTH/{id}', [CustomerPersonalityController::class, 'show']);
     Route::get('/{id}', [CustomerPersonalityController::class, 'show'])->middleware("document_access:$CUSTOMERS, $VIEW");
     Route::post('/', [CustomerPersonalityController::class, 'store'])->middleware("document_access:$CUSTOMERS, $CREATE");
 
@@ -166,6 +178,8 @@ Route::middleware('auth:sanctum')->prefix('CUSTOMERS')->group(function () use ($
 // Personalities routes
 Route::middleware('auth:sanctum')->prefix('PERSONALITIES')->group(function () use ($PERSONALITIES, $VIEW, $CREATE, $UPDATE, $DELETE) {
     Route::get('/', [PersonalityController::class, 'index'])->middleware("document_access:$PERSONALITIES, $VIEW");
+    Route::get('/NoAUTH', [PersonalityController::class, 'index']);
+    Route::get('/NoAUTH/{id}', [PersonalityController::class, 'show']);
     Route::get('/{id}', [PersonalityController::class, 'show'])->middleware("document_access:$PERSONALITIES, $VIEW");
     Route::post('/', [PersonalityController::class, 'store'])->middleware("document_access:$PERSONALITIES, $CREATE");
     Route::put('/{id}', [PersonalityController::class, 'update'])->middleware("document_access:$PERSONALITIES, $UPDATE");
@@ -185,6 +199,8 @@ Route::middleware('auth:sanctum')->prefix('PERSONALITIES')->group(function () us
 // Document Map Permission routes
 Route::middleware('auth:sanctum')->prefix('DOCUMENT_MAP_PERMISSIONS')->group(function () use ($DOCUMENT_MAP_PERMISSIONS, $VIEW, $CREATE, $UPDATE, $DELETE) {
     Route::get('/', [DocumentPermissionMapController::class, 'index'])->middleware("document_access:$DOCUMENT_MAP_PERMISSIONS, $VIEW");
+    Route::get('/NoAUTH', [DocumentPermissionMapController::class, 'index']);
+    Route::get('/NoAUTH/{id}', [DocumentPermissionMapController::class, 'show']);
     Route::get('/{id}', [DocumentPermissionMapController::class, 'show'])->middleware("document_access:$DOCUMENT_MAP_PERMISSIONS, $VIEW");
     Route::post('/', [DocumentPermissionMapController::class, 'store'])->middleware("document_access:$DOCUMENT_MAP_PERMISSIONS, $CREATE");
     Route::put('/{id}', [DocumentPermissionMapController::class, 'update'])->middleware("document_access:$DOCUMENT_MAP_PERMISSIONS, $UPDATE");
@@ -204,6 +220,8 @@ Route::middleware('auth:sanctum')->prefix('DOCUMENT_MAP_PERMISSIONS')->group(fun
 // Document Map routes
 Route::middleware('auth:sanctum')->prefix('DOCUMENT_MAPS')->group(function () use ($DOCUMENT_MAPS, $VIEW, $CREATE, $UPDATE, $DELETE) {
     Route::get('/', [DocumentMapController::class, 'index'])->middleware("document_access:$DOCUMENT_MAPS, $VIEW");
+    Route::get('/NoAUTH', [DocumentMapController::class, 'index']);
+    Route::get('/NoAUTH/{id}', [DocumentMapController::class, 'show']);
     Route::get('/{id}', [DocumentMapController::class, 'show'])->middleware("document_access:$DOCUMENT_MAPS, $VIEW");
     Route::post('/', [DocumentMapController::class, 'store'])->middleware("document_access:$DOCUMENT_MAPS, $CREATE");
     Route::put('/{id}', [DocumentMapController::class, 'update'])->middleware("document_access:$DOCUMENT_MAPS, $UPDATE");
@@ -223,6 +241,8 @@ Route::middleware('auth:sanctum')->prefix('DOCUMENT_MAPS')->group(function () us
 // Document Permission routes
 Route::middleware('auth:sanctum')->prefix('DOCUMENT_PERMISSIONS')->group(function () use ($DOCUMENT_PERMISSIONS, $VIEW, $CREATE, $UPDATE, $DELETE) {
     Route::get('/', [DocumentPermissionController::class, 'index'])->middleware("document_access:$DOCUMENT_PERMISSIONS, $VIEW");
+    Route::get('/NoAUTH', [DocumentPermissionController::class, 'index']);
+    Route::get('/NoAUTH/{id}', [DocumentPermissionController::class, 'show']);
     Route::get('/{id}', [DocumentPermissionController::class, 'show'])->middleware("document_access:$DOCUMENT_PERMISSIONS, $VIEW");
     Route::post('/', [DocumentPermissionController::class, 'store'])->middleware("document_access:$DOCUMENT_PERMISSIONS, $CREATE");
     Route::put('/{id}', [DocumentPermissionController::class, 'update'])->middleware("document_access:$DOCUMENT_PERMISSIONS, $UPDATE");
@@ -242,6 +262,8 @@ Route::middleware('auth:sanctum')->prefix('DOCUMENT_PERMISSIONS')->group(functio
 // Loan Count routes
 Route::middleware('auth:sanctum')->prefix('LOAN_COUNTS')->group(function () use ($LOAN_COUNTS, $VIEW, $CREATE, $UPDATE, $DELETE) {
     Route::get('/', [LoanCountController::class, 'index'])->middleware("document_access:$LOAN_COUNTS, $VIEW");
+    Route::get('/NoAUTH', [LoanCountController::class, 'index']);
+    Route::get('/NoAUTH/{id}', [LoanCountController::class, 'show']);
     Route::get('/{id}', [LoanCountController::class, 'show'])->middleware("document_access:$LOAN_COUNTS, $VIEW");
     Route::post('/', [LoanCountController::class, 'store'])->middleware("document_access:$LOAN_COUNTS, $CREATE");
     Route::put('/{id}', [LoanCountController::class, 'update'])->middleware("document_access:$LOAN_COUNTS, $UPDATE");
@@ -261,6 +283,8 @@ Route::middleware('auth:sanctum')->prefix('LOAN_COUNTS')->group(function () use 
 // Factor Rate routes
 Route::middleware('auth:sanctum')->prefix('FACTOR_RATES')->group(function () use ($FACTORRATES, $VIEW, $CREATE, $UPDATE, $DELETE) {
     Route::get('/', [FactorRateController::class, 'index'])->middleware("document_access:$FACTORRATES, $VIEW");
+    Route::get('/NoAUTH', [FactorRateController::class, 'index']);
+    Route::get('/NoAUTH/{id}', [FactorRateController::class, 'show']);
     Route::get('/{id}', [FactorRateController::class, 'show'])->middleware("document_access:$FACTORRATES, $VIEW");
     Route::post('/', [FactorRateController::class, 'store'])->middleware("document_access:$FACTORRATES, $CREATE");
     Route::put('/{id}', [FactorRateController::class, 'update'])->middleware("document_access:$FACTORRATES, $UPDATE");
@@ -280,6 +304,8 @@ Route::middleware('auth:sanctum')->prefix('FACTOR_RATES')->group(function () use
 // Payment Duration routes
 Route::middleware('auth:sanctum')->prefix('PAYMENT_DURATIONS')->group(function () use ($PAYMENT_DURATIONS, $VIEW, $CREATE, $UPDATE, $DELETE) {
     Route::get('/', [PaymentDurationController::class, 'index'])->middleware("document_access:$PAYMENT_DURATIONS, $VIEW");
+    Route::get('/NoAUTH', [PaymentDurationController::class, 'index']);
+    Route::get('/NoAUTH/{id}', [PaymentDurationController::class, 'show']);
     Route::get('/{id}', [PaymentDurationController::class, 'show'])->middleware("document_access:$PAYMENT_DURATIONS, $VIEW");
     Route::post('/', [PaymentDurationController::class, 'store'])->middleware("document_access:$PAYMENT_DURATIONS, $CREATE");
     Route::put('/{id}', [PaymentDurationController::class, 'update'])->middleware("document_access:$PAYMENT_DURATIONS, $UPDATE");
@@ -299,6 +325,8 @@ Route::middleware('auth:sanctum')->prefix('PAYMENT_DURATIONS')->group(function (
 // Payment Frequency routes
 Route::middleware('auth:sanctum')->prefix('PAYMENT_FREQUENCIES')->group(function () use ($PAYMENT_FREQUENCIES, $VIEW, $CREATE, $UPDATE, $DELETE) {
     Route::get('/', [PaymentFrequencyController::class, 'index'])->middleware("document_access:$PAYMENT_FREQUENCIES, $VIEW");
+    Route::get('/NoAUTH', [PaymentFrequencyController::class, 'index']);
+    Route::get('/NoAUTH/{id}', [PaymentFrequencyController::class, 'show']);
     Route::get('/{id}', [PaymentFrequencyController::class, 'show'])->middleware("document_access:$PAYMENT_FREQUENCIES, $VIEW");
     Route::post('/', [PaymentFrequencyController::class, 'store'])->middleware("document_access:$PAYMENT_FREQUENCIES, $CREATE");
     Route::put('/{id}', [PaymentFrequencyController::class, 'update'])->middleware("document_access:$PAYMENT_FREQUENCIES, $UPDATE");
@@ -318,6 +346,8 @@ Route::middleware('auth:sanctum')->prefix('PAYMENT_FREQUENCIES')->group(function
 // Group routes
 Route::middleware('auth:sanctum')->prefix('CUSTOMER_GROUPS')->group(function () use ($CUSTOMER_GROUPS, $VIEW, $CREATE, $UPDATE, $DELETE) {
     Route::get('/', [CustomerGroupController::class, 'index'])->middleware("document_access:$CUSTOMER_GROUPS, $VIEW");
+    Route::get('/NoAUTH', [CustomerGroupController::class, 'index']);
+    Route::get('/NoAUTH/{id}', [CustomerGroupController::class, 'show']);
     Route::get('/{id}', [CustomerGroupController::class, 'show'])->middleware("document_access:$CUSTOMER_GROUPS, $VIEW");
     Route::post('/', [CustomerGroupController::class, 'store'])->middleware("document_access:$CUSTOMER_GROUPS, $CREATE");
     Route::put('/{id}', [CustomerGroupController::class, 'update'])->middleware("document_access:$CUSTOMER_GROUPS, $UPDATE");
@@ -338,6 +368,8 @@ Route::middleware('auth:sanctum')->prefix('CUSTOMER_GROUPS')->group(function () 
 // Payment Duration routes
 Route::middleware('auth:sanctum')->prefix('FEES')->group(function () use ($FEES, $VIEW, $CREATE, $UPDATE, $DELETE) {
     Route::get('/', [FeeController::class, 'index'])->middleware("document_access:$FEES, $VIEW");
+    Route::get('/NoAUTH', [FeeController::class, 'index']);
+    Route::get('/NoAUTH/{id}', [FeeController::class, 'show']);
     Route::get('/{id}', [FeeController::class, 'show'])->middleware("document_access:$FEES, $VIEW");
     Route::post('/', [FeeController::class, 'store'])->middleware("document_access:$FEES, $CREATE");
     Route::put('/{id}', [FeeController::class, 'update'])->middleware("document_access:$FEES, $UPDATE");
@@ -352,6 +384,7 @@ Route::middleware('auth:sanctum')->prefix('FEES')->group(function () use ($FEES,
     Route::patch('/create', function () {
         return response()->json(['message' => 'Access granted']);
     })->middleware("document_access:$FEES, $CREATE");
+
 });
 
 

@@ -45,7 +45,7 @@ class DBLibraryController extends Controller
 
     public function show(int $id, DBLibraryShowRequest $request)
     {
-        $modeltype = '' . trim($request->query('modeltype'));
+        $modeltype = '' . trim($request->input('modeltype'));
         // $modeltype = $request->query('modeltype');
         // return response()->json([
         //     'status' => 'error', // Or 'success' depending on your logic

@@ -64,6 +64,40 @@ class EmployeePersonalityController extends Controller
     ];
 }
 
+public function look()
+    {
+    // Fetch employees and personalities from their respective services
+    $employees = $this->employeeService->findNoUserEmployees(); // Assuming findCustomers returns employees
+    $personalities = $this->personalityService->findPersonality();
+
+    //return response()->json(['message' => [$employees,$personalities]]);
+
+    // Create an associative array (lookup) for personalities using personality_id as key
+    $personalityMap = [];
+    foreach ($personalities as $personality) {
+        $personalityMap[$personality->id] = $personality;
+    }
+
+    // Loop through employees and pair them with their respective personality
+    $employeesWithPersonality = [];
+    foreach ($employees as $employee) {
+        $personalityId = $employee->personality_id;
+        // Find the corresponding personality using the personality_id
+        $personality = $personalityMap[$personalityId] ?? null;
+
+        // Pair the employee with their personality
+        $employeesWithPersonality[] = [
+            'employee' => $employee,
+            'personality' => $personality
+        ];
+    }
+
+    // Return the paired employees and personalities
+    return [
+        'data' => $employeesWithPersonality
+    ];
+}
+
     public function store(Request $request, EmployeeController $employeeController, PersonalityController $personalityController)
     {
         // Summons the storeRequest from both controllers

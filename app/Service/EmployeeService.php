@@ -22,6 +22,13 @@ class EmployeeService implements EmployeeServiceInterface
         return EmployeeResource::collection($employee);
     }
 
+    public function findNoUserEmployees()
+    {
+        $employee = $this->employeeRepository->findNoUserByMany();
+
+        return EmployeeResource::collection($employee);
+    }
+
     public function findEmlpoyeeById(int $id)
     {
         $employee = $this->employeeRepository->findByOneId($id);

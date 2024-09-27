@@ -6,6 +6,8 @@ interface EmployeeServiceInterface
 {
     public function findEmployees();
 
+    public function findNoUserEmployees();
+
     public function findEmlpoyeeById(int $id);
 
     public function createEmployee(object $payload);

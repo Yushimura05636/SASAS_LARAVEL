@@ -31,24 +31,27 @@ class DocumentAccess
         // Get the user ID from the authenticated user
         $userId = auth()->user()->id;
 
+        //default variable value
+        $documentId = '';
+        $clientSentPermissionValue = '';
+
         if($request->input('docId') && $request->input('perm'))
         {
            // Retrieve docId and perm from the request (either POST body or GET parameters)
             $documentId = $request->input('docId');
             $clientSentPermissionValue = $request->input('perm'); // Client-sent permission (e.g., 4)
-            
+
             $requiredPermissionValue = (int) trim($requiredPermissionValue);
             $requiredDocId = (int) trim($requiredDocId);
 
             $documentId = Document_Map::where('description', $documentId)->first();
             $clientSentPermissionValue = Document_Permission_Map::where('description', $clientSentPermissionValue)->first();
-            
-            
         }
-            // Fetch the dynamic permission mapping from the database (client-sent)
-            $permission = Document_Permission_Map::where('id', $requiredPermissionValue)->first();
-            $document = Document_Map::where('id', $requiredDocId)->first();
-            
+
+        // Fetch the dynamic permission mapping from the database (client-sent)
+        $permission = Document_Permission_Map::where('id', $requiredPermissionValue)->first();
+        $document = Document_Map::where('id', $requiredDocId)->first();
+
         //return response()->json([$requiredPermissionValue, $requiredDocId, $permission, $document]);
 
         //if the document permission exist in database

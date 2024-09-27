@@ -334,4 +334,25 @@ Route::middleware('auth:sanctum')->prefix('CUSTOMER_GROUPS')->group(function () 
     })->middleware("document_access:$CUSTOMER_GROUPS, $CREATE");
 });
 
+
+// Payment Duration routes
+Route::middleware('auth:sanctum')->prefix('FEES')->group(function () use ($FEES, $VIEW, $CREATE, $UPDATE, $DELETE) {
+    Route::get('/', [FeeController::class, 'index'])->middleware("document_access:$FEES, $VIEW");
+    Route::get('/{id}', [FeeController::class, 'show'])->middleware("document_access:$FEES, $VIEW");
+    Route::post('/', [FeeController::class, 'store'])->middleware("document_access:$FEES, $CREATE");
+    Route::put('/{id}', [FeeController::class, 'update'])->middleware("document_access:$FEES, $UPDATE");
+    Route::delete('/{id}', [FeeController::class, 'destroy'])->middleware("document_access:$FEES, $DELETE");
+
+    // Empty update route with PATCH
+    Route::patch('/update', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$FEES, $UPDATE");
+
+    // Empty create route with PATCH
+    Route::patch('/create', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$FEES, $CREATE");
+});
+
+
 }

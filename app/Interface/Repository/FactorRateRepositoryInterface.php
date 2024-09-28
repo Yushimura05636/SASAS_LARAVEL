@@ -13,4 +13,6 @@ interface FactorRateRepositoryInterface
     public function update(object $payload, int $id);
 
     public function delete(int $id);
+
+    public function getDescription();
 }

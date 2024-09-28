@@ -20,7 +20,6 @@ class FactorRateService implements FactorRateServiceInterface
     public function findFactorRate()
     {
         $factorRate = $this->factorRate->findMany();
-
         return FactorRateResource::collection($factorRate);
 
     }
@@ -49,6 +48,9 @@ class FactorRateService implements FactorRateServiceInterface
     public function deleteFactorRate(int $id)
     {
         return $this->factorRate->delete($id);
+    }
 
+    public function getFreqandDuraDescription(){
+        
     }
 }

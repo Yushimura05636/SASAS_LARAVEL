@@ -2,6 +2,7 @@
 
 namespace App\Repository;
 use App\Interface\Repository\PaymentFrequencyRepositoryInterface;
+use App\Models\Factor_Rate;
 use App\Models\Payment_Frequency;
 use Illuminate\Http\Response;
 

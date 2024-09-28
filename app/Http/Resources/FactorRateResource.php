@@ -21,6 +21,8 @@ class FactorRateResource extends JsonResource
             'description'=> $this->description,
             'value'=> $this->value,
             'notes'=> $this->notes,
+            'payment_frequency' => $this->paymentFrequency, 
+            'payment_duration' => $this->paymentDuration, 
         ];
     }
 }

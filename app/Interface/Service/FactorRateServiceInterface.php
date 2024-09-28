@@ -13,4 +13,6 @@ interface FactorRateServiceInterface
     public function updateFactorRate(object $payload, int $id);
 
     public function deleteFactorRate(int $id);
+
+    public function getFreqandDuraDescription();
 }

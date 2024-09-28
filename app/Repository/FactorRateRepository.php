@@ -10,7 +10,8 @@ class FactorRateRepository implements FactorRateRepositoryInterface
 {
     public function findMany()
     {
-        return Factor_Rate::paginate(10);
+        return Factor_Rate::with(['paymentFrequency','paymentDuration'])->get();
+        // return Factor_Rate::paginate(10);
     }
 
     public function findOneById($id)
@@ -50,5 +51,10 @@ class FactorRateRepository implements FactorRateRepositoryInterface
         return response()->json([
             'message' => 'Success'
         ], Response::HTTP_OK);
+    }
+
+    public function getDescription()
+    {
+        return Factor_Rate::with(['paymentFrequency','paymentDuration'])->get();
     }
 }

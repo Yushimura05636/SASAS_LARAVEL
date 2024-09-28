@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\FactorRateStoreRequest;
 use App\Http\Requests\FactorRateUpdateRequest;
 use App\Interface\Service\FactorRateServiceInterface;
+use App\Models\Factor_Rate;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 

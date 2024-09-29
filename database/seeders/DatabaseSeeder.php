@@ -84,7 +84,7 @@ class DatabaseSeeder extends Seeder
             'province',
             // 'document_map',
             'customer_group',
-            'personality_status_map',
+            // 'personality_status_map',
         ];
 
         // Defining unique value arrays beforehand
@@ -94,6 +94,7 @@ class DatabaseSeeder extends Seeder
         $userAccountStatusNames = ['Active', 'Inactive'];
         $documentPermissionNames = ['CREATE', 'UPDATE', 'DELETE', 'VIEW'];
         $nameTypes = ['Employee', 'Customer'];
+        $personality_status_map = ['Pending', 'Approved','Reject','Active','Inactive'];
 
         $documentMap = [
             'USER_ACCOUNTS', # 1
@@ -113,7 +114,9 @@ class DatabaseSeeder extends Seeder
             'FEES'
         ];
 
-
+        foreach ($personality_status_map as $name) {
+            Personality_Status_Map::createEntry($name); // No duplicates, direct array iteration
+        }
         foreach ($documentMap as $name) {
             Document_Map::createEntry($name); // No duplicates, direct array iteration
         }
@@ -169,9 +172,9 @@ class DatabaseSeeder extends Seeder
                 case 'province':
                     Province::createEntry($faker->unique()->state());
                     break;
-                case 'personality_status_map':
-                    Personality_Status_Map::createEntry($faker->unique()->sentence(6));
-                    break;
+                // case 'personality_status_map':
+                //     Personality_Status_Map::createEntry($faker->unique()->sentence(6));
+                //     break;
                 // case 'document_map':
                 //     Document_Map::createEntry($description);
                 //     break;

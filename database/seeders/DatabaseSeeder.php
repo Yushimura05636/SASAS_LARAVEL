@@ -79,11 +79,11 @@ class DatabaseSeeder extends Seeder
         $modelTypes = [
             'barangay',
             'branch',
-            'city',
+            // 'city',
             'country',
             'province',
             // 'document_map',
-            'customer_group',
+            // 'customer_group',
             // 'personality_status_map',
         ];
 
@@ -95,6 +95,37 @@ class DatabaseSeeder extends Seeder
         $documentPermissionNames = ['CREATE', 'UPDATE', 'DELETE', 'VIEW'];
         $nameTypes = ['Employee', 'Customer'];
         $personality_status_map = ['Pending', 'Approved','Reject','Active','Inactive'];
+        $city = [
+            'Davao City',
+            'Cagayan de Oro',
+            'Zamboanga City',
+            'General Santos City',
+            'Butuan City',
+            'Iligan City',
+            'Cotabato City',
+            'Tagum City',
+            'Pagadian City',
+            'Dipolog City',
+            'Surigao City',
+            'Koronadal City',
+            'Malaybalay City',
+            'Valencia City',
+            'Ozamiz City'
+        ];
+        
+        $customer_group = [
+            'Apple',
+            'Banana',
+            'Orange',
+            'Mango',
+            'Pineapple',
+            'Grapes',
+            'Strawberry',
+            'Blueberry',
+            'Watermelon',
+            'Kiwi'
+        ];
+        
 
         $documentMap = [
             'USER_ACCOUNTS', # 1
@@ -113,6 +144,15 @@ class DatabaseSeeder extends Seeder
             'LOAN_COUNTS',
             'FEES'
         ];
+
+        
+        foreach ($city as $name) {
+            City::createEntry($name); // No duplicates, direct array iteration
+        }
+
+        foreach ($customer_group as $name) {
+            Customer_Group::createEntry($name); // No duplicates, direct array iteration
+        }
 
         foreach ($personality_status_map as $name) {
             Personality_Status_Map::createEntry($name); // No duplicates, direct array iteration
@@ -163,9 +203,9 @@ class DatabaseSeeder extends Seeder
                 case 'branch':
                     Branch::createEntry($description);
                     break;
-                case 'city':
-                    City::createEntry($faker->unique()->city());
-                    break;
+                // case 'city':
+                //     City::createEntry($faker->unique()->city());
+                //     break;
                 case 'country':
                     Country::createEntry($faker->unique()->country());
                     break;
@@ -178,9 +218,9 @@ class DatabaseSeeder extends Seeder
                 // case 'document_map':
                 //     Document_Map::createEntry($description);
                 //     break;
-                case 'customer_group':
-                    Customer_Group::createEntry($description);
-                    break;
+                // case 'customer_group':
+                //     Customer_Group::createEntry($description);
+                //     break;
                 default:
                     throw new \InvalidArgumentException("Unknown model type: $modeltype");
             }

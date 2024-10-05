@@ -3,6 +3,7 @@
 namespace App\Service;
 
 use App\Http\Resources\CustomerResource;
+use App\Http\Resources\CustomerResourceCollection;
 use App\Interface\Repository\CustomerRepositoryInterface;
 use App\Interface\Service\CustomerServiceInterface;
 use App\Models\Customer;
@@ -54,5 +55,11 @@ class CustomerService implements CustomerServiceInterface
     public function deleteCustomer(int $id)
     {
         return $this->customerRepository->delete($id);
+    }
+
+    public function findCustomerByGroupId(int $id)
+    {
+        $customer = $this->customerRepository->findByGroupId($id);
+        return new CustomerResourceCollection($customer);
     }
 }

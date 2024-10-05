@@ -6,6 +6,7 @@ use App\Interface\Repository\UserRepositoryInterface;
 use App\Models\User;
 use App\Models\User_Account;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
 class UserRepository implements UserRepositoryInterface
@@ -64,4 +65,8 @@ class UserRepository implements UserRepositoryInterface
         ], Response::HTTP_OK);
     }
 
+    
+    public function getUser(){
+        return Auth::user(); // Get the authenticated user
+    }
 }

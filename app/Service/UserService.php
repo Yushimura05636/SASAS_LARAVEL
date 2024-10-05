@@ -49,4 +49,9 @@ class UserService implements UserServiceInterface
     {
         return $this->userRepository->delete($id);
     }
+
+    public function getUserLogin(){
+        $user = $this->userRepository->getUser();
+        return new UserResource($user); 
+    }
 }

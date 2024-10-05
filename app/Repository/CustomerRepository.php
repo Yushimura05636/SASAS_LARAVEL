@@ -61,4 +61,11 @@ class CustomerRepository implements CustomerRepositoryInterface
             'message' => 'Success'
         ], Response::HTTP_OK);
     }
+
+    public function findByGroupId($id){
+        return Customer::where('group_id', $id)
+        ->with('personality')  // Include related personality data
+        ->orderBy('personality_id')
+        ->get();
+    }
 }

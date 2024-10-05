@@ -58,4 +58,10 @@ class UserController extends Controller
         return $this->userService->deleteUser($id);
 
     }
+
+    public function test()
+    {
+        return $this->userService->getUserLogin();
+
+    }
 }

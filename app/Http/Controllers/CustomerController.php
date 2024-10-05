@@ -42,4 +42,10 @@ class CustomerController extends Controller
     {
         return $this->customerService->deleteCustomer($id);
     }
+
+    public function test(int $id)
+    {
+        return $this->customerService->findCustomerByGroupId($id);
+    }
+
 }

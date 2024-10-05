@@ -15,4 +15,6 @@ interface UserServiceInterface
     public function updateUser(object $payload, int $id);
 
     public function deleteUser(int $id);
+
+    public function getUserLogin();
 }

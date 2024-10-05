@@ -387,7 +387,10 @@ Route::middleware('auth:sanctum')->prefix('FEES')->group(function () use ($FEES,
 
 });
 
-//test can be delete
-Route::get('/test-pf', [FactorRateController::class, 'index']);
 
 }
+
+//get customer under this group (EG: Banana, Grapes)
+Route::get('/test/{id}', [CustomerController::class, 'test']);
+
+Route::middleware('auth')->get('/testCustomer', [UserController::class, 'test']);

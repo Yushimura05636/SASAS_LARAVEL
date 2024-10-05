@@ -15,4 +15,6 @@ interface CustomerServiceInterface
     public function updateCustomer(object $payload, int $id);
 
     public function deleteCustomer(int $id);
+
+    public function findCustomerByGroupId(int $id);
 }

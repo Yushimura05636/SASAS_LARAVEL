@@ -21,11 +21,12 @@ class LoanApplicationRepository implements LoanApplicationRepositoryInterface
     public function create(object $payload)
     {
         $loanapplication = new Loan_Application();
-        
-        $loanapplication->customer_id = $payload->customer_id;
-        $loanapplication->group_id = $payload->group_id;
-        $loanapplication->document_status_code = $payload->document_status_code;
-        $loanapplication->loan_application_no = $payload->loan_application_no;
+
+        $loanapplication->customer_id = $payload->customer_id; //
+        $loanapplication->datetime_prepared = $payload->datetime_prepared;
+        $loanapplication->group_id = $payload->group_id; //
+        $loanapplication->document_status_code = $payload->document_status_code; //
+        $loanapplication->loan_application_no = $payload->loan_application_no; //
         $loanapplication->amount_loan = $payload->amount_loan;
         $loanapplication->factor_rate = $payload->factor_rate;
         $loanapplication->amount_interest = $payload->amount_interest;
@@ -40,7 +41,7 @@ class LoanApplicationRepository implements LoanApplicationRepositoryInterface
         $loanapplication->released_by_id = $payload->released_by_id;
         $loanapplication->last_modified_by_id = $payload->last_modified_by_id;
         $loanapplication->notes = $payload->notes;
-        
+
         $loanapplication->save();
         return $loanapplication->refresh();
 
@@ -49,8 +50,9 @@ class LoanApplicationRepository implements LoanApplicationRepositoryInterface
     public function update(object $payload, int $id)
     {
         $loanapplication = Loan_Application::findOrFail($id);
-        
+
         $loanapplication->customer_id = $payload->customer_id;
+        $loanapplication->datetime_prepared = $payload->datetime_prepared;
         $loanapplication->group_id = $payload->group_id;
         $loanapplication->document_status_code = $payload->document_status_code;
         $loanapplication->loan_application_no = $payload->loan_application_no;
@@ -68,7 +70,7 @@ class LoanApplicationRepository implements LoanApplicationRepositoryInterface
         $loanapplication->released_by_id = $payload->released_by_id;
         $loanapplication->last_modified_by_id = $payload->last_modified_by_id;
         $loanapplication->notes = $payload->notes;
-        
+
         $loanapplication->save();
         return $loanapplication->refresh();
     }

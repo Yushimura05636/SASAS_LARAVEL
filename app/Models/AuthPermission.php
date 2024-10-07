@@ -25,6 +25,8 @@ class AuthPermission extends Model
     private static int $LOAN_COUNTS;
     private static int $FEES;
 
+    private static int $LOAN_APPLICATIONS;
+
     //unique
     private static int $BUTTON_AUTHORIZATION;
 
@@ -56,6 +58,7 @@ class AuthPermission extends Model
         self::$LOAN_COUNTS = self::getPermissionId('LOAN_COUNTS', Document_Map::class); // Corrected
         self::$FEES = self::getPermissionId('FEES', Document_Map::class); // Corrected
         self::$BUTTON_AUTHORIZATION = self::getPermissionId('BUTTON_AUTHORIZATIONS', DOCUMENT_MAP::class);
+        self::$LOAN_APPLICATIONS = self::getPermissionId('LOAN_APPLICATIONS', Document_Map::class);
 
         self::$CREATE = self::getPermissionId('CREATE', Document_Permission_Map::class);
         self::$DELETE = self::getPermissionId('DELETE', Document_Permission_Map::class);
@@ -153,6 +156,11 @@ class AuthPermission extends Model
     public static function FEES(): int
     {
         return self::$FEES;
+    }
+
+    public static function LOAN_APPLICATIONS(): int
+    {
+        return self::$LOAN_APPLICATIONS;
     }
 
     public static function CREATE_PERM(): int

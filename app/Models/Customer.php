@@ -47,4 +47,9 @@ class Customer extends Model
     {
         return $this->belongsTo(Personality::class,'personality_id', 'id');
     }
+
+    public function loanCount(): BelongsTo
+    {
+        return $this->belongsTo(Loan_Count::class, 'loan_count', 'id');
+    }
 }

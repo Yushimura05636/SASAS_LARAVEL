@@ -11,6 +11,7 @@ use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\EmployeePersonalityController;
 use App\Http\Controllers\FactorRateController;
 use App\Http\Controllers\FeeController;
+use App\Http\Controllers\LoanApplicationController;
 use App\Http\Controllers\LoanCountController;
 use App\Http\Controllers\PaymentDurationController;
 use App\Http\Controllers\PaymentFrequencyController;
@@ -46,6 +47,7 @@ $LOAN_COUNTS = AuthPermission::LOAN_COUNTS();
 $FEES = AuthPermission::FEES();
 $PERSONALITIES = AuthPermission::PERSONALITIES();
 $BUTTON_AUTHORIZATIONS = AuthPermission::BUTTON_AUTHORIZATIONS();
+$LOAN_APPLICATIONS = AuthPermission::LOAN_APPLICATIONS();
 
 $VIEW = AuthPermission::VIEW_PERM();
 $CREATE = AuthPermission::CREATE_PERM();
@@ -384,6 +386,28 @@ Route::middleware('auth:sanctum')->prefix('FEES')->group(function () use ($FEES,
     Route::patch('/create', function () {
         return response()->json(['message' => 'Access granted']);
     })->middleware("document_access:$FEES, $CREATE");
+
+});
+
+// Loan Application routes
+Route::middleware('auth:sanctum')->prefix('LOAN_APPLICATIONS')->group(function () use ($LOAN_APPLICATIONS, $VIEW, $CREATE, $UPDATE, $DELETE) {
+    Route::get('/', [LoanApplicationController::class, 'index'])->middleware("document_access:$LOAN_APPLICATIONS, $VIEW");
+    Route::get('/NoAUTH', [LoanApplicationController::class, 'index']);
+    Route::get('/NoAUTH/{id}', [LoanApplicationController::class, 'show']);
+    Route::get('/{id}', [LoanApplicationController::class, 'show'])->middleware("document_access:$LOAN_APPLICATIONS, $VIEW");
+    Route::post('/', [LoanApplicationController::class, 'store'])->middleware("document_access:$LOAN_APPLICATIONS, $CREATE");
+    Route::put('/{id}', [LoanApplicationController::class, 'update'])->middleware("document_access:$LOAN_APPLICATIONS, $UPDATE");
+    Route::delete('/{id}', [LoanApplicationController::class, 'destroy'])->middleware("document_access:$LOAN_APPLICATIONS, $DELETE");
+
+    // Empty update route with PATCH
+    Route::patch('/update', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$LOAN_APPLICATIONS, $UPDATE");
+
+    // Empty create route with PATCH
+    Route::patch('/create', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$LOAN_APPLICATIONS, $CREATE");
 
 });
 

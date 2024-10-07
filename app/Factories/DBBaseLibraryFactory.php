@@ -8,6 +8,7 @@ use App\Models\Barangay; #Done
 use App\Models\Branch; #Done
 use App\Models\City; #Done
 use App\Models\Civil_Status; #Done
+use App\Models\Document_Status_code;
 use App\Models\Gender_Map; #Done
 use App\Models\Country; #Done
 use App\Models\Province; #Done
@@ -136,6 +137,8 @@ class DBBaseLibraryFactory
                 return Name_Type::createEntry($description);
             case 'customer_group':
                 return Customer_Group::createEntry($description);
+            case 'document_status_code':
+                return Document_Status_code::createEntry($description);
             default:
                 throw new \InvalidArgumentException("Unknown model type: ", $modeltype);
         }
@@ -178,6 +181,8 @@ class DBBaseLibraryFactory
                 return Name_Type::findOne($id);
             case 'customer_group':
                 return Customer_Group::findOne($id);
+            case 'document_status_code':
+                return Document_Status_code::findOne($id);
             default:
                 throw new \InvalidArgumentException("Unknown model type: $modeltype");
         }
@@ -214,6 +219,8 @@ class DBBaseLibraryFactory
                 return Name_Type::findMany();
             case 'customer_group':
                 return Customer_Group::findMany();
+            case 'document_status_code':
+                return Document_Status_code::findMany();
             default:
                 throw new \InvalidArgumentException("Unknown model type: $modeltype");
         }
@@ -250,6 +257,8 @@ class DBBaseLibraryFactory
                 return Name_Type::deleteEntry($id);
             case 'customer_group':
                 return Customer_Group::deleteEntry($id);
+            case 'document_status_code':
+                return Document_Status_code::deleteEntry($id);
             default:
                 throw new \InvalidArgumentException("Unknown model type: $modelType");
         }
@@ -286,6 +295,8 @@ class DBBaseLibraryFactory
                 return Name_Type::updateEntry($id, $description);
             case 'customer_group':
                 return Customer_Group::updateEntry($id, $description);
+            case 'document_status_code':
+                return Document_Status_code::updateEntry($id, $description);
             default:
                 throw new \InvalidArgumentException("Unknown model type: $modelType");
         }

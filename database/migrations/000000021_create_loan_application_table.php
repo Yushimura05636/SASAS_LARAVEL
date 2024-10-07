@@ -16,7 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('customer_id');
             $table->unsignedBigInteger('group_id');
             //$table->dateTime('datetime_created'); redundant similar function to timestamps();
-            $table->dateTime('datetime_prepared');
+            $table->dateTime('datetime_prepared')->nullable();
             $table->string('document_status_code');
             //$table->dateTime('datetime_last_updated'); this one also;
             $table->string('loan_application_no');
@@ -24,7 +24,7 @@ return new class extends Migration
             $table->decimal('factor_rate', 5, 2);
             $table->decimal('amount_interest', 10, 2);
             $table->decimal('amount_paid', 10, 2);
-            $table->dateTime('datetime_target_release');
+            $table->dateTime('datetime_target_release')->nullable();
             $table->dateTime('datetime_fully_paid')->nullable();
             $table->dateTime('datetime_approved')->nullable();
             $table->unsignedBigInteger('payment_frequency_id');
@@ -44,6 +44,9 @@ return new class extends Migration
             $table->foreign('prepared_by_id')->references('id')->on('user_account');
             $table->foreign('released_by_id')->references('id')->on('user_account');
             $table->foreign('last_modified_by_id')->references('id')->on('user_account');
+
+            #unique constrain
+            $table->unique('loan_application_no');
         });
     }
 

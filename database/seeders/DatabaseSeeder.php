@@ -27,6 +27,9 @@ use App\Models\Document_Permission_Map; #Done
 use App\Models\Name_Type; #Done
 use App\Models\Customer_Group; #Done
 use App\Models\Document_Permission;
+use App\Models\Document_Status_code;
+use App\Models\Factor_Rate;
+use App\Models\Fees;
 use App\Models\Loan_Count;
 use App\Models\Payment_Duration;
 use App\Models\Payment_Frequency;
@@ -94,6 +97,7 @@ class DatabaseSeeder extends Seeder
         $userAccountStatusNames = ['Active', 'Inactive'];
         $documentPermissionNames = ['CREATE', 'UPDATE', 'DELETE', 'VIEW'];
         $nameTypes = ['Employee', 'Customer'];
+        $document_status_code = ['Pending', 'Approved', 'Reject', 'Active', 'Inactive'];
         $personality_status_map = ['Pending', 'Approved','Reject','Active','Inactive'];
         $city = [
             'Davao City',
@@ -112,7 +116,7 @@ class DatabaseSeeder extends Seeder
             'Valencia City',
             'Ozamiz City'
         ];
-        
+
         $customer_group = [
             'Apple',
             'Banana',
@@ -125,7 +129,7 @@ class DatabaseSeeder extends Seeder
             'Watermelon',
             'Kiwi'
         ];
-        
+
 
         $documentMap = [
             'USER_ACCOUNTS', # 1
@@ -142,10 +146,11 @@ class DatabaseSeeder extends Seeder
             'DOCUMENT_MAP_PERMISSIONS',
             'DOCUMENT_PERMISSIONS',
             'LOAN_COUNTS',
-            'FEES'
+            'FEES',
+            'LOAN_APPLICATIONS',
         ];
 
-        
+
         foreach ($city as $name) {
             City::createEntry($name); // No duplicates, direct array iteration
         }
@@ -190,7 +195,12 @@ class DatabaseSeeder extends Seeder
             Name_Type::createEntry($name); // No duplicates, direct array iteration
         }
 
-        for($i = 0; $i < 200; $i++) {
+        // Document Status Code entries
+        foreach ($document_status_code as $name) {
+            Document_Status_code::createEntry($name); // No duplicates, direct array iteration
+        }
+
+        for($i = 0; $i < 100; $i++) {
             echo "1"; echo $this->f+1;
             $modeltype = $faker->randomElement($modelTypes);
             $description = $faker->unique()->sentence(3);
@@ -354,6 +364,27 @@ class DatabaseSeeder extends Seeder
             'description' => '1 Year',
             'number_of_payments' => 52, // Assuming 4 weeks per month
             'notes' => 'For 12 Monthly Payments',
+        ]);
+
+        Factor_Rate::create([
+            'payment_frequency_id' => 1,
+            'payment_duration_id' => 1,
+            'description' => 'weekly payment in 12 weeks',
+            'value' => 12,
+        ]);
+
+        Fees::create([
+            'description' => 'Transaction Fees',
+            'amount' => 12.00000,
+            'isactive' => 1,
+            'notes' => 'Transaction fee',
+        ]);
+
+        Fees::create([
+            'description' => 'Passbook fees',
+            'amount' => 230.00000,
+            'isactive' => 1,
+            'notes' => 'Passbook fee',
         ]);
     }
 }

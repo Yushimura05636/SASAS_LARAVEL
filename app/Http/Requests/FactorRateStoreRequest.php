@@ -25,7 +25,7 @@ class FactorRateStoreRequest extends FormRequest
             'payment_frequency_id' => ['required', 'integer'],
             'payment_duration_id' => ['required', 'integer'],
             'description' => ['required', 'string'],
-            'value' => ['required', 'integer'],
+            'value' => ['required', 'numeric'],
             'notes' => ['required', 'string'],
         ];
     }

@@ -4,9 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\LoanApplicationStoreRequest;
 use App\Http\Requests\LoanApplicationUpdateRequest;
+use App\Interface\Service\LoanApplicationFeeServiceInterface;
 use App\Interface\Service\LoanApplicationServiceInterface;
 use App\Models\Document_Status_code;
 use App\Models\Factor_Rate;
+use App\Models\Fees;
+use App\Models\Loan_Application;
+use App\Service\LoanApplicationFeeService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
@@ -27,8 +31,9 @@ class LoanApplicationController extends Controller
         return $this->loanApplicationService->findLoanApplication();
     }
 
-public function store(Request $request)
+public function store(Request $request, LoanApplicationFeeServiceInterface $loanApplicationFeeService)
 {
+
     $userId = auth()->user()->id;
     $data = $request->input('allCustomerData');  // Assuming 'allCustomerData' is an array
 
@@ -56,15 +61,36 @@ public function store(Request $request)
             // Convert into object
             $payload = new Request($data[$i]);
 
+            // return response()->json([
+            //     'message' => 'An error occurred while processing the transaction',
+            //     'error' => $data[$i]['fees'],
+            // ], Response::HTTP_INTERNAL_SERVER_ERROR);
             // Insert the loan application
             $this->loanApplicationService->createLoanApplication($payload);
 
+            //then save the fees value
+            for($k = 0; $k < count($data[$i]['fees']); $k++)
+            {
+
+                $amount = Fees::where('id', $data[$i]['fees'][$k])->first()->amount;
+                $loanId = Loan_Application::where('loan_application_no', $data[$i]['loan_application_no'])->first()->id;
+
+                //convert fees and add amount
+                $fees = [
+                    'loan_application_id' => $loanId,
+                    'fee_id' => $data[$i]['fees'][$k],
+                    'amount' => $amount,
+                ];
+
+                //convert fee to object
+                $payload = new Request($fees);
+
+                //store the fees
+                $loanApplicationFeeService->createLoanFee($payload);
+            }
+
             // Insert the fees here (you can implement this part if needed)
 
-            // return response()->json([
-            //     'message' => 'An error occurred while processing the transaction',
-            //     'error' => 'error',
-            // ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
 
         // If all is good, commit the transaction

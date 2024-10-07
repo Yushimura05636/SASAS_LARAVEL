@@ -18,7 +18,7 @@ return new class extends Migration
             $table->unsignedBigInteger('loan_application_id');
             $table->unsignedBigInteger('fee_id');
             $table->decimal('amount', 8, 2);
-            $table->string('encoding_order');
+            $table->string('encoding_order')->nullable();
             $table->timestamps();
 
             $table->foreign('loan_application_id')->references('id')->on('loan_application')->onDelete('cascade');

@@ -24,7 +24,7 @@ class LoanApplicationCoMakerStoreRequest extends FormRequest
         return [
             'loan_applicaiton_id' => ['required', 'integer'],
             'customer_id' => ['required', 'integer'],
-            'encoding_order' => ['required', 'string'],
+            'encoding_order' => ['nullable', 'string'],
         ];
     }
 }

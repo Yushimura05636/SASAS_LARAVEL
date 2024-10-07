@@ -50,7 +50,7 @@ class DatabaseSeeder extends Seeder
        $this->c = 500;
         $this->f = 1;
 
-        for($i = 0; $i < 4; $i++)
+        for($i = 0; $i < 14; $i++)
         {
             Personality::create([
                 'datetime_registered'=>now(),
@@ -254,15 +254,21 @@ class DatabaseSeeder extends Seeder
             'personality_id' => 2,
         ]);
 
-        Customer::create([
-            'group_id' => 1,
-            'passbook_no' => $faker->unique()->randomDigit(),
-            'loan_count' => $faker->unique()->randomDigit(),
-            'enable_mortuary' => $faker->numberBetween(1,2),
-            'mortuary_coverage_start' => null,
-            'mortuary_coverage_end' => null,
-            'personality_id' => 3,
-        ]);
+
+        //'LN' . '-' . $faker->randomDigit() . trim(strtoupper($faker->lexify('??????')), ' ')
+
+        for($i = 0; $i < 10; $i++)
+        {
+            Customer::create([
+                'group_id' => 1,
+                'passbook_no' => $faker->randomDigitNotZero() . $faker->randomNumber(),
+                'loan_count' => 1,
+                'enable_mortuary' => $faker->numberBetween(1,2),
+                'mortuary_coverage_start' => null,
+                'mortuary_coverage_end' => null,
+                'personality_id' => $faker->numberBetween(3, 14),
+            ]);
+        }
 
         User_Account::create([
             'last_name' => 'Sasas',

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\LoanApplicationFeeStoreRequest;
 use App\Http\Requests\LoanApplicationFeeUpdateRequest;
 use App\Interface\Service\LoanApplicationFeeServiceInterface;
+use Illuminate\Http\Request;
 
 class LoanApplicationFeeController extends Controller
 {
@@ -20,7 +21,7 @@ class LoanApplicationFeeController extends Controller
         $this->loanApplicationFeeService->findLoanFees();
     }
 
-    public function store(LoanApplicationFeeStoreRequest $request)
+    public function store(Request $request)
     {
         return $this->loanApplicationFeeService->createLoanFee($request);
     }

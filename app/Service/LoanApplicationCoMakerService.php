@@ -2,6 +2,7 @@
 
 namespace App\Service;
 use App\Http\Resources\LoanApplicationCoMakerResource;
+use App\Interface\Repository\LoanApplicationCoMakerRepositoryInterface;
 use App\Interface\Repository\LoanApplicationFeeRepositoryInterface;
 use App\Interface\Service\LoanApplicationCoMakerServiceInterface;
 
@@ -9,9 +10,9 @@ class LoanApplicationCoMakerService implements LoanApplicationCoMakerServiceInte
 {
     private $loanApplicationCoMakerRepository;
 
-    public function __construct(LoanApplicationFeeRepositoryInterface $loanApplicationFeeRepository)
+    public function __construct(LoanApplicationCoMakerRepositoryInterface $loanApplicationCoMakerRepository)
     {
-        $this->loanApplicationCoMakerRepository = $loanApplicationFeeRepository;
+        $this->loanApplicationCoMakerRepository = $loanApplicationCoMakerRepository;
     }
 
     public function findCoMakers()
@@ -25,14 +26,14 @@ class LoanApplicationCoMakerService implements LoanApplicationCoMakerServiceInte
     {
         $loanApplicationCoMaker = $this->loanApplicationCoMakerRepository->findOneById($id);
 
-        return LoanApplicationCoMakerResource::collection($loanApplicationCoMaker);
+        return new LoanApplicationCoMakerResource($loanApplicationCoMaker);
     }
 
     public function createLoanCoMaker(object $payload)
     {
         $loanApplicationCoMaker = $this->loanApplicationCoMakerRepository->create($payload);
 
-        return LoanApplicationCoMakerResource::collection($loanApplicationCoMaker);
+        return new LoanApplicationCoMakerResource($loanApplicationCoMaker);
     }
 
     public function updateLoanCoMaker(object $payload, int $id)

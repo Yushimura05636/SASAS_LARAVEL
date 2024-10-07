@@ -17,7 +17,7 @@ return new class extends Migration
             $table->bigIncrements('id');
             $table->unsignedBigInteger('loan_application_id');
             $table->unsignedBigInteger('customer_id');
-            $table->integer('encoding_order');
+            $table->integer('encoding_order')->nullable();
             $table->timestamps();
 
             $table->foreign('loan_application_id')->references('id')->on('loan_application')->onDelete('cascade');

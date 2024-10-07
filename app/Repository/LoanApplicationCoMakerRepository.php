@@ -20,7 +20,7 @@ class LoanApplicationCoMakerRepository implements LoanApplicationCoMakerReposito
     public function create(object $payload)
     {
         $loanApplicationCoMaker = new Loan_Application_Comaker();
-        $loanApplicationCoMaker->loan_application_id = $payload->loan_applicaiton_id;
+        $loanApplicationCoMaker->loan_application_id = $payload->loan_application_id;
         $loanApplicationCoMaker->customer_id = $payload->customer_id;
         $loanApplicationCoMaker->encoding_order = $payload->encoding_order;
         $loanApplicationCoMaker->save();
@@ -31,7 +31,7 @@ class LoanApplicationCoMakerRepository implements LoanApplicationCoMakerReposito
     public function update(object $payload, int $id)
     {
         $loanApplicationCoMaker = Loan_Application_Comaker::findOrFail($id);
-        $loanApplicationCoMaker->loan_application_id = $payload->loan_applicaiton_id;
+        $loanApplicationCoMaker->loan_application_id = $payload->loan_application_id;
         $loanApplicationCoMaker->customer_id = $payload->customer_id;
         $loanApplicationCoMaker->encoding_order = $payload->encoding_order;
         $loanApplicationCoMaker->save();

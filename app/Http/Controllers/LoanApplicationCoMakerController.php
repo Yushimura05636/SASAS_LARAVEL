@@ -5,8 +5,9 @@ namespace App\Http\Controllers;
 use App\Http\Requests\LoanApplicationCoMakerStoreRequest;
 use App\Http\Requests\LoanApplicationCoMakerUpdateRequest;
 use App\Interface\Service\LoanApplicationCoMakerServiceInterface;
+use Illuminate\Http\Request;
 
-class LoanApplicationCoMaker extends Controller
+class LoanApplicationCoMakerController extends Controller
 {
     private $loanApplicationCoMakerService;
 
@@ -20,7 +21,7 @@ class LoanApplicationCoMaker extends Controller
         return $this->loanApplicationCoMakerService->findCoMakers();
     }
 
-    public function store(LoanApplicationCoMakerStoreRequest $request)
+    public function store(Request $request)
     {
         return $this->loanApplicationCoMakerService->createLoanCoMaker($request);
     }

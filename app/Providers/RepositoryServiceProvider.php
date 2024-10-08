@@ -66,6 +66,7 @@ use App\Repository\PaymentDurationRepository;
 use App\Repository\PaymentFrequencyRepository;
 use App\Repository\PaymentLineRepository;
 use App\Repository\PaymentRepository;
+use App\Repository\PaymentScheduleRepository;
 use App\Repository\PersonalityRepository;
 use App\Repository\SpouseRepository;
 use App\Repository\UserRepository;
@@ -113,7 +114,7 @@ class RepositoryServiceProvider extends ServiceProvider
 
         $this->app->bind(FactorRateRepositoryInterface::class, FactorRateRepository::class);
         $this->app->bind(PaymentDurationRepositoryInterface::class, PaymentDurationRepository::class);
-        $this->app->bind(PaymentScheduleRepositoryInterface::class, PaymentFrequencyRepository::class);
+        $this->app->bind(PaymentScheduleRepositoryInterface::class, PaymentScheduleRepository::class);
         $this->app->bind(LoanReleaseRepositoryInterface::class, LoanReleaseRepositority::class);
         $this->app->bind(LoanApplicationRepositoryInterface::class, LoanApplicationRepository::class);
         $this->app->bind(PaymentFrequencyRepositoryInterface::class, PaymentFrequencyRepository::class);

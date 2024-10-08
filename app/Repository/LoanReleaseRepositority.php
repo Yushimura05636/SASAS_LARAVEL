@@ -21,7 +21,6 @@ class LoanReleaseRepositority implements LoanReleaseRepositoryInterface
     public function create(object $payload)
     {
         $loanRelease = new Loan_Release();
-        $loanRelease->datetime_created = $payload->datetime_created;
         $loanRelease->datetime_prepared = $payload->datetime_prepared;
         $loanRelease->passbook_number = $payload->passbook_number;
         $loanRelease->loan_application_id = $payload->loan_application_id;

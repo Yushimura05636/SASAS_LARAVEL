@@ -23,7 +23,6 @@ class PaymentScheduleRepository implements PaymentScheduleRepositoryInterface
     {
         $paymentSchedule = new Payment_Schedule();
 
-        $paymentSchedule->datetime_created =$payload->datetime_created;
         $paymentSchedule->customer_id =$payload->customer_id;
         $paymentSchedule->loan_released_id =$payload->loan_released_id;
         $paymentSchedule->datetime_due =$payload->datetime_due;
@@ -42,7 +41,6 @@ class PaymentScheduleRepository implements PaymentScheduleRepositoryInterface
     {
         $paymentSchedule = Payment_Schedule::findOrFail($id);
 
-        $paymentSchedule->datetime_created =$payload->datetime_created;
         $paymentSchedule->customer_id =$payload->customer_id;
         $paymentSchedule->loan_released_id =$payload->loan_released_id;
         $paymentSchedule->datetime_due =$payload->datetime_due;

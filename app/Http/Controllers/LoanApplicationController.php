@@ -8,6 +8,10 @@ use App\Interface\Service\FeeServiceInterface;
 use App\Interface\Service\LoanApplicationCoMakerServiceInterface;
 use App\Interface\Service\LoanApplicationFeeServiceInterface;
 use App\Interface\Service\LoanApplicationServiceInterface;
+use App\Interface\Service\LoanReleaseServiceInterface;
+use App\Interface\Service\PaymentLineServiceInterface;
+use App\Interface\Service\PaymentScheduleServiceInterface;
+use App\Interface\Service\PaymentServiceInterface;
 use App\Models\Customer;
 use App\Models\Document_Status_code;
 use App\Models\Factor_Rate;
@@ -16,6 +20,8 @@ use App\Models\Loan_Application;
 use App\Models\Loan_Application_Comaker;
 use App\Models\Loan_Application_Fees;
 use App\Models\Loan_Count;
+use App\Models\Payment_Duration;
+use App\Models\Payment_Frequency;
 use App\Service\LoanApplicationFeeService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -134,8 +140,6 @@ public function store(Request $request, LoanApplicationFeeController $loanApplic
 
             // Convert the time to now
             $data[$i]['datetime_prepared'] = now();
-
-            $data[$i]['factor_rate'] = Factor_Rate::where('id', $data[$i]['factor_rate'])->first()->value;
 
             //set in which who the user that modify and prepare the ui
 
@@ -261,7 +265,6 @@ public function store(Request $request, LoanApplicationFeeController $loanApplic
         return response()->json([
             'data' => $loanData
         ]);
-
     }
 
     public function look(string $id, LoanApplicationFeeServiceInterface $loanApplicationFeeService, LoanApplicationCoMakerServiceInterface $loanApplicationCoMakerService)
@@ -367,4 +370,147 @@ public function store(Request $request, LoanApplicationFeeController $loanApplic
     {
         return $this->loanApplicationService->deleteLoanApplication( $id);
     }
+
+    public function approve(Request $request,int $id, LoanReleaseServiceInterface $loanReleaseService, PaymentScheduleServiceInterface $paymentScheduleService)
+{
+    // Start the transaction
+    DB::beginTransaction();
+
+    try {
+        $userId = auth()->user()->id;
+        $customerId = $request['customer_id'];
+        $loanId = $request['id'];
+
+        // Get the passbook number
+        $passbookNo = Customer::where('id', $customerId)->first()->passbook_no;
+
+        // Loan details
+        $loanAmount = $request['amount_loan'];
+        $factorRateId = $request['factor_rate'];
+        $amountInterest = $request['amount_interest'];
+
+        // Fetch payment frequency and duration
+        $factorRate = Factor_Rate::findOrFail($factorRateId);
+        $paymentFrequencyId = $factorRate->payment_frequency_id;
+        $paymentDurationId = $factorRate->payment_duration_id;
+
+        $paymentFrequency = Payment_Frequency::findOrFail($paymentFrequencyId);
+        $paymentDuration = Payment_Duration::findOrFail($paymentDurationId);
+
+        // Prepare payload for loan release creation
+        $loanReleasePayload = [
+            'datetime_prepared' => now(),
+            'passbook_number' => $passbookNo,
+            'loan_application_id' => $loanId,
+            'prepared_by_id' => $userId,
+            'amount_loan' => $loanAmount,
+            'amount_interest' => $amountInterest,
+            'datetime_first_due' => now()->addDays($paymentFrequency->days_interval), // Calculate first due date based on frequency
+            'notes' => $request->get('notes', null),
+        ];
+
+        //custom payload
+        $loanReleasePayload = new Request($loanReleasePayload);
+
+
+        // Save the loan release
+        $loanRelease = $loanReleaseService->createLoanRelease($loanReleasePayload);
+
+        // Create payment schedule entries
+        $numberOfPayments = $paymentDuration->number_of_payments;
+        $amountDue = ($loanAmount + $amountInterest) / $numberOfPayments; // Distributing total amount over payments
+        $firstDueDate = $loanReleasePayload['datetime_first_due'];
+
+
+        for ($i = 0; $i < $numberOfPayments; $i++) {
+            // Calculate due date for each payment
+            $dueDate = $firstDueDate->copy()->addDays($i * $paymentFrequency->days_interval);
+
+            //custom payload
+            $payload = [
+                'customer_id' => $customerId,
+                'loan_released_id' => $loanRelease->id,
+                'datetime_due' => $dueDate,
+                'amount_due' => $amountDue,
+                'amount_interest' => $amountInterest / $numberOfPayments, // Assuming equal interest distribution
+                'amount_paid' => 0,
+                'payment_status_code' => 0, // Default status
+                'remarks' => null,
+            ];
+
+
+            $payload = new Request($payload);
+
+            // Create payment schedule entry
+            $paymentScheduleService->createPaymentSchedule($payload);
+
+            // return response()->json([
+            //     'message' => $paymentScheduleService,
+            //     'data' => $firstDueDate,
+            //     'data 2' => $numberOfPayments,
+            // ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+
+        // Commit the transaction
+        DB::commit();
+
+        return response()->json(['message' => 'Loan release and payment schedule created successfully.'], Response::HTTP_OK);
+
+    } catch (\Exception $e) {
+        // Rollback the transaction in case of error
+        DB::rollBack();
+
+        return response()->json(['message' => 'An error occurred: ' . $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
+    }
+}
+
+public function createPayment(Request $request, PaymentServiceInterface $paymentService, PaymentLineServiceInterface $paymentLineService, PaymentScheduleServiceInterface $paymentScheduleService)
+{
+    /*
+    here will create the payment function
+    for payment requirements
+    id 	customer_id 	prepared_at 	document_status_code 	prepared_by_id 	amount_paid 	notes 	created_at 	updated_at
+    example for database
+    id	customer_id	datetime_created	datetime_prepared	document_status_code	prepared_by_id	amount_paid	notes
+    1	1001	10/09/2024 18:48	10/09/2024 19:00	APPROVED	20	1000	Payment for loan installment.
+    */
+
+    /*
+    here will create payment line
+    for payment line requirements
+    id 	payment_id 	payment_schedule_id 	balance 	amount_paid 	remarks 	created_at 	updated_at
+    example for database
+    id	payment_id	payment_schedule_id	balance	amount_paid	remarks
+    101	1	1001	2000	1000	Partial payment.
+
+    notes
+    the purpose of payment line is like a many relation example there could be 1 schedule for 2 payments as partial payment or vice versa
+    */
+
+    /*
+    here will update the payment schedule
+    for payment schedule requirements
+    id	customer_id	loan_released_id	datetime_due	amount_due	amount_interest	amount_paid	payment_status_code	remarks	created_at
+    example for database
+    id	customer_id	loan_released_id	datetime_due	amount_due	amount_interest	amount_paid	payment_status_code	remarks	created_at	updated_at
+    2	8	6	2024-10-15 13:07:22	1400.00	150.00	0.00	0	NULL	2024-10-08 13:07:22	2024-10-08 13:07:22
+    3	8	6	2024-10-22 13:07:22	1400.00	150.00	0.00	0	NULL	2024-10-08 13:07:22	2024-10-08 13:07:22
+    4	8	6	2024-10-29 13:07:22	1400.00	150.00	0.00	0	NULL	2024-10-08 13:07:22	2024-10-08 13:07:22
+    5	8	6	2024-11-05 13:07:22	1400.00	150.00	0.00	0	NULL	2024-10-08 13:07:22	2024-10-08 13:07:22
+    6	8	6	2024-11-12 13:07:22	1400.00	150.00	0.00	0	NULL	2024-10-08 13:07:22	2024-10-08 13:07:22
+    7	8	6	2024-11-19 13:07:22	1400.00	150.00	0.00	0	NULL	2024-10-08 13:07:22	2024-10-08 13:07:22
+    8	8	6	2024-11-26 13:07:22	1400.00	150.00	0.00	0	NULL	2024-10-08 13:07:22	2024-10-08 13:07:22
+    9	8	6	2024-12-03 13:07:22	1400.00	150.00	0.00	0	NULL	2024-10-08 13:07:22	2024-10-08 13:07:22
+    10	8	6	2024-12-10 13:07:22	1400.00	150.00	0.00	0	NULL	2024-10-08 13:07:22	2024-10-08 13:07:22
+    11	8	6	2024-12-17 13:07:22	1400.00	150.00	0.00	0	NULL	2024-10-08 13:07:22	2024-10-08 13:07:22
+    12	8	6	2024-12-24 13:07:22	1400.00	150.00	0.00	0	NULL	2024-10-08 13:07:22	2024-10-08 13:07:22
+    13	8	6	2024-12-31 13:07:22	1400.00	150.00	0.00	0	NULL	2024-10-08 13:07:22	2024-10-08 13:07:22
+    */
+
+    /*
+    Notes
+    What I want is to create a function for payment and payment line and update the loan schedule if either the first payment is fully paid then it will mark as PAID
+    But if the payment in not enough to be fully paid it will only reflect as partial payment in the payment line and also reflect the payment in payment table
+    */
+}
 }

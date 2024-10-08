@@ -4,8 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\PaymentStoreRequest;
 use App\Http\Requests\PaymentUpdateRequest;
+use App\Interface\Service\PaymentLineServiceInterface;
+use App\Interface\Service\PaymentScheduleServiceInterface;
 use App\Interface\Service\PaymentServiceInterface;
-
+use App\Models\Loan_Release;
+use App\Models\Payment_Schedule;
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use Illuminate\Support\Facades\DB;
 
 class PaymentController extends Controller
 {
@@ -28,10 +34,116 @@ class PaymentController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(PaymentStoreRequest $request)
-    {
-        return $this->paymentService->createPayment($request);
+    public function store(Request $request, PaymentServiceInterface $paymentService, PaymentLineServiceInterface $paymentLineService, PaymentScheduleServiceInterface $paymentScheduleService)
+{
+    // Start DB Transaction
+    DB::beginTransaction();
+
+    try {
+        $customerId = $request['customer.id'];
+        $amountPaid = $request['schedule.amount_paid'];
+        $notes = $request['schedule.remarks'] ?? null;
+
+
+        // Create the payment record
+        $paymentData = [
+            'customer_id' => $customerId,
+            'prepared_at' => now(),
+            'document_status_code' => 'APPROVED',
+            'prepared_by_id' => auth()->user()->id,
+            'amount_paid' => $amountPaid,
+            'notes' => $notes
+        ];
+
+        // return response()->json([
+        //     'data' => $paymentData,
+        // ], Response::HTTP_INTERNAL_SERVER_ERROR);
+
+        $paymentData = new Request($paymentData);
+
+        $payment = $paymentService->createPayment($paymentData); // Save payment
+
+        // Step 2: Apply payment to schedule(s)
+        $this->applyPaymentToSchedules($payment, $amountPaid, $request, $paymentLineService, $paymentScheduleService);
+
+
+        DB::commit();
+
+        return response()->json(['message' => 'Payment created successfully'], 200);
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+        return response()->json(['error' => $e->getMessage()], 500);
     }
+}
+
+protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $request, PaymentLineServiceInterface $paymentLineService, PaymentScheduleServiceInterface $paymentScheduleService)
+{
+    //get first the loan app id
+    $loanReleaseId = Loan_Release::where('loan_application_id', $request['loan.Loan_Application.id'])->where('passbook_number', $request['customer.passbook_no'])->first()->id;
+
+    //then release
+
+    $schedules = Payment_Schedule::where('customer_id', $payment->customer_id)->where('loan_released_id', $loanReleaseId)->where('payment_status_code', 0)->get();
+
+
+    foreach ($schedules as $schedule) {
+        if ($totalAmountPaid <= 0) {
+            break; // No more payment left to allocate
+        }
+
+        $amountDue = $schedule->amount_due - $schedule->amount_paid; // Remaining balance for this schedule
+
+        // return response()->json([
+        //         'data' => $amountDue,
+        //         'request' => $totalAmountPaid,
+        //     ], Response::HTTP_INTERNAL_SERVER_ERROR);
+
+        if ($totalAmountPaid >= $amountDue) {
+            // Full payment for this schedule
+            $this->createPaymentLine($payment, $schedule, $amountDue, 'Full payment', $paymentLineService);
+            $schedule->update([
+                'amount_paid' => $schedule->amount_paid + $amountDue,
+                'payment_status_code' => 'PAID',
+            ]);
+            $totalAmountPaid -= $amountDue;
+        } else {
+            // Partial payment
+            $this->createPaymentLine($payment, $schedule, $totalAmountPaid, 'Partial payment', $paymentLineService);
+            $schedule->update([
+                'amount_paid' => $schedule->amount_paid + $totalAmountPaid,
+                'payment_status_code' => 'PARTIALLY PAID',
+            ]);
+            $totalAmountPaid = 0; // All payment has been allocated
+        }
+    }
+}
+
+protected function createPaymentLine($payment, $schedule, $amountPaid, $remarks, PaymentLineServiceInterface $paymentLineService)
+{
+    $paymentLineData = [
+        'payment_id' => $payment->id,
+        'payment_schedule_id' => $schedule->id,
+        'balance' => $schedule->amount_due - $schedule->amount_paid,
+        'amount_paid' => $amountPaid,
+        'remarks' => $remarks
+    ];
+
+    // return response()->json([
+    //             'data' => $paymentLineData,
+    //         ], Response::HTTP_INTERNAL_SERVER_ERROR);
+
+
+
+    //convert object
+    $paymentLineData = new Request($paymentLineData);
+
+    // Save payment line
+    $paymentLineService->createPaymentLine($paymentLineData);
+}
+
+
+
 
     /**
      * Display the specified resource.
@@ -39,7 +151,7 @@ class PaymentController extends Controller
     public function show(int $id)
     {
         return $this->paymentService->findPaymentById($id);
-        
+
     }
 
     /**
@@ -48,7 +160,7 @@ class PaymentController extends Controller
     public function update(PaymentUpdateRequest $request, int $id)
     {
         return $this->paymentService->updatePayment($request, $id);
-        
+
     }
 
     /**
@@ -57,6 +169,6 @@ class PaymentController extends Controller
     public function destroy(int $id)
     {
         return $this->paymentService->deletePayment($id);
-        
+
     }
 }

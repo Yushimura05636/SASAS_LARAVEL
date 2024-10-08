@@ -11,6 +11,7 @@ use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\EmployeePersonalityController;
 use App\Http\Controllers\FactorRateController;
 use App\Http\Controllers\FeeController;
+use App\Http\Controllers\LoanApplicationCoMakerController;
 use App\Http\Controllers\LoanApplicationController;
 use App\Http\Controllers\LoanCountController;
 use App\Http\Controllers\PaymentDurationController;
@@ -48,6 +49,7 @@ $FEES = AuthPermission::FEES();
 $PERSONALITIES = AuthPermission::PERSONALITIES();
 $BUTTON_AUTHORIZATIONS = AuthPermission::BUTTON_AUTHORIZATIONS();
 $LOAN_APPLICATIONS = AuthPermission::LOAN_APPLICATIONS();
+$LOAN_APPLICATION_COMAKERS = AuthPermission::LOAN_APPLICATION_COMAKERS();
 
 $VIEW = AuthPermission::VIEW_PERM();
 $CREATE = AuthPermission::CREATE_PERM();
@@ -395,6 +397,8 @@ Route::middleware('auth:sanctum')->prefix('LOAN_APPLICATIONS')->group(function (
     Route::get('/NoAUTH', [LoanApplicationController::class, 'index']);
     Route::get('/NoAUTH/{id}', [LoanApplicationController::class, 'show']);
     Route::get('/{id}', [LoanApplicationController::class, 'show'])->middleware("document_access:$LOAN_APPLICATIONS, $VIEW");
+    Route::get('/loanno/{id}', [LoanApplicationController::class, 'look'])->middleware("document_access:$LOAN_APPLICATIONS, $VIEW");;
+    Route::get('/loanno/NoAUTH/{id}', [LoanApplicationController::class, 'look']);
     Route::post('/', [LoanApplicationController::class, 'store'])->middleware("document_access:$LOAN_APPLICATIONS, $CREATE");
     Route::put('/{id}', [LoanApplicationController::class, 'update'])->middleware("document_access:$LOAN_APPLICATIONS, $UPDATE");
     Route::delete('/{id}', [LoanApplicationController::class, 'destroy'])->middleware("document_access:$LOAN_APPLICATIONS, $DELETE");
@@ -408,6 +412,30 @@ Route::middleware('auth:sanctum')->prefix('LOAN_APPLICATIONS')->group(function (
     Route::patch('/create', function () {
         return response()->json(['message' => 'Access granted']);
     })->middleware("document_access:$LOAN_APPLICATIONS, $CREATE");
+
+});
+
+// Loan Application routes
+Route::middleware('auth:sanctum')->prefix('LOAN_APPLICATION_COMAKERS')->group(function () use ($LOAN_APPLICATION_COMAKERS, $VIEW, $CREATE, $UPDATE, $DELETE) {
+    Route::get('/', [LoanApplicationCoMakerController::class, 'index'])->middleware("document_access:$LOAN_APPLICATION_COMAKERS, $VIEW");
+    Route::get('/NoAUTH', [LoanApplicationCoMakerController::class, 'index']);
+    Route::get('/NoAUTH/{id}', [LoanApplicationCoMakerController::class, 'show']);
+    Route::get('/{id}', [LoanApplicationCoMakerController::class, 'show'])->middleware("document_access:$LOAN_APPLICATION_COMAKERS, $VIEW");
+    Route::get('/loanid/NoAUTH/{id}', [LoanApplicationCoMakerController::class, 'look']);
+    Route::get('/loanid/{id}', [LoanApplicationCoMakerController::class, 'look'])->middleware("document_access:$LOAN_APPLICATION_COMAKERS, $VIEW");
+    Route::post('/', [LoanApplicationCoMakerController::class, 'store'])->middleware("document_access:$LOAN_APPLICATION_COMAKERS, $CREATE");
+    Route::put('/{id}', [LoanApplicationCoMakerController::class, 'update'])->middleware("document_access:$LOAN_APPLICATION_COMAKERS, $UPDATE");
+    Route::delete('/{id}', [LoanApplicationCoMakerController::class, 'destroy'])->middleware("document_access:$LOAN_APPLICATION_COMAKERS, $DELETE");
+
+    // Empty update route with PATCH
+    Route::patch('/update', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$LOAN_APPLICATION_COMAKERS, $UPDATE");
+
+    // Empty create route with PATCH
+    Route::patch('/create', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$LOAN_APPLICATION_COMAKERS, $CREATE");
 
 });
 

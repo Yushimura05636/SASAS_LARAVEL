@@ -32,6 +32,7 @@ class PaymentScheduleController extends Controller
             $payment[$i]['family_name'] = " " . $customerPersonality->original['personality']['family_name'];
             $payment[$i]['first_name'] = " " . $customerPersonality->original['personality']['first_name'];
             $payment[$i]['middle_name'] = " " . $customerPersonality->original['personality']['middle_name'];
+            $payment[$i]['balance'] = $payment[$i]['amount_due'] - $payment[$i]['amount_paid'];
 
         }
 
@@ -57,7 +58,6 @@ class PaymentScheduleController extends Controller
     public function show(int $id)
     {
         return $this->paymentScheduleService->findPaymentScheduleById($id);
-
     }
 
 

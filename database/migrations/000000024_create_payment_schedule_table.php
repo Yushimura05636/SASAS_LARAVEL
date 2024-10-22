@@ -17,7 +17,7 @@ return new class extends Migration
             $table->bigIncrements('id');
             //$table->dateTime('datetime_created'); redundant and has similar function to timestamps();
             $table->unsignedBigInteger('customer_id');
-            $table->unsignedBigInteger('loan_released_id');
+            $table->unsignedBigInteger('loan_released_id')->nullable();
             $table->dateTime('datetime_due');
             $table->decimal('amount_due', 10, 2);
             $table->decimal('amount_interest', 10, 2);

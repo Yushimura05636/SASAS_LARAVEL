@@ -20,6 +20,7 @@ use App\Models\Loan_Application;
 use App\Models\Loan_Application_Comaker;
 use App\Models\Loan_Application_Fees;
 use App\Models\Loan_Count;
+use App\Models\Loan_Release;
 use App\Models\Payment_Duration;
 use App\Models\Payment_Frequency;
 use App\Models\Payment_Schedule;
@@ -88,7 +89,7 @@ class LoanApplicationController extends Controller
 
     }
 
-public function store(Request $request, LoanApplicationFeeController $loanApplicationFeeController , LoanApplicationCoMakerController $loanApplicationCoMakerController)
+public function store(Request $request, PaymentScheduleServiceInterface $paymentScheduleService, LoanApplicationFeeController $loanApplicationFeeController , LoanApplicationCoMakerController $loanApplicationCoMakerController)
 {
 
     $userId = auth()->user()->id;
@@ -106,7 +107,6 @@ public function store(Request $request, LoanApplicationFeeController $loanApplic
 
     for($i = 0; $i < count($groupDatas); $i++)
     {
-        $customerId = 10; // Replace with the actual customer ID you want to query
 
         // Fetch total due and total paid for the specific customer
 
@@ -232,6 +232,12 @@ public function store(Request $request, LoanApplicationFeeController $loanApplic
                 //loan id is here
                 $loanId = Loan_Application::where('loan_application_no', $data[$i]['loan_application_no'])->first()->id;
 
+                //get first the loan passbook no
+                $passbookNo = Customer::where('id', $data[$i]['customer_id'])->first()->passbook_no;
+
+
+                //$loanReleaseId = Loan_Release::where('passbook_number', $passbookNo)->where('loan_application_id', $loanId)->first()->id;
+
                 //convert fees and add amount
                 $fees = [
                     'loan_application_id' => $loanId,
@@ -239,13 +245,31 @@ public function store(Request $request, LoanApplicationFeeController $loanApplic
                     'amount' => $amount,
                 ];
 
-            //     return response()->json([
-            //     'message' => 'An error occurred while processing the transaction',
-            //     'error' => $fees,
-            // ], Response::HTTP_INTERNAL_SERVER_ERROR);
+                //custom payload
+                $payload = [
+                    'customer_id' => $data[$i]['customer_id'],
+                    'loan_released_id' => null,
+                    'datetime_due' => now(),
+                    'amount_due' => $amount,
+                    'amount_interest' => 0, // Assuming equal interest distribution
+                    'amount_paid' => 0,
+                    'payment_status_code' => 'UNPAID', // Default status
+                    'remarks' => 'FEES',
+                ];
+
+                // return response()->json([
+                // 'message' => 'An error occurred while processing the transaction',
+                // 'error' => $payload,
+                // ], Response::HTTP_INTERNAL_SERVER_ERROR);
+
+                $payload = new Request($payload);
+
+                // Create payment schedule entry
+                $paymentScheduleService->createPaymentSchedule($payload);
 
                 //store the fees
                 $loanApplicationFeeController->store(new Request($fees));
+
             }
 
 
@@ -438,6 +462,24 @@ public function store(Request $request, LoanApplicationFeeController $loanApplic
         $customerId = $request['customer_id'];
         $loanId = $request['id'];
 
+
+        //before all this it will go first to check if all the FEES is paid!
+        $payableFee = Payment_Schedule::where('customer_id', $customerId)
+        ->where('remarks', 'FEES')
+        ->orWhere('remarks', 'PARTIALLY PAID')
+        ->selectRaw('SUM(amount_due) - SUM(amount_paid) as fee_balance')
+        ->first();
+
+        // return response()->json([
+        //     'message' => $payableFee,
+        //     ], Response::HTTP_INTERNAL_SERVER_ERROR);
+
+        if($payableFee && $payableFee->fee_balance > 0)
+        {
+            throw new \Exception('Cannot approve there still fees need to be paid');
+        }
+
+
         //find the 'APPROVE' description
         $loanApproveId = Document_Status_code::where('description', 'Approved')->first()->id;
 
@@ -447,10 +489,6 @@ public function store(Request $request, LoanApplicationFeeController $loanApplic
         $loanApplication->save();
         $loanApplication->fresh();
 
-        // return response()->json([
-        //     'message' => $loanApplication,
-        //     'nt' => $loanApproveId,
-        //     ], Response::HTTP_INTERNAL_SERVER_ERROR);
 
         // // Get the passbook number
         $passbookNo = Customer::where('id', $customerId)->first()->passbook_no;

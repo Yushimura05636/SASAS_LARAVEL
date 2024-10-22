@@ -20,6 +20,7 @@ class PaymentScheduleResource extends JsonResource
             'family_name' => $this->family_name,
             'first_name' => $this->first_name,
             'middle_name' => $this->middle_name,
+            'balance' => $this->balance,
             'customer_id' => $this->customer_id,
             'loan_released_id' => $this->loan_released_id,
             'datetime_due' => $this->datetime_due,

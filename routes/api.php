@@ -35,7 +35,8 @@ use Illuminate\Support\Facades\Route;
 // Initialized
 if (AuthPermission::initialize())
 {
-    // Define permission constants
+
+// Define permission constants
 $LIBRARIES = AuthPermission::LIBRARIES();
 $USER_ACCOUNTS = AuthPermission::USER_ACCOUNTS();
 $CUSTOMERS = AuthPermission::CUSTOMERS();

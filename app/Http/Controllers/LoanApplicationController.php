@@ -22,7 +22,9 @@ use App\Models\Loan_Application_Fees;
 use App\Models\Loan_Count;
 use App\Models\Payment_Duration;
 use App\Models\Payment_Frequency;
+use App\Models\Payment_Schedule;
 use App\Service\LoanApplicationFeeService;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
@@ -95,7 +97,44 @@ public function store(Request $request, LoanApplicationFeeController $loanApplic
     // Start a database transaction
     DB::beginTransaction();
 
+    //find the group id
+    $groupDatas = Customer::where('group_id', $data[0]['group_id'])->get();
+
+    // return response()->json([
+    //     'balance' => $groupDatas,
+    // ], Response::HTTP_INTERNAL_SERVER_ERROR);
+
+    for($i = 9; $i < count($groupDatas); $i++)
+    {
+        $customerId = 10; // Replace with the actual customer ID you want to query
+
+        // Fetch total due and total paid for the specific customer
+
+
+        $totals = Payment_Schedule::where('customer_id', $groupDatas[$i]['id'])
+        ->selectRaw('(SUM(amount_due) - SUM(amount_paid)) AS balance')
+        ->first();
+
+        $balance = $totals->balance;
+
+        if($totals && $balance > 0)
+        {
+            throw new \Exception('There still member has not yet fully paid!');
+        }
+
+        // return response()->json([
+        //     'customer_id' => $totals,
+        // ], Response::HTTP_INTERNAL_SERVER_ERROR);
+
+        // $totals = DB::table('payments')  // Replace 'payments' with your actual table name
+        //     ->where('customer_id', $customerId)
+        //     ->selectRaw('SUM(amount_due) as total_due, SUM(amount_paid) as total_paid')
+        //     ->first();
+
+    }
+
     try {
+
 
         //according kang sir mars recommended ang 8 but minimum of 6
         // if(count($data) < 6 || count($data) > 8)
@@ -106,9 +145,12 @@ public function store(Request $request, LoanApplicationFeeController $loanApplic
         //     ], Response::HTTP_CONFLICT);
         // }
 
-
+        //check if the group has remaining balance
 
         for ($i = 0; $i < count($data); $i++) {
+
+            //check if the group has remaining balance
+
 
 
             // //check for coMakers
@@ -371,7 +413,7 @@ public function store(Request $request, LoanApplicationFeeController $loanApplic
         return $this->loanApplicationService->deleteLoanApplication( $id);
     }
 
-    public function approve(Request $request,int $id, LoanReleaseServiceInterface $loanReleaseService, PaymentScheduleServiceInterface $paymentScheduleService)
+    public function approve(Request $request,int $id, LoanApplicationServiceInterface $loanApplicationService, LoanReleaseServiceInterface $loanReleaseService, PaymentScheduleServiceInterface $paymentScheduleService)
 {
     // Start the transaction
     DB::beginTransaction();
@@ -381,7 +423,21 @@ public function store(Request $request, LoanApplicationFeeController $loanApplic
         $customerId = $request['customer_id'];
         $loanId = $request['id'];
 
-        // Get the passbook number
+        //find the 'APPROVE' description
+        $loanApproveId = Document_Status_code::where('description', 'Approved')->first()->id;
+
+        //Update the status code
+        $loanApplication = Loan_Application::findOrFail($loanId);
+        $loanApplication->document_status_code = $loanApproveId;
+        $loanApplication->save();
+        $loanApplication->fresh();
+
+        // return response()->json([
+        //     'message' => $loanApplication,
+        //     'nt' => $loanApproveId,
+        //     ], Response::HTTP_INTERNAL_SERVER_ERROR);
+
+        // // Get the passbook number
         $passbookNo = Customer::where('id', $customerId)->first()->passbook_no;
 
         // Loan details
@@ -421,7 +477,6 @@ public function store(Request $request, LoanApplicationFeeController $loanApplic
         $amountDue = ($loanAmount + $amountInterest) / $numberOfPayments; // Distributing total amount over payments
         $firstDueDate = $loanReleasePayload['datetime_first_due'];
 
-
         for ($i = 0; $i < $numberOfPayments; $i++) {
             // Calculate due date for each payment
             $dueDate = $firstDueDate->copy()->addDays($i * $paymentFrequency->days_interval);
@@ -443,12 +498,6 @@ public function store(Request $request, LoanApplicationFeeController $loanApplic
 
             // Create payment schedule entry
             $paymentScheduleService->createPaymentSchedule($payload);
-
-            // return response()->json([
-            //     'message' => $paymentScheduleService,
-            //     'data' => $firstDueDate,
-            //     'data 2' => $numberOfPayments,
-            // ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
 
         // Commit the transaction

@@ -27,7 +27,7 @@ use App\Models\Document_Permission_Map; #Done
 use App\Models\Name_Type; #Done
 use App\Models\Customer_Group; #Done
 use App\Models\Document_Permission;
-use App\Models\Document_Status_code;
+use App\Models\Document_Status_Code;
 use App\Models\Factor_Rate;
 use App\Models\Fees;
 use App\Models\Loan_Count;
@@ -197,7 +197,7 @@ class DatabaseSeeder extends Seeder
 
         // Document Status Code entries
         foreach ($document_status_code as $name) {
-            Document_Status_code::createEntry($name); // No duplicates, direct array iteration
+            Document_Status_Code::createEntry($name); // No duplicates, direct array iteration
         }
 
         for($i = 0; $i < 100; $i++) {

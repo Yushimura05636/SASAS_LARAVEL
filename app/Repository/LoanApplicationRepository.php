@@ -43,7 +43,7 @@ class LoanApplicationRepository implements LoanApplicationRepositoryInterface
         $loanapplication->notes = $payload->notes;
 
         $loanapplication->save();
-        return $loanapplication->refresh();
+        return $loanapplication->fresh();
 
     }
 
@@ -72,7 +72,7 @@ class LoanApplicationRepository implements LoanApplicationRepositoryInterface
         $loanapplication->notes = $payload->notes;
 
         $loanapplication->save();
-        return $loanapplication->refresh();
+        return $loanapplication->fresh();
     }
 
     public function delete(int $id)

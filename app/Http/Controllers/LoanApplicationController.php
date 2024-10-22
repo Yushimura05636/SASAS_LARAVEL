@@ -149,24 +149,41 @@ public function store(Request $request, PaymentScheduleServiceInterface $payment
         //     ], Response::HTTP_CONFLICT);
         // }
 
-        //check if the group has remaining balance
-
-        for ($i = 0; $i < count($data); $i++) {
-
+        //check if the coMaker has remaining balance
+        //isolate the loop because
+        for ($i = 0; $i < count($data); $i++)
+        {
             //check if the coMaker has remaining balance
             // Fetch total due and total paid for the specific customer
-            $totals = Payment_Schedule::where('customer_id', $data[$i]['coMaker'])
-            ->selectRaw('(SUM(amount_due) - SUM(amount_paid)) AS balance')
-            ->first();
+            // Check if 'coMaker' exists and has a valid value
+            if (isset($data[$i]['coMaker']) && $data[$i]['coMaker'] > 0) {
+                // Fetch total due and total paid for the specific customer
+                $totals = Payment_Schedule::where('customer_id', $data[$i]['coMaker'])
+                ->selectRaw('(SUM(amount_due) - SUM(amount_paid)) AS balance')
+                ->first();
 
-            $balance = $totals->balance;
+                // Check if $totals is not empty and has a valid balance property
+                if ($totals && !empty($totals->balance)) {
+                    // Get the balance (in case balance is null, set it to 0)
+                    $balance = $totals->balance ?? 0;
 
+                    // Check if there's an outstanding balance
+                    if ($balance > 0) {
+                        // return response()->json([
+                        //     'data' => 'user: ' . $data[$i]['customer_id'] . ' ' . $data[$i]['coMaker'] . ' ' . $totals->balance,
+                        // ], Response::HTTP_INTERNAL_SERVER_ERROR);
+                        throw new \Exception($data[$i]['customer_id'] . ' The coMaker has not yet fully paid!');
+                    }
+                }
 
-            if($totals && $balance > 0)
-            {
-                throw new \Exception('The coMaker has not yet fully paid!');
             }
+        }
 
+        // return response()->json([
+        //     'data' => 'hello',
+        // ], Response::HTTP_INTERNAL_SERVER_ERROR);
+
+        for ($i = 0; $i < count($data); $i++) {
 
             // //check for coMakers
             // if($data[$i]['coMaker'])
@@ -175,9 +192,6 @@ public function store(Request $request, PaymentScheduleServiceInterface $payment
             // }
 
             //continue if there is not problem in CoMaker
-            // return response()->json([
-            //     $data,
-            // ], Response::HTTP_INTERNAL_SERVER_ERROR);
 
             //for loan count logic
             $loanCountId = Customer::where('id', $data[$i]['customer_id'])->first()->loan_count;
@@ -217,21 +231,24 @@ public function store(Request $request, PaymentScheduleServiceInterface $payment
 
             $this->loanApplicationService->createLoanApplication($payload);
 
-            $loanId = Loan_Application::where('loan_application_no', $data[$i]['loan_application_no'])->first()->id;
+            if(isset($data[$i]['coMaker']) && $data[$i]['coMaker'] > 0)
+            {
+                $loanId = Loan_Application::where('loan_application_no', $data[$i]['loan_application_no'])->first()->id;
 
-            //here will the store comaker if all is good
-            //store the coMaker
-            $coMaker = [
-                'loan_application_id' => $loanId,
-                'customer_id' => $data[$i]['customer_id'],
-            ];
+                //here will the store comaker if all is good
+                //store the coMaker
+                $coMaker = [
+                    'loan_application_id' => $loanId,
+                    'customer_id' => $data[$i]['customer_id'],
+                ];
 
-            // return response()->json([
-            //         'message' => 'An error occurred while processing the transaction',
-            //         'error' => $coMaker,
-            //     ], Response::HTTP_INTERNAL_SERVER_ERROR);
+                // return response()->json([
+                //         'message' => 'An error occurred while processing the transaction',
+                //         'error' => $data[$i]['customer_id'],
+                //     ], Response::HTTP_INTERNAL_SERVER_ERROR);
 
-            $loanApplicationCoMakerController->store(new Request($coMaker));
+                $loanApplicationCoMakerController->store(new Request($coMaker));
+            }
 
             // return response()->json([
             //     'message' => 'An error occurred while processing the transaction',

@@ -10,7 +10,7 @@ class PaymentLineRepository implements PaymentLineRepositoryInterface
 {
     public function findMany()
     {
-        return Payment_Line::paginate(10);
+        return Payment_Line::paginate(100);
     }
 
     public function findOneById($id)

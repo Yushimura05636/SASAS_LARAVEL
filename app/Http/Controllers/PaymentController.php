@@ -122,7 +122,7 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
     ->orWhere('payment_status_code', 'PARTIALLY PAID')
     ->get();
     // return response()->json([
-    //             'data' => $schedules,
+    //             'data' => $loanReleaseId,
     //             ], Response::HTTP_INTERNAL_SERVER_ERROR);
 
 
@@ -159,8 +159,6 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
             //     'payment_status_code' => 'PARTIALLY PAID',
             // ]);
             $totalAmountPaid = 0; // All payment has been allocated
-
-
         }
     }
 }

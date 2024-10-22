@@ -104,7 +104,7 @@ public function store(Request $request, LoanApplicationFeeController $loanApplic
     //     'balance' => $groupDatas,
     // ], Response::HTTP_INTERNAL_SERVER_ERROR);
 
-    for($i = 9; $i < count($groupDatas); $i++)
+    for($i = 0; $i < count($groupDatas); $i++)
     {
         $customerId = 10; // Replace with the actual customer ID you want to query
 
@@ -339,6 +339,21 @@ public function store(Request $request, LoanApplicationFeeController $loanApplic
 
     }
 
+    public function see(string $id, LoanApplicationFeeServiceInterface $loanApplicationFeeService, LoanApplicationCoMakerServiceInterface $loanApplicationCoMakerService)
+    {
+        // Find loan application by user ID
+        $loanApp = Loan_Application::where('customer_id', $id)->get();
+
+        if (!$loanApp) {
+            return response()->json(['error' => 'Loan Application not found'], 404);
+        }
+
+        return response()->json([
+            'data' => $loanApp,
+        ]);
+
+    }
+
     /**
      * Update the specified resource in storage.
      */
@@ -489,7 +504,7 @@ public function store(Request $request, LoanApplicationFeeController $loanApplic
                 'amount_due' => $amountDue,
                 'amount_interest' => $amountInterest / $numberOfPayments, // Assuming equal interest distribution
                 'amount_paid' => 0,
-                'payment_status_code' => 0, // Default status
+                'payment_status_code' => 'UNPAID', // Default status
                 'remarks' => null,
             ];
 

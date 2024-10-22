@@ -26,9 +26,24 @@ class PaymentController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(CustomerPersonalityController $customerPersonalityController)
     {
-        return $this->paymentService->findPayment();
+        $payment = $this->paymentService->findPayment();
+
+        for($i = 0; $i < count($payment); $i++)
+        {
+
+            $customerPersonality = $customerPersonalityController->show($payment[$i]['customer_id']);
+
+            $payment[$i]['family_name'] = " " . $customerPersonality->original['personality']['family_name'];
+            $payment[$i]['first_name'] = " " . $customerPersonality->original['personality']['first_name'];
+            $payment[$i]['middle_name'] = " " . $customerPersonality->original['personality']['middle_name'];
+        }
+
+        return response()->json([
+            'data' => $payment,
+        ]);
+
     }
 
 

@@ -109,22 +109,26 @@ public function store(Request $request, PaymentScheduleServiceInterface $payment
     {
 
         // Fetch total due and total paid for the specific customer
-
-
         $totals = Payment_Schedule::where('customer_id', $groupDatas[$i]['id'])
         ->selectRaw('(SUM(amount_due) - SUM(amount_paid)) AS balance')
         ->first();
 
         $balance = $totals->balance;
 
+
         if($totals && $balance > 0)
         {
             throw new \Exception('There still member has not yet fully paid!');
         }
 
+
+
         // return response()->json([
         //     'customer_id' => $totals,
         // ], Response::HTTP_INTERNAL_SERVER_ERROR);
+
+
+
 
         // $totals = DB::table('payments')  // Replace 'payments' with your actual table name
         //     ->where('customer_id', $customerId)
@@ -149,8 +153,19 @@ public function store(Request $request, PaymentScheduleServiceInterface $payment
 
         for ($i = 0; $i < count($data); $i++) {
 
-            //check if the group has remaining balance
+            //check if the coMaker has remaining balance
+            // Fetch total due and total paid for the specific customer
+            $totals = Payment_Schedule::where('customer_id', $data[$i]['coMaker'])
+            ->selectRaw('(SUM(amount_due) - SUM(amount_paid)) AS balance')
+            ->first();
 
+            $balance = $totals->balance;
+
+
+            if($totals && $balance > 0)
+            {
+                throw new \Exception('The coMaker has not yet fully paid!');
+            }
 
 
             // //check for coMakers
@@ -271,10 +286,6 @@ public function store(Request $request, PaymentScheduleServiceInterface $payment
                 $loanApplicationFeeController->store(new Request($fees));
 
             }
-
-
-            // Insert the fees here (you can implement this part if needed)
-
         }
 
         // If all is good, commit the transaction

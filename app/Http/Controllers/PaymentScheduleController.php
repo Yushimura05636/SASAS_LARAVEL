@@ -9,6 +9,7 @@ use App\Models\Loan_Application;
 use App\Models\Loan_Release;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\DB;
 
 class PaymentScheduleController extends Controller
 {
@@ -46,7 +47,21 @@ class PaymentScheduleController extends Controller
 
                 $payment[$i]['loan_application_no'] = $loanApplicationNo;
             }
+            else
+            {
+                $loanApplications = DB::table('loan_application_fees AS laf')
+                ->join('loan_application AS la', 'laf.loan_application_id', '=', 'la.id')
+                ->where('la.customer_id', $payment[$i]['customer_id'])
+                ->select('la.loan_application_no', 'laf.amount', 'la.customer_id', 'laf.loan_application_id')
+                ->first();
 
+                $payment[$i]['loan_application_no'] = $loanApplications->loan_application_no;
+
+            }
+
+            // return response()->json([
+            //     'data' => $payment[$i],
+            // ], Response::HTTP_INTERNAL_SERVER_ERROR);
 
 
         }

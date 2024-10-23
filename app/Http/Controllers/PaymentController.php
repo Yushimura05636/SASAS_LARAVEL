@@ -98,14 +98,14 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
 {
 
     //get first the loan app id
-    $loanReleaseId = Loan_Release::where('loan_application_id', $request['loan.Loan_Application.id'])->where('passbook_number', $request['customer.passbook_no'])->get();
+    $loanReleaseId = Loan_Release::where('loan_application_id', $request['loan.loan_applications.id'])->where('passbook_number', $request['customer.passbook_no'])->get();
 
     //Empty schedule
     $schedules = '';
 
 
     if(!$loanReleaseId->isEmpty()){
-        $loanReleaseId = Loan_Release::where('loan_application_id', $request['loan.Loan_Application.id'])->where('passbook_number', $request['customer.passbook_no'])
+        $loanReleaseId = Loan_Release::where('loan_application_id', $request['loan.loan_applications.id'])->where('passbook_number', $request['customer.passbook_no'])
         ->first()
         ->id;
     }
@@ -121,10 +121,6 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
     $schedules = Payment_Schedule::where('customer_id', $payment->customer_id)->where('loan_released_id', $loanReleaseId)->where('payment_status_code', 'UNPAID')
     ->orWhere('payment_status_code', 'PARTIALLY PAID')
     ->get();
-    // return response()->json([
-    //             'data' => $loanReleaseId,
-    //             ], Response::HTTP_INTERNAL_SERVER_ERROR);
-
 
     foreach ($schedules as $schedule) {
         if ($totalAmountPaid <= 0) {
@@ -143,10 +139,13 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
             $schedule->fresh();
 
             // $schedule->update([
-            //     'amount_paid' => $schedule->amount_paid + $amountDue,
-            //     'payment_status_code' => 'PAID',
-            // ]);
-            $totalAmountPaid -= $amountDue;
+                //     'amount_paid' => $schedule->amount_paid + $amountDue,
+                //     'payment_status_code' => 'PAID',
+                // ]);
+                $totalAmountPaid -= $amountDue;
+                // return response()->json([
+                //             'data' => $schedule,
+                //             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         } else {
             // Partial payment
             $this->createPaymentLine($request, $payment, $schedule, $totalAmountPaid, 'Partial payment', $paymentLineService);
@@ -161,6 +160,10 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
             $totalAmountPaid = 0; // All payment has been allocated
         }
     }
+
+    return response()->json([
+        'data' => 'end',
+        ], Response::HTTP_INTERNAL_SERVER_ERROR);
 }
 
 protected function createPaymentLine($request, $payment, $schedule, $amountPaid, $remarks, PaymentLineServiceInterface $paymentLineService)

@@ -31,7 +31,8 @@ class LoanApplicationCoMakerController extends Controller
 
     public function show(int $id)
     {
-        return $this->loanApplicationCoMakerService->findLoanCoMakerById($id);
+        return new JsonResource(Loan_Application_Comaker::where('loan_application_id', $id)->first());
+        //return $this->loanApplicationCoMakerService->findLoanCoMakerById($id);
     }
 
     public function look(int $id)

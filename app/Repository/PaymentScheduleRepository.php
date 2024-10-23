@@ -11,7 +11,7 @@ class PaymentScheduleRepository implements PaymentScheduleRepositoryInterface
 
     public function findMany()
     {
-        return Payment_Schedule::paginate(100);
+        return Payment_Schedule::get(); //no limit
     }
 
     public function findOneById($id)

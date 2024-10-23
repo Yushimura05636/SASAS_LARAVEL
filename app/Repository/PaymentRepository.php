@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 namespace App\Repository;
 
@@ -10,7 +10,7 @@ class PaymentRepository implements PaymentRepositoryInterface
 {
     public function findMany()
     {
-        return Payment::paginate(10);
+        return Payment::get(); //no limit
     }
 
     public function findOneById($id)
@@ -48,7 +48,7 @@ class PaymentRepository implements PaymentRepositoryInterface
     {
         $payment = Payment::findOrFail($id);
         $payment->delete();
-        
+
         return response()->json([
             'message' => 'Success'
         ], Response::HTTP_OK);

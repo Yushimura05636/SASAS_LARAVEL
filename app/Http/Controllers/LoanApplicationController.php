@@ -13,7 +13,7 @@ use App\Interface\Service\PaymentLineServiceInterface;
 use App\Interface\Service\PaymentScheduleServiceInterface;
 use App\Interface\Service\PaymentServiceInterface;
 use App\Models\Customer;
-use App\Models\Document_Status_code;
+use App\Models\Document_Status_Code;
 use App\Models\Factor_Rate;
 use App\Models\Fees;
 use App\Models\Loan_Application;
@@ -207,7 +207,7 @@ public function store(Request $request, PaymentScheduleServiceInterface $payment
             // }
 
             // Convert the PENDING name to value integer
-            $data[$i]['document_status_code'] = Document_Status_code::where('description', $data[$i]['document_status_code'])->first()->id;
+            $data[$i]['document_status_code'] = Document_Status_Code::where('description', $data[$i]['document_status_code'])->first()->id;
 
             // Convert the time to now
             $data[$i]['datetime_prepared'] = now();
@@ -509,7 +509,7 @@ public function store(Request $request, PaymentScheduleServiceInterface $payment
 
 
         //find the 'APPROVE' description
-        $loanApproveId = Document_Status_code::where('description', 'Approved')->first()->id;
+        $loanApproveId = Document_Status_Code::where('description', 'Approved')->first()->id;
 
         //Update the status code
         $loanApplication = Loan_Application::findOrFail($loanId);

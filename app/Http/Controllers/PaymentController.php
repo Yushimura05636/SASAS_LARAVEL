@@ -76,12 +76,19 @@ class PaymentController extends Controller
         //     'request' => $request['customer.passbook_no']
         // ], Response::HTTP_INTERNAL_SERVER_ERROR);
 
-        $paymentData = new Request($paymentData);
+        if($amountPaid > 0)
+        {
+            $paymentData = new Request($paymentData);
 
-        $payment = $paymentService->createPayment($paymentData); // Save payment
+            $payment = $paymentService->createPayment($paymentData); // Save payment
 
-        // Step 2: Apply payment to schedule(s)
-        $this->applyPaymentToSchedules($payment, $amountPaid, $request, $paymentLineService, $paymentScheduleService);
+            // Step 2: Apply payment to schedule(s)
+            $this->applyPaymentToSchedules($payment, $amountPaid, $request, $paymentLineService, $paymentScheduleService);
+        }
+        else
+        {
+            throw new \Exception('The amount should not be less than or equal zero');
+        }
 
 
         DB::commit();

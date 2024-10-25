@@ -60,6 +60,7 @@ $CREATE = AuthPermission::CREATE_PERM();
 $UPDATE = AuthPermission::UPDATE_PERM();
 $DELETE = AuthPermission::DELETE_PERM();
 
+
 // User Auth routes
 Route::middleware('auth:sanctum')->prefix('USER_AUTH')->group(function () use ($BUTTON_AUTHORIZATIONS, $CREATE, $UPDATE) {
     Route::post('/', function () {
@@ -69,6 +70,10 @@ Route::middleware('auth:sanctum')->prefix('USER_AUTH')->group(function () use ($
     Route::put('/', function () {
         return response()->json(['message' => 'Access granted']);
     })->middleware("document_access:$BUTTON_AUTHORIZATIONS, $UPDATE");
+
+    Route::patch('/', function () {
+        return response()->json(['message' => 'Checking authentication']);
+    });
 });
 
 // User Auth routes

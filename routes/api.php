@@ -14,6 +14,7 @@ use App\Http\Controllers\FeeController;
 use App\Http\Controllers\LoanApplicationCoMakerController;
 use App\Http\Controllers\LoanApplicationController;
 use App\Http\Controllers\LoanCountController;
+use App\Http\Controllers\LoanReleaseController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PaymentDurationController;
 use App\Http\Controllers\PaymentFrequencyController;
@@ -55,10 +56,18 @@ $BUTTON_AUTHORIZATIONS = AuthPermission::BUTTON_AUTHORIZATIONS();
 $LOAN_APPLICATIONS = AuthPermission::LOAN_APPLICATIONS();
 $LOAN_APPLICATION_COMAKERS = AuthPermission::LOAN_APPLICATION_COMAKERS();
 
-$VIEW = AuthPermission::VIEW_PERM();
+$LOAN_RELEASES = AuthPermission::LOAN_RELEASES();
+$PAYMENTS = AuthPermission::PAYMENTS();
+$PAYMENT_SCHEDULES=  AuthPermission::PAYMENT_SCHEDULES();
+$PAYMENT_LINES =  AuthPermission::PAYMENT_LINES();
+
+$VIEW =   AuthPermission::VIEW_PERM();
 $CREATE = AuthPermission::CREATE_PERM();
 $UPDATE = AuthPermission::UPDATE_PERM();
 $DELETE = AuthPermission::DELETE_PERM();
+
+$APPROVE = AuthPermission::APPROVE_PERM();
+$REJECT = AuthPermission::REJECT_PERM();
 
 
 // User Auth routes
@@ -356,87 +365,87 @@ Route::middleware('auth:sanctum')->prefix('PAYMENT_DURATIONS')->group(function (
 });
 
 // Payment routes
-Route::middleware('auth:sanctum')->prefix('PAYMENTS')->group(function () {
-    Route::get('/', [PaymentController::class, 'index']);
+Route::middleware('auth:sanctum')->prefix('PAYMENTS')->group(function () use ($PAYMENTS, $VIEW, $CREATE, $UPDATE, $DELETE) {
+    Route::get('/', [PaymentController::class, 'index'])->middleware("document_access:$PAYMENTS, $VIEW");
     Route::get('/NoAUTH', [PaymentController::class, 'index']);
     Route::get('/NoAUTH/{id}', [PaymentController::class, 'show']);
-    Route::get('/{id}', [PaymentController::class, 'show']);
-    Route::post('/', [PaymentController::class, 'store']);
-    Route::put('/{id}', [PaymentController::class, 'update']);
-    Route::delete('/{id}', [PaymentController::class, 'destroy']);
+    Route::get('/{id}', [PaymentController::class, 'show'])->middleware("document_access:$PAYMENTS, $VIEW");
+    Route::post('/', [PaymentController::class, 'store'])->middleware("document_access:$PAYMENTS, $CREATE");
+    Route::put('/{id}', [PaymentController::class, 'update'])->middleware("document_access:$PAYMENTS, $UPDATE");
+    Route::delete('/{id}', [PaymentController::class, 'destroy'])->middleware("document_access:$PAYMENTS, $DELETE");
 
     // Empty update route with PATCH
     Route::patch('/update', function () {
         return response()->json(['message' => 'Access granted']);
-    });
+    })->middleware("document_access:$PAYMENTS, $UPDATE");
 
     // Empty create route with PATCH
     Route::patch('/create', function () {
         return response()->json(['message' => 'Access granted']);
-    });
+    })->middleware("document_access:$PAYMENTS, $CREATE");
 });
 
 // Payment Line
-Route::middleware('auth:sanctum')->prefix('PAYMENT_LINES')->group(function () {
-    Route::get('/', [PaymentLineController::class, 'index']);
+Route::middleware('auth:sanctum')->prefix('PAYMENT_LINES')->group(function () use ($PAYMENT_LINES, $VIEW, $CREATE, $UPDATE, $DELETE) {
+    Route::get('/', [PaymentLineController::class, 'index'])->middleware("document_access:$PAYMENT_LINES, $VIEW");
     Route::get('/NoAUTH', [PaymentLineController::class, 'index']);
     Route::get('/NoAUTH/{id}', [PaymentLineController::class, 'show']);
-    Route::get('/{id}', [PaymentLineController::class, 'show']);
-    Route::post('/', [PaymentLineController::class, 'store']);
-    Route::put('/{id}', [PaymentLineController::class, 'update']);
-    Route::delete('/{id}', [PaymentLineController::class, 'destroy']);
+    Route::get('/{id}', [PaymentLineController::class, 'show'])->middleware("document_access:$PAYMENT_LINES, $VIEW");
+    Route::post('/', [PaymentLineController::class, 'store'])->middleware("document_access:$PAYMENT_LINES, $CREATE");
+    Route::put('/{id}', [PaymentLineController::class, 'update'])->middleware("document_access:$PAYMENT_LINES, $UPDATE");
+    Route::delete('/{id}', [PaymentLineController::class, 'destroy'])->middleware("document_access:$PAYMENT_LINES, $DELETE");
 
     // Empty update route with PATCH
     Route::patch('/update', function () {
         return response()->json(['message' => 'Access granted']);
-    });
+    })->middleware("document_access:$PAYMENT_LINES, $UPDATE");
 
     // Empty create route with PATCH
     Route::patch('/create', function () {
         return response()->json(['message' => 'Access granted']);
-    });
+    })->middleware("document_access:$PAYMENT_LINES, $CREATE");
 });
 
 // Payment Frequencies
-Route::middleware('auth:sanctum')->prefix('PAYMENT_FREQUENCIES')->group(function () {
-    Route::get('/', [PaymentFrequencyController::class, 'index']);
+Route::middleware('auth:sanctum')->prefix('PAYMENT_FREQUENCIES')->group(function () use ($PAYMENT_FREQUENCIES, $VIEW, $CREATE, $UPDATE, $DELETE) {
+    Route::get('/', [PaymentFrequencyController::class, 'index'])->middleware("document_access:$PAYMENT_FREQUENCIES, $VIEW");
     Route::get('/NoAUTH', [PaymentFrequencyController::class, 'index']);
     Route::get('/NoAUTH/{id}', [PaymentFrequencyController::class, 'show']);
-    Route::get('/{id}', [PaymentFrequencyController::class, 'show']);
-    Route::post('/', [PaymentFrequencyController::class, 'store']);
-    Route::put('/{id}', [PaymentFrequencyController::class, 'update']);
-    Route::delete('/{id}', [PaymentFrequencyController::class, 'destroy']);
+    Route::get('/{id}', [PaymentFrequencyController::class, 'show'])->middleware("document_access:$PAYMENT_FREQUENCIES, $VIEW");
+    Route::post('/', [PaymentFrequencyController::class, 'store'])->middleware("document_access:$PAYMENT_FREQUENCIES, $CREATE");
+    Route::put('/{id}', [PaymentFrequencyController::class, 'update'])->middleware("document_access:$PAYMENT_FREQUENCIES, $UPDATE");
+    Route::delete('/{id}', [PaymentFrequencyController::class, 'destroy'])->middleware("document_access:$PAYMENT_FREQUENCIES, $DELETE");
 
     // Empty update route with PATCH
     Route::patch('/update', function () {
         return response()->json(['message' => 'Access granted']);
-    });
+    })->middleware("document_access:$PAYMENT_FREQUENCIES, $UPDATE");
 
     // Empty create route with PATCH
     Route::patch('/create', function () {
         return response()->json(['message' => 'Access granted']);
-    });
+    })->middleware("document_access:$PAYMENT_FREQUENCIES, $CREATE");
 });
 
 // Loan Schedules routes
-Route::middleware('auth:sanctum')->prefix('PAYMENT_SCHEDULES')->group(function () {
-    Route::get('/', [PaymentScheduleController::class, 'index']);
+Route::middleware('auth:sanctum')->prefix('PAYMENT_SCHEDULES')->group(function () use ($PAYMENT_SCHEDULES, $VIEW, $CREATE, $UPDATE, $DELETE) {
+    Route::get('/', [PaymentScheduleController::class, 'index'])->middleware("document_access:$PAYMENT_SCHEDULES, $VIEW");
     Route::get('/NoAUTH', [PaymentScheduleController::class, 'index']);
     Route::get('/NoAUTH/{id}', [PaymentScheduleController::class, 'show']);
-    Route::get('/{id}', [PaymentScheduleController::class, 'show']);
-    Route::post('/', [PaymentScheduleController::class, 'store']);
-    Route::put('/{id}', [PaymentScheduleController::class, 'update']);
-    Route::delete('/{id}', [PaymentScheduleController::class, 'destroy']);
+    Route::get('/{id}', [PaymentScheduleController::class, 'show'])->middleware("document_access:$PAYMENT_SCHEDULES, $VIEW");
+    Route::post('/', [PaymentScheduleController::class, 'store'])->middleware("document_access:$PAYMENT_SCHEDULES, $CREATE");
+    Route::put('/{id}', [PaymentScheduleController::class, 'update'])->middleware("document_access:$PAYMENT_SCHEDULES, $UPDATE");
+    Route::delete('/{id}', [PaymentScheduleController::class, 'destroy'])->middleware("document_access:$PAYMENT_SCHEDULES, $DELETE");
 
     // Empty update route with PATCH
     Route::patch('/update', function () {
         return response()->json(['message' => 'Access granted']);
-    });
+    })->middleware("document_access:$PAYMENT_SCHEDULES, $UPDATE");
 
     // Empty create route with PATCH
     Route::patch('/create', function () {
         return response()->json(['message' => 'Access granted']);
-    });
+    })->middleware("document_access:$PAYMENT_SCHEDULES, $CREATE");
 });
 
 
@@ -539,9 +548,35 @@ Route::middleware('auth:sanctum')->prefix('LOAN_APPLICATION_COMAKERS')->group(fu
 });
 
 
+//loan Release
+Route::middleware('auth:sanctum')->prefix('LOAN_RELEASES')->group(function () use ($LOAN_RELEASES, $VIEW, $CREATE, $UPDATE, $DELETE) {
+    Route::get('/', [LoanReleaseController::class, 'index'])->middleware("document_access:$LOAN_RELEASES, $VIEW");
+    Route::get('/NoAUTH', [LoanReleaseController::class, 'index']);
+    Route::get('/NoAUTH/{id}', [LoanReleaseController::class, 'show']);
+    
+    Route::get('/{id}', [LoanReleaseController::class, 'show'])->middleware("document_access:$LOAN_RELEASES, $VIEW");
+    Route::post('/', [LoanReleaseController::class, 'store'])->middleware("document_access:$LOAN_RELEASES, $CREATE");
+    Route::put('/{id}', [LoanReleaseController::class, 'update'])->middleware("document_access:$LOAN_RELEASES, $UPDATE");
+    Route::delete('/{id}', [LoanReleaseController::class, 'destroy'])->middleware("document_access:$LOAN_RELEASES, $DELETE");
+    // Empty update route with PATCH
+    Route::patch('/update', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$LOAN_RELEASES, $UPDATE");
+    // Empty create route with PATCH
+    Route::patch('/create', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$LOAN_RELEASES, $CREATE");
+});
+
+
+
 }
+
+
 
 //get customer under this group (EG: Banana, Grapes)
 Route::get('/test/{id}', [CustomerController::class, 'test']);
+
+Route::get('/loan-test/{id}', [PaymentScheduleController::class, 'test']);
 
 Route::middleware('auth')->get('/testCustomer', [UserController::class, 'test']);

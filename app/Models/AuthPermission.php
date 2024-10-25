@@ -28,6 +28,13 @@ class AuthPermission extends Model
 
     private static int $LOAN_APPLICATIONS;
 
+    private static int $LOAN_RELEASES;
+    private static int $PAYMENTS;
+    private static int $PAYMENT_LINES;
+    private static int $PAYMENT_SCHEDULES;
+
+
+
     //unique
     private static int $BUTTON_AUTHORIZATION;
 
@@ -35,6 +42,9 @@ class AuthPermission extends Model
     private static int $DELETE;
     private static int $UPDATE;
     private static int $VIEW;
+
+    private static int $APPROVE;
+    private static int $REJECT;
 
     public static function initialize(): bool
     {
@@ -62,11 +72,21 @@ class AuthPermission extends Model
         self::$LOAN_APPLICATIONS = self::getPermissionId('LOAN_APPLICATIONS', Document_Map::class);
         self::$LOAN_APPLICATION_COMAKERS = self::getPermissionId('LOAN_APPLICATION_COMAKERS', Document_Map::class);
 
+        
+        self::$LOAN_RELEASES = self::getPermissionId('LOAN_RELEASES', Document_Map::class);
+        self::$PAYMENTS = self::getPermissionId('PAYMENTS', Document_Map::class);
+        self::$PAYMENT_SCHEDULES = self::getPermissionId('PAYMENT_SCHEDULES', Document_Map::class);
+        self::$PAYMENT_LINES = self::getPermissionId('PAYMENT_LINES', Document_Map::class);
+
+
 
         self::$CREATE = self::getPermissionId('CREATE', Document_Permission_Map::class);
         self::$DELETE = self::getPermissionId('DELETE', Document_Permission_Map::class);
         self::$UPDATE = self::getPermissionId('UPDATE', Document_Permission_Map::class);
         self::$VIEW = self::getPermissionId('VIEW', Document_Permission_Map::class);
+
+        self::$APPROVE = self::getPermissionId('APPROVE', Document_Status_Code::class);
+        self::$REJECT = self::getPermissionId('REJECT', Document_Status_Code::class);
 
         //all is true
         return true;
@@ -131,6 +151,24 @@ class AuthPermission extends Model
         return self::$PAYMENT_FREQUENCIES;
     }
 
+    
+        public static function LOAN_RELEASES(): int
+        {
+            return self::$LOAN_RELEASES;
+        }
+        public static function PAYMENTS(): int
+        {
+            return self::$PAYMENTS;
+        }    
+        public static function PAYMENT_SCHEDULES(): int
+        {
+            return self::$PAYMENT_SCHEDULES;
+        }  
+        public static function PAYMENT_LINES(): int
+        {
+            return self::$PAYMENT_LINES;
+        }  
+
     public static function PERSONALITIES(): int
     {
         return self::$PERSONALITIES;
@@ -189,5 +227,16 @@ class AuthPermission extends Model
     public static function VIEW_PERM(): int
     {
         return self::$VIEW;
+    }
+
+    
+    public static function APPROVE_PERM(): int
+    {
+        return self::$APPROVE;
+    }
+
+    public static function REJECT_PERM(): int
+    {
+        return self::$REJECT;
     }
 }

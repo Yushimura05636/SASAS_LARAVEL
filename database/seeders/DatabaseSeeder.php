@@ -148,6 +148,11 @@ class DatabaseSeeder extends Seeder
             'LOAN_COUNTS',
             'FEES',
             'LOAN_APPLICATIONS',
+            'LOAN_APPLICATIONS_COMAKERS',
+            'LOAN_RELEASES',
+            'PAYMENTS',
+            'PAYMENT_SCHEDULES',
+            'PAYMENT_LINES',
         ];
 
 

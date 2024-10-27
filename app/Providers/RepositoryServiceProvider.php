@@ -26,6 +26,7 @@ use App\Interface\Repository\PersonalityRepositoryInterface;
 use App\Interface\Repository\SpouseRepositoryInterface;
 use App\Interface\Repository\UserRepositoryInterface;
 use App\Interface\Repository\CustomerRequirementRepositoryInterface;
+use App\Interface\Repository\HolidayRepositoryInterface;
 use App\Interface\Repository\RequirementRepositoryInterface;
 use App\Interface\Service\AuthenticationServiceInterface;
 use App\Interface\Service\CustomerGroupServiceInterface;
@@ -38,6 +39,7 @@ use App\Interface\Service\DocumentPermissionServiceInterface;
 use App\Interface\Service\EmployeeServiceInterface;
 use App\Interface\Service\FactorRateServiceInterface;
 use App\Interface\Service\FeeServiceInterface;
+use App\Interface\Service\HolidayServiceInterface;
 use App\Interface\Service\LoanApplicationCoMakerServiceInterface;
 use App\Interface\Service\LoanApplicationFeeServiceInterface;
 use App\Interface\Service\LoanApplicationServiceInterface;
@@ -62,6 +64,7 @@ use App\Repository\DocumentPermissionRepository;
 use App\Repository\EmployeeRepository;
 use App\Repository\FactorRateRepository;
 use App\Repository\FeeRepository;
+use App\Repository\HolidayRepository;
 use App\Repository\LoanApplicationCoMakerRepository;
 use App\Repository\LoanApplicationFeeRepository;
 use App\Repository\LoanApplicationRepository;
@@ -87,6 +90,7 @@ use App\Service\DocumentPermissionService;
 use App\Service\EmployeeService;
 use App\Service\FactorRateService;
 use App\Service\FeeService;
+use App\Service\HolidayService;
 use App\Service\LoanApplicationCoMakerService;
 use App\Service\LoanApplicationFeeService;
 use App\Service\LoanApplicationService;
@@ -141,6 +145,7 @@ class RepositoryServiceProvider extends ServiceProvider
 
         $this->app->bind(CustomerRequirementRepositoryInterface::class, CustomerRequirementRepository::class);
         $this->app->bind(RequirementRepositoryInterface::class, RequirementRepository::class);
+        $this->app->bind(HolidayRepositoryInterface::class, HolidayRepository::class);
 
 
         //Service
@@ -172,6 +177,8 @@ class RepositoryServiceProvider extends ServiceProvider
         $this->app->bind(CustomerGroupServiceInterface::class, CustomerGroupService::class);
         $this->app->bind(CustomerRequirementServiceInterface::class, CustomerRequirementService::class);
         $this->app->bind(RequirementServiceInterface::class, RequirementService::class);
+        $this->app->bind(HolidayServiceInterface::class, HolidayService::class);
+
     }
 
     /**

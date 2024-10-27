@@ -12,6 +12,7 @@ use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\EmployeePersonalityController;
 use App\Http\Controllers\FactorRateController;
 use App\Http\Controllers\FeeController;
+use App\Http\Controllers\HolidayController;
 use App\Http\Controllers\LoanApplicationCoMakerController;
 use App\Http\Controllers\LoanApplicationController;
 use App\Http\Controllers\LoanCountController;
@@ -65,6 +66,8 @@ $PAYMENT_LINES =  AuthPermission::PAYMENT_LINES();
 
 $CUSTOMER_REQUIREMENTS = AuthPermission::CUSTOMER_REQUIREMENTS();
 $REQUIREMENTS = AuthPermission::REQUIREMENTS();
+$HOLIDAYS = AuthPermission::HOLIDAYS();
+
 
 $VIEW =   AuthPermission::VIEW_PERM();
 $CREATE = AuthPermission::CREATE_PERM();
@@ -627,7 +630,24 @@ Route::middleware('auth:sanctum')->prefix('REQUIREMENTS')->group(function () use
     Route::delete('/{id}', [RequirementController::class, 'destroy'])->middleware("document_access:$REQUIREMENTS, $DELETE");
 });
 
-
+//Holiday route
+Route::middleware('auth:sanctum')->prefix('HOLIDAYS')->group(function () use ($HOLIDAYS, $VIEW, $CREATE, $UPDATE, $DELETE) {
+    Route::get('/', [HolidayController::class, 'index'])->middleware("document_access:$HOLIDAYS, $VIEW");
+    Route::get('/NoUSERID', [HolidayController::class, '']);
+    Route::get('/{id}', [HolidayController::class, 'show'])->middleware("document_access:$HOLIDAYS, $VIEW");
+    Route::post('/', [HolidayController::class, 'store'])->middleware("document_access:$HOLIDAYS, $CREATE");
+    // Empty update route with PATCH
+    Route::patch('/update', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$HOLIDAYS, $UPDATE");
+    // Empty create route with PATCH
+    Route::patch('/create', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$HOLIDAYS, $CREATE");
+    Route::put('/{id}', [HolidayController::class, 'update'])->middleware("document_access:$HOLIDAYS, $UPDATE");
+    Route::patch('/{id}', [HolidayController::class, 'update'])->middleware("document_access:$HOLIDAYS, $UPDATE"); // PATCH method
+    Route::delete('/{id}', [HolidayController::class, 'destroy'])->middleware("document_access:$HOLIDAYS, $DELETE");
+});
 
 }
 
@@ -639,3 +659,4 @@ Route::get('/test/{id}', [CustomerController::class, 'test']);
 Route::get('/loan-test/{id}', [PaymentScheduleController::class, 'test']);
 
 Route::middleware('auth')->get('/testCustomer', [UserController::class, 'test']);
+Route::get('/HOLIDAY-TEST', [HolidayController::class, 'index']);

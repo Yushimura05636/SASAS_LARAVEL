@@ -36,6 +36,8 @@ class AuthPermission extends Model
     private static int $CUSTOMER_REQUIREMENTS;
 
     private static int $REQUIREMENTS;
+    private static int $HOLIDAYS;
+
 
 
 
@@ -81,6 +83,7 @@ class AuthPermission extends Model
         self::$PAYMENT_LINES = self::getPermissionId('PAYMENT_LINES', Document_Map::class);
         self::$CUSTOMER_REQUIREMENTS = self::getPermissionId('CUSTOMER_REQUIREMENTS', Document_Map::class);
         self::$REQUIREMENTS = self::getPermissionId('REQUIREMENTS', Document_Map::class);
+        self::$HOLIDAYS = self::getPermissionId('HOLIDAYS', Document_Map::class);
 
 
         self::$CREATE = self::getPermissionId('CREATE', Document_Permission_Map::class);
@@ -180,6 +183,10 @@ class AuthPermission extends Model
         public static function REQUIREMENTS(): int
         {
             return self::$REQUIREMENTS;
+        }
+        public static function HOLIDAYS(): int
+        {
+            return self::$HOLIDAYS;
         }
 
     public static function PERSONALITIES(): int

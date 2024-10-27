@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\EmployeeStoreRequest;
 use App\Http\Requests\EmployeeUpdateRequest;
 use App\Interface\Service\EmployeeServiceInterface;
+use App\Models\Employee;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Validator;
@@ -25,6 +26,11 @@ class EmployeeController extends Controller
 
     public function noUserIndex()
     {
+        // // Get employees who do not have an associated user
+        // return $employeesWithoutUsers = Employee::leftJoin('user_account as user', 'employee.id', '=', 'user.employee_id')
+        //     ->whereNull('user.employee_id')  // Filter where employee_id in user is NULL
+        //     ->select('employee.*')  // Select only employee fields
+        //     ->get();
         return $this->employeeService->findNoUserEmployees();
     }
 

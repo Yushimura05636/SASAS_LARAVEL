@@ -51,13 +51,17 @@ class CustomerPersonalityController extends Controller
         // Find the corresponding personality using the personality_id
         $personality = $personalityMap[$personalityId] ?? null;
 
+        //find the status code description
+        $personalityStatusDescription = Personality_Status_Map::where('id', $personality->personality_status_code)->first()->description;
+
+        $personality['personality_status_description'] = $personalityStatusDescription;
+
         // Pair the customer with their personality
         $customersWithPersonality[] = [
             'customer' => $customer,
             'personality' => $personality
         ];
     }
-
     // Return the paired customers and personalities
     return [
         'data' => $customersWithPersonality
@@ -142,6 +146,9 @@ class CustomerPersonalityController extends Controller
                 //     'message' => $requireData['id'],
                 // ], Response::HTTP_BAD_REQUEST);
             }
+
+            //create membership payment
+
 
 
             // Commit the transaction
@@ -330,6 +337,43 @@ class CustomerPersonalityController extends Controller
                 'error' => $e->getMessage(),
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
+    }
+
+    public function showGroupApprove(int $id)
+    {
+
+        //get first the approve id
+        $personalityStatusId = Personality_Status_Map::where('description', 'Approved')->first()->id;
+
+        $customers = Customer::where('group_id', $id)
+        ->with('personality')  // Include related personality data
+        ->orderBy('personality_id')
+        ->get();
+
+        $customerDatas = [];
+        $i = 0;
+
+        foreach($customers as $customer)
+        {
+            if($customer['personality']['personality_status_code'] == $personalityStatusId)
+            {
+                $customerDatas[$i] = $customer;
+            }
+
+            $i++;
+        }
+
+        if(count($customerDatas) > 0)
+        {
+            return [
+                'data' => $customerDatas,
+            ];
+        }
+
+        return response()->json([
+            'message' => 'there is no customer in this group'
+        ], Response::HTTP_NOT_FOUND);
+
     }
 
     public function destroy(int $reqId)

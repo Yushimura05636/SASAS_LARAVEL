@@ -7,6 +7,8 @@ interface EmployeeRepositoryInterface
 {
     public function findByMany();
 
+    public function findNoUserByMany();
+
     public function findByOneId(int $id);
 
     public function create(object $payload);

@@ -33,6 +33,10 @@ class AuthPermission extends Model
     private static int $PAYMENT_LINES;
     private static int $PAYMENT_SCHEDULES;
 
+    private static int $CUSTOMER_REQUIREMENTS;
+
+    private static int $REQUIREMENTS;
+
 
 
     //unique
@@ -71,13 +75,12 @@ class AuthPermission extends Model
         self::$BUTTON_AUTHORIZATION = self::getPermissionId('BUTTON_AUTHORIZATIONS', DOCUMENT_MAP::class);
         self::$LOAN_APPLICATIONS = self::getPermissionId('LOAN_APPLICATIONS', Document_Map::class);
         self::$LOAN_APPLICATION_COMAKERS = self::getPermissionId('LOAN_APPLICATION_COMAKERS', Document_Map::class);
-
-        
         self::$LOAN_RELEASES = self::getPermissionId('LOAN_RELEASES', Document_Map::class);
         self::$PAYMENTS = self::getPermissionId('PAYMENTS', Document_Map::class);
         self::$PAYMENT_SCHEDULES = self::getPermissionId('PAYMENT_SCHEDULES', Document_Map::class);
         self::$PAYMENT_LINES = self::getPermissionId('PAYMENT_LINES', Document_Map::class);
-
+        self::$CUSTOMER_REQUIREMENTS = self::getPermissionId('CUSTOMER_REQUIREMENTS', Document_Map::class);
+        self::$REQUIREMENTS = self::getPermissionId('REQUIREMENTS', Document_Map::class);
 
 
         self::$CREATE = self::getPermissionId('CREATE', Document_Permission_Map::class);
@@ -151,7 +154,7 @@ class AuthPermission extends Model
         return self::$PAYMENT_FREQUENCIES;
     }
 
-    
+
         public static function LOAN_RELEASES(): int
         {
             return self::$LOAN_RELEASES;
@@ -159,15 +162,25 @@ class AuthPermission extends Model
         public static function PAYMENTS(): int
         {
             return self::$PAYMENTS;
-        }    
+        }
         public static function PAYMENT_SCHEDULES(): int
         {
             return self::$PAYMENT_SCHEDULES;
-        }  
+        }
         public static function PAYMENT_LINES(): int
         {
             return self::$PAYMENT_LINES;
-        }  
+        }
+
+        public static function CUSTOMER_REQUIREMENTS(): int
+        {
+            return self::$CUSTOMER_REQUIREMENTS;
+        }
+
+        public static function REQUIREMENTS(): int
+        {
+            return self::$REQUIREMENTS;
+        }
 
     public static function PERSONALITIES(): int
     {
@@ -229,7 +242,7 @@ class AuthPermission extends Model
         return self::$VIEW;
     }
 
-    
+
     public static function APPROVE_PERM(): int
     {
         return self::$APPROVE;

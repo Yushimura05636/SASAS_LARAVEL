@@ -3,6 +3,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\CustomerGroupController;
 use App\Http\Controllers\CustomerPersonalityController;
+use App\Http\Controllers\CustomerRequirementController;
 use App\Http\Controllers\DBLibraryController;
 use App\Http\Controllers\DocumentMapController;
 use App\Http\Controllers\DocumentPermissionController;
@@ -21,6 +22,7 @@ use App\Http\Controllers\PaymentFrequencyController;
 use App\Http\Controllers\PaymentLineController;
 use App\Http\Controllers\PaymentScheduleController;
 use App\Http\Controllers\PersonalityController;
+use App\Http\Controllers\RequirementController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserController2;
@@ -60,6 +62,9 @@ $LOAN_RELEASES = AuthPermission::LOAN_RELEASES();
 $PAYMENTS = AuthPermission::PAYMENTS();
 $PAYMENT_SCHEDULES=  AuthPermission::PAYMENT_SCHEDULES();
 $PAYMENT_LINES =  AuthPermission::PAYMENT_LINES();
+
+$CUSTOMER_REQUIREMENTS = AuthPermission::CUSTOMER_REQUIREMENTS();
+$REQUIREMENTS = AuthPermission::REQUIREMENTS();
 
 $VIEW =   AuthPermission::VIEW_PERM();
 $CREATE = AuthPermission::CREATE_PERM();
@@ -553,7 +558,7 @@ Route::middleware('auth:sanctum')->prefix('LOAN_RELEASES')->group(function () us
     Route::get('/', [LoanReleaseController::class, 'index'])->middleware("document_access:$LOAN_RELEASES, $VIEW");
     Route::get('/NoAUTH', [LoanReleaseController::class, 'index']);
     Route::get('/NoAUTH/{id}', [LoanReleaseController::class, 'show']);
-    
+
     Route::get('/{id}', [LoanReleaseController::class, 'show'])->middleware("document_access:$LOAN_RELEASES, $VIEW");
     Route::post('/', [LoanReleaseController::class, 'store'])->middleware("document_access:$LOAN_RELEASES, $CREATE");
     Route::put('/{id}', [LoanReleaseController::class, 'update'])->middleware("document_access:$LOAN_RELEASES, $UPDATE");
@@ -566,6 +571,50 @@ Route::middleware('auth:sanctum')->prefix('LOAN_RELEASES')->group(function () us
     Route::patch('/create', function () {
         return response()->json(['message' => 'Access granted']);
     })->middleware("document_access:$LOAN_RELEASES, $CREATE");
+});
+
+// Customer Requirements routes
+Route::middleware('auth:sanctum')->prefix('CUSTOMER_REQUIREMENTS')->group(function () use ($CUSTOMER_REQUIREMENTS, $VIEW, $CREATE, $UPDATE, $DELETE) {
+    Route::get('/', [CustomerRequirementController::class, 'index'])->middleware("document_access:$CUSTOMER_REQUIREMENTS, $VIEW");
+    Route::get('/NoUSERID', [CustomerRequirementController::class, '']);
+    Route::get('/{id}', [CustomerRequirementController::class, 'show'])->middleware("document_access:$CUSTOMER_REQUIREMENTS, $VIEW");
+    Route::post('/', [CustomerRequirementController::class, 'store'])->middleware("document_access:$CUSTOMER_REQUIREMENTS, $CREATE");
+
+    // Empty update route with PATCH
+    Route::patch('/update', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$CUSTOMER_REQUIREMENTS, $UPDATE");
+
+    // Empty create route with PATCH
+    Route::patch('/create', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$CUSTOMER_REQUIREMENTS, $CREATE");
+
+    Route::put('/{id}', [CustomerRequirementController::class, 'update'])->middleware("document_access:$CUSTOMER_REQUIREMENTS, $UPDATE");
+    Route::patch('/{id}', [CustomerRequirementController::class, 'update'])->middleware("document_access:$CUSTOMER_REQUIREMENTS, $UPDATE"); // PATCH method
+    Route::delete('/{id}', [CustomerRequirementController::class, 'destroy'])->middleware("document_access:$CUSTOMER_REQUIREMENTS, $DELETE");
+});
+
+//Requirement route
+Route::middleware('auth:sanctum')->prefix('REQUIREMENTS')->group(function () use ($REQUIREMENTS, $VIEW, $CREATE, $UPDATE, $DELETE) {
+    Route::get('/', [RequirementController::class, 'index'])->middleware("document_access:$REQUIREMENTS, $VIEW");
+    Route::get('/NoUSERID', [RequirementController::class, '']);
+    Route::get('/{id}', [RequirementController::class, 'show'])->middleware("document_access:$REQUIREMENTS, $VIEW");
+    Route::post('/', [RequirementController::class, 'store'])->middleware("document_access:$REQUIREMENTS, $CREATE");
+
+    // Empty update route with PATCH
+    Route::patch('/update', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$REQUIREMENTS, $UPDATE");
+
+    // Empty create route with PATCH
+    Route::patch('/create', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$REQUIREMENTS, $CREATE");
+
+    Route::put('/{id}', [RequirementController::class, 'update'])->middleware("document_access:$REQUIREMENTS, $UPDATE");
+    Route::patch('/{id}', [RequirementController::class, 'update'])->middleware("document_access:$REQUIREMENTS, $UPDATE"); // PATCH method
+    Route::delete('/{id}', [RequirementController::class, 'destroy'])->middleware("document_access:$REQUIREMENTS, $DELETE");
 });
 
 

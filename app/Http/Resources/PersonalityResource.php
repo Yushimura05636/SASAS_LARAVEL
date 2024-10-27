@@ -39,6 +39,9 @@ class PersonalityResource extends JsonResource
             'province_id' => $this->province_id,
             //'spouse_id' => $this->spouse_id,
             'credit_status_id' => $this->credit_status_id,
+
+            //unique
+            'personality_status_description' => $this->personality_status_description,
         ];
     }
 }

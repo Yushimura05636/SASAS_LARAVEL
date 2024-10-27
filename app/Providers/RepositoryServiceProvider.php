@@ -25,8 +25,11 @@ use App\Interface\Repository\PaymentScheduleRepositoryInterface;
 use App\Interface\Repository\PersonalityRepositoryInterface;
 use App\Interface\Repository\SpouseRepositoryInterface;
 use App\Interface\Repository\UserRepositoryInterface;
+use App\Interface\Repository\CustomerRequirementRepositoryInterface;
+use App\Interface\Repository\RequirementRepositoryInterface;
 use App\Interface\Service\AuthenticationServiceInterface;
 use App\Interface\Service\CustomerGroupServiceInterface;
+use App\Interface\Service\CustomerRequirementServiceInterface;
 use App\Interface\Service\CustomerServiceInterface;
 use App\Interface\Service\DBLibraryServiceInterface;
 use App\Interface\Service\DocumentMapServiceInterface;
@@ -46,10 +49,12 @@ use App\Interface\Service\PaymentLineServiceInterface;
 use App\Interface\Service\PaymentScheduleServiceInterface;
 use App\Interface\Service\PaymentServiceInterface;
 use App\Interface\Service\PersonalityServiceInterface;
+use App\Interface\Service\RequirementServiceInterface;
 use App\Interface\Service\SpouseServiceInterface;
 use App\Interface\Service\UserServiceInterface;
 use App\Repository\CustomerGroupRepository;
 use App\Repository\CustomerRepository;
+use App\Repository\CustomerRequirementRepository;
 use App\Repository\DBLibraryRepository;
 use App\Repository\DocumentMapRepository;
 use App\Repository\DocumentPermissionMapRepository;
@@ -68,10 +73,12 @@ use App\Repository\PaymentLineRepository;
 use App\Repository\PaymentRepository;
 use App\Repository\PaymentScheduleRepository;
 use App\Repository\PersonalityRepository;
+use App\Repository\RequirementRepository;
 use App\Repository\SpouseRepository;
 use App\Repository\UserRepository;
 use App\Service\AuthenticationService;
 use App\Service\CustomerGroupService;
+use App\Service\CustomerRequirementService;
 use App\Service\CustomerService;
 use App\Service\DBLibraryService;
 use App\Service\DocumentMapService;
@@ -91,6 +98,7 @@ use App\Service\PaymentLineService;
 use App\Service\PaymentScheduleService;
 use App\Service\PaymentService;
 use App\Service\PersonalityService;
+use App\Service\RequirementService;
 use App\Service\SpouseService;
 use App\Service\UserService;
 use Illuminate\Support\ServiceProvider;
@@ -131,6 +139,9 @@ class RepositoryServiceProvider extends ServiceProvider
 
         $this->app->bind(CustomerGroupRepositoryInterface::class, CustomerGroupRepository::class);
 
+        $this->app->bind(CustomerRequirementRepositoryInterface::class, CustomerRequirementRepository::class);
+        $this->app->bind(RequirementRepositoryInterface::class, RequirementRepository::class);
+
 
         //Service
         $this->app->bind(LoanCountServiceInterface::class, LoanCountService::class);
@@ -159,6 +170,8 @@ class RepositoryServiceProvider extends ServiceProvider
         $this->app->bind(UserServiceInterface::class, UserService::class);
 
         $this->app->bind(CustomerGroupServiceInterface::class, CustomerGroupService::class);
+        $this->app->bind(CustomerRequirementServiceInterface::class, CustomerRequirementService::class);
+        $this->app->bind(RequirementServiceInterface::class, RequirementService::class);
     }
 
     /**

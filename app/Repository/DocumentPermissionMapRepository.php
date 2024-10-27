@@ -10,7 +10,7 @@ class DocumentPermissionMapRepository implements DocumentPermissionMapRepository
 {
     public function findMany()
     {
-        return Document_Permission_Map::paginate(10);
+        return Document_Permission_Map::get();
     }
 
     public function findOneById($id)

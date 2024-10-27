@@ -34,7 +34,9 @@ use App\Models\Loan_Count;
 use App\Models\Payment_Duration;
 use App\Models\Payment_Frequency;
 use App\Models\Personality; #Done
+use App\Models\Requirements;
 use App\Models\Spouse;
+use PHPUnit\Metadata\Version\Requirement;
 
 class DatabaseSeeder extends Seeder
 {
@@ -47,7 +49,7 @@ class DatabaseSeeder extends Seeder
     {
         $faker = Faker::create();
 
-       $this->c = 500;
+        $this->c = 500;
         $this->f = 1;
 
         for($i = 0; $i < 14; $i++)
@@ -91,6 +93,8 @@ class DatabaseSeeder extends Seeder
         ];
 
         // Defining unique value arrays beforehand
+
+
         $civilStatusNames = ['Married', 'Widowed', 'Single'];
         $genderNames = ['Male', 'Female'];
         $creditStatusNames = ['Active', 'Inactive', 'Suspended', 'Blacklisted'];
@@ -131,6 +135,8 @@ class DatabaseSeeder extends Seeder
         ];
 
 
+
+
         $documentMap = [
             'USER_ACCOUNTS', # 1
             'BUTTON_AUTHORIZARIONS',
@@ -153,6 +159,8 @@ class DatabaseSeeder extends Seeder
             'PAYMENTS',
             'PAYMENT_SCHEDULES',
             'PAYMENT_LINES',
+            'CUSTOMER_REQUIREMENTS',
+            'REQUIREMENTS',
         ];
 
 
@@ -259,6 +267,22 @@ class DatabaseSeeder extends Seeder
             'personality_id' => 2,
         ]);
 
+        Requirements::create([
+            'description' => 'Barangay Certificate',
+            'isActive' => 1,
+        ]);
+        Requirements::create([
+            'description' => 'Birth Certificate',
+            'isActive' => 1,
+        ]);
+        Requirements::create([
+            'description' => 'Valid ID',
+            'isActive' => 1,
+        ]);
+        Requirements::create([
+            'description' => 'Proof of Address',
+            'isActive' => 1,
+        ]);
 
         //'LN' . '-' . $faker->randomDigit() . trim(strtoupper($faker->lexify('??????')), ' ')
 

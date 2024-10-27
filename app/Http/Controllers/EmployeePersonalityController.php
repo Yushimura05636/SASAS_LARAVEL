@@ -83,6 +83,7 @@ public function look()
     foreach ($employees as $employee) {
         $personalityId = $employee->personality_id;
         // Find the corresponding personality using the personality_id
+
         $personality = $personalityMap[$personalityId] ?? null;
 
         // Pair the employee with their personality
@@ -90,6 +91,7 @@ public function look()
             'employee' => $employee,
             'personality' => $personality
         ];
+
     }
 
     // Return the paired employees and personalities

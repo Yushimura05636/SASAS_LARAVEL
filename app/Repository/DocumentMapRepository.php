@@ -10,7 +10,7 @@ class DocumentMapRepository implements DocumentMapRepositoryInterface
 {
     public function findMany()
     {
-        return Document_Map::paginate(50);
+        return Document_Map::get();
     }
 
     public function findOneById($id)

@@ -2,14 +2,11 @@
 
 namespace App\Interface\Repository;
 
-
-interface EmployeeRepositoryInterface
+interface CustomerRequirementRepositoryInterface
 {
-    public function findByMany();
+    public function findMany();
 
-    public function findNoUserByMany();
-
-    public function findByOneId(int $id);
+    public function findOneById(int $id);
 
     public function create(object $payload);
 

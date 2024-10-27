@@ -573,10 +573,13 @@ Route::middleware('auth:sanctum')->prefix('LOAN_RELEASES')->group(function () us
     })->middleware("document_access:$LOAN_RELEASES, $CREATE");
 });
 
-// Customer Requirements routes
+// Customers routes
 Route::middleware('auth:sanctum')->prefix('CUSTOMER_REQUIREMENTS')->group(function () use ($CUSTOMER_REQUIREMENTS, $VIEW, $CREATE, $UPDATE, $DELETE) {
     Route::get('/', [CustomerRequirementController::class, 'index'])->middleware("document_access:$CUSTOMER_REQUIREMENTS, $VIEW");
-    Route::get('/NoUSERID', [CustomerRequirementController::class, '']);
+    Route::get('/NoAUTH', [CustomerRequirementController::class, 'index']);
+    Route::get('/NotEXPIRED', [CustomerRequirementController::class, 'available'])->middleware("document_access:$CUSTOMER_REQUIREMENTS, $VIEW");
+    Route::get('/NoAUTH/NotEXPIRED', [CustomerRequirementController::class, 'available']);
+    Route::get('/NoAUTH/{id}', [CustomerRequirementController::class, 'show']);
     Route::get('/{id}', [CustomerRequirementController::class, 'show'])->middleware("document_access:$CUSTOMER_REQUIREMENTS, $VIEW");
     Route::post('/', [CustomerRequirementController::class, 'store'])->middleware("document_access:$CUSTOMER_REQUIREMENTS, $CREATE");
 
@@ -595,10 +598,13 @@ Route::middleware('auth:sanctum')->prefix('CUSTOMER_REQUIREMENTS')->group(functi
     Route::delete('/{id}', [CustomerRequirementController::class, 'destroy'])->middleware("document_access:$CUSTOMER_REQUIREMENTS, $DELETE");
 });
 
-//Requirement route
+// Customers routes
 Route::middleware('auth:sanctum')->prefix('REQUIREMENTS')->group(function () use ($REQUIREMENTS, $VIEW, $CREATE, $UPDATE, $DELETE) {
     Route::get('/', [RequirementController::class, 'index'])->middleware("document_access:$REQUIREMENTS, $VIEW");
-    Route::get('/NoUSERID', [RequirementController::class, '']);
+    Route::get('/Active', [RequirementController::class, 'active'])->middleware("document_access:$REQUIREMENTS, $VIEW");
+    Route::get('/NoAUTH/Active', [RequirementController::class, 'active']);
+    Route::get('/NoAUTH', [RequirementController::class, 'index']);
+    Route::get('/NoAUTH/{id}', [RequirementController::class, 'show']);
     Route::get('/{id}', [RequirementController::class, 'show'])->middleware("document_access:$REQUIREMENTS, $VIEW");
     Route::post('/', [RequirementController::class, 'store'])->middleware("document_access:$REQUIREMENTS, $CREATE");
 

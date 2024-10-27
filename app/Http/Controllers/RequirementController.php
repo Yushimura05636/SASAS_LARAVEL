@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Interface\Service\RequirementServiceInterface;
+use App\Models\Requirements;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
 
 class RequirementController extends Controller
 {
@@ -17,6 +19,14 @@ class RequirementController extends Controller
     public function index()
     {
         return $this->requirementService->findRequirements();
+    }
+
+    public function active()
+    {
+        //get only the active requirements
+        $activeRequirement = Requirements::where('isActive', 1)->get();
+
+        return new JsonResource($activeRequirement);
     }
 
     public function store(Request $request)

@@ -3,7 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Interface\Service\CustomerRequirementServiceInterface;
+use App\Models\Customer_Requirements;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
 
 class CustomerRequirementController extends Controller
 {
@@ -19,12 +22,20 @@ class CustomerRequirementController extends Controller
         return $this->customerRequirementService->findCustomerRequirements();
     }
 
+    public function available()
+    {
+        //get the not expired customer_requirements
+        $notExpiredRequirements = Customer_Requirements::where('expiry_date', '>', Carbon::now())->get();
+
+        return new JsonResource($notExpiredRequirements);
+    }
+
     public function show(int $id)
     {
         return $this->customerRequirementService->findCustomerRequirementById($id);
     }
 
-    public function create(Request $request)
+    public function store(Request $request)
     {
         return $this->customerRequirementService->createCustomerRequirement($request);
     }

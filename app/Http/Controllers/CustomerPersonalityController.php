@@ -10,11 +10,14 @@ use App\Http\Resources\CustomerResource;
 use App\Http\Resources\PersonalityResource;
 use App\Interface\Service\CustomerServiceInterface;
 use App\Interface\Service\PersonalityServiceInterface;
+use App\Models\Customer;
 use App\Models\Personality;
+use App\Models\Personality_Status_Map;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 class CustomerPersonalityController extends Controller
@@ -61,7 +64,7 @@ class CustomerPersonalityController extends Controller
 }
 
 
-    public function store(Request $request, CustomerController $customerController, PersonalityController $personalityController)
+    public function store(Request $request, CustomerRequirementController $customerRequirementController, CustomerController $customerController, PersonalityController $personalityController)
     {
         // Summons the storeRequest from both controllers
         $customerStoreRequest = new CustomerStoreRequest();
@@ -70,12 +73,13 @@ class CustomerPersonalityController extends Controller
         // Access the customer and personality data
         $customerData = $request->input('customer');
         $personalityData = $request->input('personality');
+        $requirementDatas = $request->input('requirements');
 
-        // return response()->json([
-        //     'message' => 'data',
-        //     'data' => $personalityData,
-        //     'error' => '',
-        // ], Response::HTTP_BAD_REQUEST);
+        //get the personality status code
+        $personalityStatusId = Personality_Status_Map::where('description', 'Pending')->first()->id;
+
+        //set the personality status code
+        $personalityData['personality_status_code'] = $personalityStatusId;
 
         // Merge data for validation
         $datas = array_merge($customerData, $personalityData);
@@ -111,6 +115,33 @@ class CustomerPersonalityController extends Controller
             // Then put the ID to personality_id in customer
             $customerData['personality_id'] = $id;
             $customerResponse = $customerController->store(new Request($customerData));
+
+            $customer_id = Customer::where('passbook_no', $customerData['passbook_no'])->first()->id;
+
+            // return response()->json([
+            //     'message' => $customer_id,
+            // ], Response::HTTP_BAD_REQUEST);
+
+            // Create customer_requirements
+            for ($i = 0; $i < count($requirementDatas); $i++) {
+                $requireData = $requirementDatas[$i];
+
+                $payload = [
+                    'customer_id' => $customer_id,
+                    'requirement_id' => $requireData['id'],
+                    'expiry_date' => $requireData['expiry_date'],
+                ];
+
+                $payload = new Request($payload);
+
+                $customerRequirementController->store($payload);
+
+                // // Return the current requirement as part of the response for tracing
+                // return response()->json([
+                //     'message' => $requireData['id'],
+                // ], Response::HTTP_BAD_REQUEST);
+            }
+
 
             // Commit the transaction
             DB::commit();

@@ -288,11 +288,21 @@ class CustomerPersonalityController extends Controller
 
                 if ($customerRequirement) {
                     // Update the existing record
+                    // return response()->json([
+                    //     'message update' => $payload->all(),
+                    // ], Response::HTTP_INTERNAL_SERVER_ERROR);
                     $customerRequirementController->update($payload, $customerRequirement->id);
                 } else {
+                    // return response()->json([
+                    //     'message create' => $payload->all(),
+                    // ], Response::HTTP_INTERNAL_SERVER_ERROR);
                     // Create a new record if it doesn't exist
                     $customerRequirementController->store($payload);
                 }
+
+                // return response()->json([
+                //     'message' => $customerRequirement,
+                // ], Response::HTTP_INTERNAL_SERVER_ERROR);
             }
 
             // Commit the transaction

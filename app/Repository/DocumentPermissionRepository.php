@@ -10,7 +10,7 @@ class DocumentPermissionRepository implements DocumentPermissionRepositoryInterf
 {
     public function findMany()
     {
-        return Document_Permission::paginate(10);
+        return Document_Permission::get();
     }
 
     public function findOneById($id)

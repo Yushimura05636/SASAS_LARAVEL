@@ -579,6 +579,8 @@ Route::middleware('auth:sanctum')->prefix('CUSTOMER_REQUIREMENTS')->group(functi
     Route::get('/NoAUTH', [CustomerRequirementController::class, 'index']);
     Route::get('/NotEXPIRED', [CustomerRequirementController::class, 'available'])->middleware("document_access:$CUSTOMER_REQUIREMENTS, $VIEW");
     Route::get('/NoAUTH/NotEXPIRED', [CustomerRequirementController::class, 'available']);
+    Route::get('/NotEXPIRED/{id}', [CustomerRequirementController::class, 'showAvailable'])->middleware("document_access:$CUSTOMER_REQUIREMENTS, $VIEW");
+    Route::get('/NoAUTH/NotEXPIRED/{id}', [CustomerRequirementController::class, 'showAvailable']);
     Route::get('/NoAUTH/{id}', [CustomerRequirementController::class, 'show']);
     Route::get('/{id}', [CustomerRequirementController::class, 'show'])->middleware("document_access:$CUSTOMER_REQUIREMENTS, $VIEW");
     Route::post('/', [CustomerRequirementController::class, 'store'])->middleware("document_access:$CUSTOMER_REQUIREMENTS, $CREATE");

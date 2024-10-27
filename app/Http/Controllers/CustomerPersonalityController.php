@@ -11,6 +11,7 @@ use App\Http\Resources\PersonalityResource;
 use App\Interface\Service\CustomerServiceInterface;
 use App\Interface\Service\PersonalityServiceInterface;
 use App\Models\Customer;
+use App\Models\Customer_Requirements;
 use App\Models\Personality;
 use App\Models\Personality_Status_Map;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -211,7 +212,7 @@ class CustomerPersonalityController extends Controller
         }
     }
 
-    public function update(Request $request, int $reqId, PersonalityController $personalityController, CustomerController $customerController)
+    public function update(Request $request, int $reqId, CustomerRequirementController $customerRequirementController, PersonalityController $personalityController, CustomerController $customerController)
     {
         // Summons the storeRequest from both controllers
         $customerStoreRequest = new CustomerUpdateRequest();
@@ -220,6 +221,13 @@ class CustomerPersonalityController extends Controller
         // Access the customer and personality data
         $customerData = $request->input('customer');
         $personalityData = $request->input('personality');
+        $requirementDatas = $request->input('requirements');
+
+        //get the personality status code
+        $personalityStatusId = Personality_Status_Map::where('description', 'Pending')->first()->id;
+
+        //set the personality status code
+        $personalityData['personality_status_code'] = $personalityStatusId;
 
         // Merge data for validation
         $datas = array_merge($customerData, $personalityData);
@@ -246,6 +254,46 @@ class CustomerPersonalityController extends Controller
             $id = $customerData['personality_id'];
 
             $personalityResponse = $personalityController->update(new Request($personalityData), $id);
+
+            $customer_id = Customer::where('passbook_no', $customerData['passbook_no'])->first()->id;
+
+            // return response()->json([
+            //     'message' => $customer_id,
+            // ], Response::HTTP_BAD_REQUEST);
+
+            // Step 1: Get all requirement_ids from the request data
+            $requestedRequirementIds = array_column($requirementDatas, 'id');
+
+            // Step 2: Find and delete database records not in the request data
+            Customer_Requirements::where('customer_id', $customer_id)
+                ->whereNotIn('requirement_id', $requestedRequirementIds)
+                ->delete();
+
+            // Step 3: Update or create customer_requirements
+            for ($i = 0; $i < count($requirementDatas); $i++) {
+                $requireData = $requirementDatas[$i];
+
+                $payload = [
+                    'customer_id' => $customer_id,
+                    'requirement_id' => $requireData['id'],
+                    'expiry_date' => $requireData['expiry_date'],
+                ];
+
+                $payload = new Request($payload);
+
+                // Find the record by customer_id and requirement_id, if it exists
+                $customerRequirement = Customer_Requirements::where('customer_id', $customer_id)
+                                                            ->where('requirement_id', $requireData['id'])
+                                                            ->first();
+
+                if ($customerRequirement) {
+                    // Update the existing record
+                    $customerRequirementController->update($payload, $customerRequirement->id);
+                } else {
+                    // Create a new record if it doesn't exist
+                    $customerRequirementController->store($payload);
+                }
+            }
 
             // Commit the transaction
             DB::commit();

@@ -258,7 +258,7 @@ $i = 0;
 // Loop through the payments array
 foreach ($paymentsArray as $payment) {
     // Check if 'original' and 'data' keys exist
-    if($payment['loan_application_no'])
+    if($payment->loan_application_no)
     {
         $loanApplicationNos[$i] = $payment;
     }

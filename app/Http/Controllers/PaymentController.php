@@ -237,7 +237,7 @@ protected function createPaymentLine($request, $payment, $schedule, $amountPaid,
         foreach($payments as $payment)
         {
             return [
-                'data' => $payments,
+                $payments,
             ];
         }
 

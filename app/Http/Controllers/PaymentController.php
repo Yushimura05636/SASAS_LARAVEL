@@ -7,6 +7,8 @@ use App\Http\Requests\PaymentUpdateRequest;
 use App\Interface\Service\PaymentLineServiceInterface;
 use App\Interface\Service\PaymentScheduleServiceInterface;
 use App\Interface\Service\PaymentServiceInterface;
+use App\Models\Customer;
+use App\Models\Loan_Application;
 use App\Models\Loan_Release;
 use App\Models\Payment_Line;
 use App\Models\Payment_Schedule;
@@ -47,50 +49,117 @@ class PaymentController extends Controller
 
     }
 
+    public function store(Request $request, PaymentLineController $paymentLineController, PaymentServiceInterface $paymentService)
+    {
+        // Start DB Transaction
+        DB::beginTransaction();
+
+        try {
+
+            // Loop through the decoded array to get the ids
+            foreach ($request['payment'] as $key => $item) {
+                if (isset($item)) {
+
+                    // Create the payment record
+                    $paymentData = [
+                        'customer_id' => $request->customer_id,
+                        'prepared_at' => now(),
+                        'document_status_code' => 'PENDING',
+                        'prepared_by_id' => auth()->user()->id,
+                        'amount_paid' => $item['amount_paid'],
+                        'notes' => ''
+                    ];
+
+
+
+                    if($paymentData['amount_paid'] > 0)
+                    {
+                        $paymentData = new Request($paymentData);
+
+                        $payment = $paymentService->createPayment($paymentData); // Save payment
+
+                        //get the loan application no
+                        $payment_schedule_id = $item['id'];
+
+                        $payment_id = $payment->id;
+
+                        $payload = [
+                            'payment_id' => $payment_id,
+                            'payment_schedule_id' => $payment_schedule_id,
+                            'balance' => $item['balance'],
+                            'amount_paid' => 0,
+                            'remarks' => 'PENDING',
+                        ];
+
+                        $payload = new Request($payload);
+
+                        $payment_line = $paymentLineController->store($payload);
+                    }
+                    else
+                    {
+                        throw new \Exception('The amount should not be less than or equal zero');
+                    }
+                }
+            }
+
+            DB::commit();
+
+            return response()->json(['message' => 'Payment created successfully'], 200);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+        return response()->json(['error' => $e->getMessage()], 500);
+    }
+    }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request, PaymentServiceInterface $paymentService, PaymentLineServiceInterface $paymentLineService, PaymentScheduleServiceInterface $paymentScheduleService)
+    public function paymentApprove(Request $request, int $id, PaymentServiceInterface $paymentService, PaymentLineServiceInterface $paymentLineService, PaymentScheduleServiceInterface $paymentScheduleService, PaymentScheduleController $paymentScheduleController, CustomerPersonalityController $customerPersonalityController)
 {
     // Start DB Transaction
     DB::beginTransaction();
 
     try {
-        $customerId = $request['customer.id'];
-        $amountPaid = $request['schedule.amount_paid'];
-        $notes = $request['schedule.remarks'] ?? null;
 
+        $payment = $request->input('state.payment');
 
         // Create the payment record
         $paymentData = [
-            'customer_id' => $customerId,
+            'customer_id' => $payment['customer_id'],
             'prepared_at' => now(),
             'document_status_code' => 'APPROVED',
             'prepared_by_id' => auth()->user()->id,
-            'amount_paid' => $amountPaid,
-            'notes' => $notes
+            'amount_paid' => $payment['amount_paid'],
+            'notes' => $payment['notes'],
         ];
 
-        // return response()->json([
-        //     'data' => $paymentData,
-        //     'request' => $request['customer.passbook_no']
-        // ], Response::HTTP_INTERNAL_SERVER_ERROR);
 
-        if($amountPaid > 0)
+        if($payment['amount_paid'] > 0)
         {
             $paymentData = new Request($paymentData);
 
-            $payment = $paymentService->createPayment($paymentData); // Save payment
+            $paymentConfirm = $paymentService->updatePayment($paymentData, $id); // Save payment
+
+            $amount_paid = $payment['amount_paid'];
+
+            // return response()->json([
+            //     //'data' => $paymentData,
+            //     'message' => $payment,
+            // ], Response::HTTP_INTERNAL_SERVER_ERROR);
 
             // Step 2: Apply payment to schedule(s)
-            $this->applyPaymentToSchedules($payment, $amountPaid, $request, $paymentLineService, $paymentScheduleService);
+            $this->applyPaymentToSchedules($paymentConfirm, $amount_paid, $request, $paymentLineService, $paymentScheduleService, $paymentScheduleController, $customerPersonalityController);
         }
         else
         {
             throw new \Exception('The amount should not be less than or equal zero');
         }
 
+        // return response()->json([
+        //         //'data' => $paymentData,
+        //         'message' => $payment,
+        //     ], Response::HTTP_INTERNAL_SERVER_ERROR);
 
         DB::commit();
 
@@ -102,18 +171,52 @@ class PaymentController extends Controller
     }
 }
 
-protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $request, PaymentLineServiceInterface $paymentLineService, PaymentScheduleServiceInterface $paymentScheduleService)
+protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $request, PaymentLineServiceInterface $paymentLineService, PaymentScheduleServiceInterface $paymentScheduleService, PaymentScheduleController $paymentScheduleController, CustomerPersonalityController $customerPersonalityController)
 {
 
+    $customer = Customer::where('id', $payment->customer_id)->first();
+
+    //get the loan application
+    $payment_line = $paymentLineService->findPaymentLine();
+
+    $payment_schedule_id = null;
+    $loan_application_no = null;
+
+    foreach($payment_line as $line)
+    {
+        if($line->payment_id == $payment->id)
+        {
+            $payment_schedule_id = $line->payment_schedule_id;
+            break;
+        }
+    }
+
+    // $payment_schedule = $paymentScheduleService->findPaymentScheduleById($payment_schedule_id);
+    $payment_schedule = $paymentScheduleController->index($customerPersonalityController);
+
+    $i = 0;
+    // Assuming $payment_schedule->original is an array of schedules
+    foreach ($payment_schedule->original as $schedule) {
+        // Check if the current schedule's id matches the payment_schedule_id
+        if ($schedule[$i]['id'] == $payment_schedule_id) {
+            // If a match is found, retrieve the loan_application_no
+            $loan_application_no = $schedule[$i]['loan_application_no']; // Correct the spelling of 'loan_application_no'
+            break; // Optional: break the loop since we've found the match
+        }
+    }
+
+    $loan_application = Loan_Application::where('loan_application_no', $loan_application_no)->first();
+
     //get first the loan app id
-    $loanReleaseId = Loan_Release::where('loan_application_id', $request['loan.loan_applications.id'])->where('passbook_number', $request['customer.passbook_no'])->get();
+    $loanReleaseId = Loan_Release::where('loan_application_id', $loan_application->loan_application_no)->where('passbook_number', $customer->passbook_no)->get();
 
     //Empty schedule
     $schedules = '';
 
 
+
     if(!$loanReleaseId->isEmpty()){
-        $loanReleaseId = Loan_Release::where('loan_application_id', $request['loan.loan_applications.id'])->where('passbook_number', $request['customer.passbook_no'])
+        $loanReleaseId = Loan_Release::where('loan_application_id', $loan_application->id)->where('passbook_number', $request['customer.passbook_no'])
         ->first()
         ->id;
     }
@@ -130,7 +233,12 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
     ->orWhere('payment_status_code', 'PARTIALLY PAID')
     ->get();
 
-    foreach ($schedules as $schedule) {
+    foreach ($schedules as $index => $schedule) {
+        // Check if the schedule status code contains "FORWARDED"
+        if (strpos($schedule->payment_status_code, 'FORWARDED') !== false) {
+            continue; // Skip this schedule
+        }
+
         if ($totalAmountPaid <= 0) {
             break; // No more payment left to allocate
         }
@@ -139,50 +247,84 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
         $amountDue = $schedule->amount_due - $schedule->amount_paid; // Remaining balance for this schedule
 
         if ($totalAmountPaid >= $amountDue) {
-
-            $this->createPaymentLine($request, $payment, $schedule, $amountDue, 'Full payment', $paymentLineService);
-            $schedule->amount_paid = $schedule->amount_paid + $amountDue;
+            // Full payment case
+            $schedule->amount_paid += $amountDue;
             $schedule->payment_status_code = 'PAID';
             $schedule->save();
             $schedule->fresh();
 
-            // $schedule->update([
-                //     'amount_paid' => $schedule->amount_paid + $amountDue,
-                //     'payment_status_code' => 'PAID',
-                // ]);
-                $totalAmountPaid -= $amountDue;
-                // return response()->json([
-                //             'data' => $schedule,
-                //             ], Response::HTTP_INTERNAL_SERVER_ERROR);
-        } else {
-            // Partial payment
-            $this->createPaymentLine($request, $payment, $schedule, $totalAmountPaid, 'Partial payment', $paymentLineService);
-            $schedule->amount_paid = $schedule->amount_paid + $totalAmountPaid;
-            $schedule->payment_status_code = 'PARTIALLY PAID';
-            $schedule->save();
-            $schedule->fresh();
-            // $schedule->update([
-            //     'amount_paid' => $schedule->amount_paid + $totalAmountPaid,
-            //     'payment_status_code' => 'PARTIALLY PAID',
-            // ]);
-            $totalAmountPaid = 0; // All payment has been allocated
-        }
-    }
+            $totalAmountPaid -= $amountDue; // Deduct the paid amount from total
 
-    return response()->json([
-        'data' => 'end',
-        ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            $this->createPaymentLine($request, $payment, $schedule, $amountDue, 'Full payment', $paymentLineService);
+
+        } else {
+
+            // Partial payment case
+            $remainingBalance = $amountDue - $totalAmountPaid; // Calculate remaining balance
+            // Respond with the next schedule data (if any)
+
+            // Update the schedule with the current total paid amount
+            $schedule->amount_paid += $totalAmountPaid;
+
+            // return response()->json([
+            //     'current_schedule' => $schedule->amount_due,
+            // ], Response::HTTP_INTERNAL_SERVER_ERROR);
+
+
+            // Check if this is the last schedule in the array
+            if ($index < count($schedules) - 1) {
+                // Only mark as PARTIALLY PAID, FORWARDED if not the last schedule
+                $schedule->payment_status_code = 'PARTIALLY PAID, FORWARDED';
+            } else {
+                // Otherwise, just mark as PARTIALLY PAID
+                $schedule->payment_status_code = 'PARTIALLY PAID';
+            }
+
+            // Save the updated schedule
+            $schedule->save();
+            $schedule->fresh(); // Refresh the schedule to get the latest data
+
+            // Find the next schedule
+            $nextSchedule = Payment_Schedule::where('id', '>', $schedule->id) // Find the next schedule based on ID
+                ->orderBy('id')
+                ->first(); // Get the first next schedule
+
+            if ($nextSchedule) {
+                // Forward the remaining balance to the next schedule
+                $nextSchedule->amount_due += $remainingBalance; // Update the amount due
+                $nextSchedule->save(); // Save the updated next schedule
+            }
+
+            // Create a payment line for the partial payment
+            $this->createPaymentLine($request, $payment, $schedule, $totalAmountPaid, 'PARTIAL PAYMENT', $paymentLineService);
+            // // Return the updated payment line along with the schedule details
+            // return response()->json([
+            //     'current_schedule' => $schedule, // Current schedule with updated balance
+            //     'next_schedule' => $nextSchedule,  // Next schedule with updated amount due
+            // ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+
+        // // Respond with the next schedule data (if any)
+        // return response()->json([
+        //     'data' => isset($nextSchedule) ? $nextSchedule : null,
+        // ], Response::HTTP_INTERNAL_SERVER_ERROR);
+    }
 }
 
 protected function createPaymentLine($request, $payment, $schedule, $amountPaid, $remarks, PaymentLineServiceInterface $paymentLineService)
 {
 
     //get the total balance of all the payment schedules
-    $totals = Payment_Schedule::where('customer_id', $request['customer.id'])
-        ->selectRaw('(SUM(amount_due) - SUM(amount_paid)) AS balance')
+    $totals = Payment_Schedule::where('customer_id', $payment->customer_id)
+        ->selectRaw('(SUM(amount_due) - SUM(amount_paid)) AS balance, SUM(amount_paid) AS paid, SUM(amount_due) AS due')
         ->first();
 
     (float) $balance = $totals->balance;
+
+    // return response()->json([
+    //     'paid' => $totals->balance,
+    //     'due' => $totals->due,
+    // ], Response::HTTP_INTERNAL_SERVER_ERROR);
 
     $paymentLineData = [
         'payment_id' => $payment->id,
@@ -232,6 +374,7 @@ protected function createPaymentLine($request, $payment, $schedule, $amountPaid,
 // Call the method to get the payments response
 $response = $paymentScheduleController->index($customerPersonalityController);
 
+$payments = null;
 // Check if the response is a JsonResponse
 if ($response instanceof JsonResponse) {
     // Get the content of the response
@@ -252,32 +395,33 @@ if ($paymentsArray === null) {
 }
 
 // Access the loan_application_no values
-// $loanApplicationNos = [];
-// $i = 0;
+$loanApplicationNos = [];
+$i = 0;
+$k = 0;
 
-// // Loop through the payments array
-// foreach ($paymentsArray as $payment) {
-//     // Check if 'original' and 'data' keys exist
-// }
-
-for($i = 0; $i < count($paymentsArray); $i++)
-{
-    $data = $paymentsArray[$i]['data'];
-
-    return [
-        $data,
-    ];
+// Loop through the decoded array to get the ids
+foreach ($paymentsArray as $item) {
+    if (isset($item)) {
+        foreach ($item as $data) {
+            if (isset($data)) {
+                if($data['loan_application_no'] == $id)
+                {
+                    $loanApplicationNos[] = $data;
+                }
+            }
+        }
+    }
 }
 
 // Output the loan_application_no values
 if (empty($loanApplicationNos)) {
     echo "No loan application numbers found.\n";
     return [
-        'data' => $paymentsArray,
+        'data result' => $loanApplicationNos,
     ];
 } else {
     return [
-        'data' => $paymentsArray,
+        'data' => $loanApplicationNos,
     ];
 }
 

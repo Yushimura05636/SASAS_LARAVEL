@@ -234,9 +234,13 @@ protected function createPaymentLine($request, $payment, $schedule, $amountPaid,
 
         $payments = $paymentScheduleController->index($customerPersonalityController);
 
-        return [
-            'data' => $payments,
-        ];
+        foreach($payments as $payment)
+        {
+            return [
+                'data' => $payments,
+            ];
+        }
+
     }
 
     /**

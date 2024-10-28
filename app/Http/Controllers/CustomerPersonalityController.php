@@ -230,9 +230,15 @@ class CustomerPersonalityController extends Controller
         //loop the customer
         foreach($customers as $customer)
         {
-            $customerData[$i] = Personality::where('id', $customer['personality_id'])
+            $customerPersonality = Personality::where('id', $customer['personality_id'])
             ->where('personality_status_code', $personalityId)
             ->first();
+
+            if($customerPersonality)
+            {
+                $customerData[$i] = $customerPersonality;
+            }
+
             $i++;
         }
 

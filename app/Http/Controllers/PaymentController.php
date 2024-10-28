@@ -270,6 +270,7 @@ foreach ($paymentsArray as $payment) {
 // Output the loan_application_no values
 if (empty($loanApplicationNos)) {
     echo "No loan application numbers found.\n";
+    echo $paymentsArray;
 } else {
     foreach ($loanApplicationNos as $loanNo) {
         echo "Loan Application No: " . $loanNo . "\n";

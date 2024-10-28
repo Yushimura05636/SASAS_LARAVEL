@@ -238,7 +238,7 @@ class CustomerPersonalityController extends Controller
 
 
         return [
-            'data' => $customers,
+            'data' => $customerData,
         ];
     }
 

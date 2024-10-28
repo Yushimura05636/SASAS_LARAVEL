@@ -186,8 +186,10 @@ Route::middleware('auth:sanctum')->prefix('EMPLOYEES')->group(function () use ($
 Route::middleware('auth:sanctum')->prefix('CUSTOMERS')->group(function () use ($CUSTOMERS, $VIEW, $CREATE, $UPDATE, $DELETE) {
     Route::get('/', [CustomerPersonalityController::class, 'index'])->middleware("document_access:$CUSTOMERS, $VIEW");
     Route::get('/NoAUTH', [CustomerPersonalityController::class, 'index']);
-    Route::get('/NoAUTH/{id}', [CustomerPersonalityController::class, 'show']);
+    Route::get('/CustomerAPPROVE', [CustomerPersonalityController::class, 'indexApprove'])->middleware("document_access:$CUSTOMERS, $VIEW");
+    Route::get('/NoAUTH/CustomerAPPROVE', [CustomerPersonalityController::class, 'indexApprove']);
     Route::get('/GroupAPPROVE/{id}', [CustomerPersonalityController::class, 'showGroupApprove'])->middleware("document_access:$CUSTOMERS, $VIEW");
+    Route::get('/NoAUTH/{id}', [CustomerPersonalityController::class, 'show']);
     Route::get('/NoAUTH/GroupAPPROVE/{id}', [CustomerPersonalityController::class, 'showGroupApprove']);
     Route::get('/{id}', [CustomerPersonalityController::class, 'show'])->middleware("document_access:$CUSTOMERS, $VIEW");
     Route::post('/', [CustomerPersonalityController::class, 'store'])->middleware("document_access:$CUSTOMERS, $CREATE");

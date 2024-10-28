@@ -30,6 +30,7 @@ use App\Models\Document_Permission;
 use App\Models\Document_Status_Code;
 use App\Models\Factor_Rate;
 use App\Models\Fees;
+use App\Models\Holiday;
 use App\Models\Loan_Count;
 use App\Models\Payment_Duration;
 use App\Models\Payment_Frequency;
@@ -420,6 +421,25 @@ class DatabaseSeeder extends Seeder
             'amount' => 230.00000,
             'isactive' => 1,
             'notes' => 'Passbook fee',
+        ]);
+
+        //holy week
+        Holiday::create([
+            'description' => 'Maundy Thursday',
+            'date' => '2024-03-28',
+            'isActive' => 1,
+        ]);
+
+        Holiday::create([
+            'description' => 'Good Friday',
+            'date' => '2024-03-29',
+            'isActive' => 1,
+        ]);
+
+        Holiday::create([
+            'description' => 'Black Saturday',
+            'date' => '2024-03-30',
+            'isActive' => 1,
         ]);
     }
 }

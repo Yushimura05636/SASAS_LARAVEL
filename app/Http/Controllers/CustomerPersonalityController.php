@@ -219,6 +219,19 @@ class CustomerPersonalityController extends Controller
         }
     }
 
+    public function indexApprove()
+    {
+        //get customers that has been approved
+        $personalityId = Personality_Status_Map::where('description', 'Approved')->first()->id;
+        $customers = Personality::where('personality_status_code', $personalityId)
+        ->with('customers')
+        ->get();
+
+        return [
+            'data' => $customers,
+        ];
+    }
+
     public function update(Request $request, int $reqId, CustomerRequirementController $customerRequirementController, PersonalityController $personalityController, CustomerController $customerController)
     {
         // Summons the storeRequest from both controllers

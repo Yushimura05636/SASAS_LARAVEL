@@ -260,6 +260,15 @@ if ($paymentsArray === null) {
 //     // Check if 'original' and 'data' keys exist
 // }
 
+for($i = 0; $i < count($paymentsArray); $i++)
+{
+    $data = $paymentsArray[$i]['data'];
+
+    return [
+        $data,
+    ];
+}
+
 // Output the loan_application_no values
 if (empty($loanApplicationNos)) {
     echo "No loan application numbers found.\n";

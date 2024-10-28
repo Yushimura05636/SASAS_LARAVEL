@@ -228,19 +228,24 @@ protected function createPaymentLine($request, $payment, $schedule, $amountPaid,
     public function paymentLoanNO(string $id, CustomerPersonalityController $customerPersonalityController, PaymentScheduleController $paymentScheduleController)
     {
         // //find the payment schedule using loan no
-        // $payments = Payment_Schedule::where('loan_application_no', $id)->get();
-
-
-
         $payments = $paymentScheduleController->index($customerPersonalityController);
 
-        // Decode the JSON string into a PHP array
-        $paymentsArray = json_decode($payments, true);
+        // Check the type of $payments
+        var_dump($payments); // Debugging line
 
-        // Check if decoding was successful
-        if ($paymentsArray === null) {
-            echo "Failed to decode JSON.";
-            exit;
+        // If $payments is already an array, use it directly; otherwise decode it.
+        if (is_string($payments)) {
+            // Decode the JSON string into a PHP array
+            $paymentsArray = json_decode($payments, true);
+
+            // Check if decoding was successful
+            if ($paymentsArray === null) {
+                echo "Failed to decode JSON: " . json_last_error_msg();
+                exit;
+            }
+        } else {
+            // If it's an array, you can use it directly
+            $paymentsArray = $payments;
         }
 
         // Access the loan_application_no values

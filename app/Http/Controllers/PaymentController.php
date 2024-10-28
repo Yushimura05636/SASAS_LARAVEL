@@ -248,9 +248,9 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
         if ($totalAmountPaid >= $amountDue) {
             // Full payment case
             $schedule->amount_paid += $amountDue;
+            $schedule->amount_due = 0; // Ensure amount_due is zero
             $schedule->payment_status_code = 'PAID';
             $schedule->save();
-            $schedule->fresh();
 
             $totalAmountPaid -= $amountDue; // Deduct the paid amount from total
 
@@ -259,19 +259,25 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
 
         } else {
             // Partial payment case
-            $remainingBalance = $amountDue - $totalAmountPaid; // Calculate remaining balance
+            $remainingBalance = $amountDue - $totalAmountPaid; // Calculate remaining balance after partial payment
 
             // Update the schedule's amount paid with the partial amount
             $schedule->amount_paid += $totalAmountPaid;
 
-            //Reduce the current schedule's amount_due by the total amount paid
+            // Reduce the current schedule's amount_due by the total amount paid
             $schedule->amount_due -= $totalAmountPaid;
 
-            // Mark the current schedule as partially paid based on position
-            if ($index < count($schedules) - 1) {
-                $schedule->payment_status_code = 'PARTIALLY PAID, FORWARDED';
+            // Check if the schedule still has a balance
+            if ($schedule->amount_due > 0) {
+                // If there's still an amount due, mark as partially paid
+                if ($index < count($schedules) - 1) {
+                    $schedule->payment_status_code = 'PARTIALLY PAID, FORWARDED';
+                } else {
+                    $schedule->payment_status_code = 'PARTIALLY PAID';
+                }
             } else {
-                $schedule->payment_status_code = 'PARTIALLY PAID';
+                // If the amount_due is now zero, mark as paid
+                $schedule->payment_status_code = 'PAID';
             }
 
             // Save and refresh the schedule to ensure updated state
@@ -286,7 +292,7 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
                 : null;
 
             if ($nextSchedule) {
-                $nextSchedule->amount_due += $remainingBalance; // Update next schedule amount due
+                $nextSchedule->amount_due += $remainingBalance; // Forward remaining balance to the next schedule
                 $nextSchedule->save();
             }
 
@@ -297,6 +303,7 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
             $totalAmountPaid = 0;
         }
     }
+
 
     // // Return updated schedules data
     // return response()->json([

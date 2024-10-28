@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\PaymentScheduleStoreRequest;
 use App\Http\Requests\PaymentScheduleUpdateRequest;
+use App\Http\Resources\PaymentScheduleResource;
 use App\Interface\Service\PaymentScheduleServiceInterface;
 use App\Models\Loan_Application;
 use App\Models\Loan_Release;
+use App\Models\Payment_Schedule;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
@@ -25,7 +27,15 @@ class PaymentScheduleController extends Controller
      */
     public function index(CustomerPersonalityController $customerPersonalityController)
     {
-        $payment = $this->paymentScheduleService->findPaymentSchedule();
+        $payment = Payment_Schedule::where('payment_status_code', '!=', 'PARTIALLY PAID, FORWARDED')
+        ->get(); // No arguments needed here
+
+        //$payment = new PaymentScheduleResource($payment);
+
+
+        return response()->json([
+                'data' => $payment,
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
 
         for($i = 0; $i < count($payment); $i++)
         {
@@ -35,7 +45,11 @@ class PaymentScheduleController extends Controller
             $payment[$i]['family_name'] = " " . $customerPersonality->original['personality']['family_name'];
             $payment[$i]['first_name'] = " " . $customerPersonality->original['personality']['first_name'];
             $payment[$i]['middle_name'] = " " . $customerPersonality->original['personality']['middle_name'];
-            $payment[$i]['balance'] = $payment[$i]['amount_due'] - $payment[$i]['amount_paid'];
+
+            // Adjust balance calculation to account for forwarded amounts
+            $originalDue = $payment[$i]['amount_due'] + $payment[$i]['amount_paid']; // or replace with stored original_amount_due if available
+            $payment[$i]['balance'] = $originalDue - $payment[$i]['amount_paid'];
+
 
             if($payment[$i]['loan_released_id'] && $payment[$i]['loan_released_id'] > 0)
             {
@@ -59,9 +73,7 @@ class PaymentScheduleController extends Controller
 
             }
 
-            // return response()->json([
-            //     'data' => $payment[$i],
-            // ], Response::HTTP_INTERNAL_SERVER_ERROR);
+
 
 
         }

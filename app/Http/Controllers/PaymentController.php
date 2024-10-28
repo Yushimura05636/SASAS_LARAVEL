@@ -227,24 +227,23 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
 
 
 
-    //then release
-
-    $schedules = Payment_Schedule::where('customer_id', $payment->customer_id)->where('loan_released_id', $loanReleaseId)->where('payment_status_code', 'UNPAID')
-    ->orWhere('payment_status_code', 'PARTIALLY PAID')
+    $schedules = Payment_Schedule::where('customer_id', $payment->customer_id)
+    ->where('loan_released_id', $loanReleaseId)
+    ->whereIn('payment_status_code', ['UNPAID', 'PARTIALLY PAID'])
+    ->where('payment_status_code', 'not like', '%FORWARDED%')
     ->get();
 
     foreach ($schedules as $index => $schedule) {
-        // Check if the schedule status code contains "FORWARDED"
+        // Skip any schedule marked as "FORWARDED"
         if (strpos($schedule->payment_status_code, 'FORWARDED') !== false) {
-            continue; // Skip this schedule
+            continue;
         }
 
         if ($totalAmountPaid <= 0) {
             break; // No more payment left to allocate
         }
 
-
-        $amountDue = $schedule->amount_due - $schedule->amount_paid; // Remaining balance for this schedule
+        $amountDue = $schedule->amount_due - $schedule->amount_paid; // Calculate remaining balance
 
         if ($totalAmountPaid >= $amountDue) {
             // Full payment case
@@ -255,60 +254,55 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
 
             $totalAmountPaid -= $amountDue; // Deduct the paid amount from total
 
+            // Create a payment line for full payment
             $this->createPaymentLine($request, $payment, $schedule, $amountDue, 'Full payment', $paymentLineService);
 
         } else {
-
             // Partial payment case
             $remainingBalance = $amountDue - $totalAmountPaid; // Calculate remaining balance
-            // Respond with the next schedule data (if any)
 
-            // Update the schedule with the current total paid amount
+            // Update the schedule's amount paid with the partial amount
             $schedule->amount_paid += $totalAmountPaid;
 
-            // return response()->json([
-            //     'current_schedule' => $schedule->amount_due,
-            // ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            //Reduce the current schedule's amount_due by the total amount paid
+            $schedule->amount_due -= $totalAmountPaid;
 
-
-            // Check if this is the last schedule in the array
+            // Mark the current schedule as partially paid based on position
             if ($index < count($schedules) - 1) {
-                // Only mark as PARTIALLY PAID, FORWARDED if not the last schedule
                 $schedule->payment_status_code = 'PARTIALLY PAID, FORWARDED';
             } else {
-                // Otherwise, just mark as PARTIALLY PAID
                 $schedule->payment_status_code = 'PARTIALLY PAID';
             }
 
-            // Save the updated schedule
+            // Save and refresh the schedule to ensure updated state
             $schedule->save();
-            $schedule->fresh(); // Refresh the schedule to get the latest data
+            $schedule->fresh();
 
-            // Find the next schedule
-            $nextSchedule = Payment_Schedule::where('id', '>', $schedule->id) // Find the next schedule based on ID
-                ->orderBy('id')
-                ->first(); // Get the first next schedule
+            // Forward the remaining balance to the next schedule only if this is not the last schedule
+            $nextSchedule = ($index < count($schedules) - 1)
+                ? Payment_Schedule::where('id', '>', $schedule->id)
+                    ->orderBy('id')
+                    ->first()
+                : null;
 
             if ($nextSchedule) {
-                // Forward the remaining balance to the next schedule
-                $nextSchedule->amount_due += $remainingBalance; // Update the amount due
-                $nextSchedule->save(); // Save the updated next schedule
+                $nextSchedule->amount_due += $remainingBalance; // Update next schedule amount due
+                $nextSchedule->save();
             }
 
             // Create a payment line for the partial payment
-            $this->createPaymentLine($request, $payment, $schedule, $totalAmountPaid, 'PARTIAL PAYMENT', $paymentLineService);
-            // // Return the updated payment line along with the schedule details
-            // return response()->json([
-            //     'current_schedule' => $schedule, // Current schedule with updated balance
-            //     'next_schedule' => $nextSchedule,  // Next schedule with updated amount due
-            // ], Response::HTTP_INTERNAL_SERVER_ERROR);
-        }
+            $this->createPaymentLine($request, $payment, $schedule, $totalAmountPaid, 'Partial payment', $paymentLineService);
 
-        // // Respond with the next schedule data (if any)
-        // return response()->json([
-        //     'data' => isset($nextSchedule) ? $nextSchedule : null,
-        // ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            // Reset totalAmountPaid as all the payment has been allocated
+            $totalAmountPaid = 0;
+        }
     }
+
+    // // Return updated schedules data
+    // return response()->json([
+    //     'data' => $schedules,
+    // ], Response::HTTP_INTERNAL_SERVER_ERROR);
+
 }
 
 protected function createPaymentLine($request, $payment, $schedule, $amountPaid, $remarks, PaymentLineServiceInterface $paymentLineService)
@@ -372,7 +366,8 @@ protected function createPaymentLine($request, $payment, $schedule, $amountPaid,
     {
 
 // Call the method to get the payments response
-$response = $paymentScheduleController->index($customerPersonalityController);
+return $response = $paymentScheduleController->index($customerPersonalityController);
+
 
 $payments = null;
 // Check if the response is a JsonResponse
@@ -424,8 +419,6 @@ if (empty($loanApplicationNos)) {
         'data' => $loanApplicationNos,
     ];
 }
-
-
     }
 
     /**

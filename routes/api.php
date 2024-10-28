@@ -381,7 +381,9 @@ Route::middleware('auth:sanctum')->prefix('PAYMENTS')->group(function () use ($P
     Route::get('/', [PaymentController::class, 'index'])->middleware("document_access:$PAYMENTS, $VIEW");
     Route::get('/NoAUTH', [PaymentController::class, 'index']);
     Route::get('/NoAUTH/{id}', [PaymentController::class, 'show']);
-    Route::get('/{id}', [PaymentController::class, 'show'])->middleware("document_access:$PAYMENTS, $VIEW");
+    Route::get('/PaymentInLoanNO/{id}', [PaymentController::class, 'paymentLoanNo'])->middleware("document_access:$PAYMENTS, $VIEW");
+    Route::get('/NoAUTH/PaymentInLoanNO/{id}', [PaymentController::class, 'paymentLoanNo']);
+    oute::get('/{id}', [PaymentController::class, 'show'])->middleware("document_access:$PAYMENTS, $VIEW");
     Route::post('/', [PaymentController::class, 'store'])->middleware("document_access:$PAYMENTS, $CREATE");
     Route::put('/{id}', [PaymentController::class, 'update'])->middleware("document_access:$PAYMENTS, $UPDATE");
     Route::delete('/{id}', [PaymentController::class, 'destroy'])->middleware("document_access:$PAYMENTS, $DELETE");

@@ -225,6 +225,16 @@ protected function createPaymentLine($request, $payment, $schedule, $amountPaid,
 
     }
 
+    public function paymentLoanNO(string $id)
+    {
+        //find the payment schedule using loan no
+        $payments = Payment_Schedule::where('loan_application_no', $id)->get();
+
+        return [
+            'data' => $payments,
+        ];
+    }
+
     /**
      * Update the specified resource in storage.
      */

@@ -225,10 +225,14 @@ protected function createPaymentLine($request, $payment, $schedule, $amountPaid,
 
     }
 
-    public function paymentLoanNO(string $id)
+    public function paymentLoanNO(string $id, CustomerPersonalityController $customerPersonalityController, PaymentScheduleController $paymentScheduleController)
     {
-        //find the payment schedule using loan no
-        $payments = Payment_Schedule::where('loan_application_no', $id)->get();
+        // //find the payment schedule using loan no
+        // $payments = Payment_Schedule::where('loan_application_no', $id)->get();
+
+
+
+        $payments = $paymentScheduleController->index($customerPersonalityController);
 
         return [
             'data' => $payments,

@@ -221,31 +221,32 @@ class CustomerPersonalityController extends Controller
 
     public function indexApprove()
     {
-        //get customers that has been approved
+        // Get the personality status code for "Approved"
         $personalityId = Personality_Status_Map::where('description', 'Approved')->first()->id;
         $customers = Customer::get();
 
         $customerData = [];
-        $i = 0;
-        //loop the customer
-        foreach($customers as $customer)
-        {
-            $customerPersonality = Personality::where('id', $customer['personality_id'])
-            ->where('personality_status_code', $personalityId)
-            ->first();
 
-            if($customerPersonality)
-            {
-                $customerData[$i] = $customerPersonality;
+        // Loop through each customer
+        foreach ($customers as $customer) {
+            // Find the related personality with the "Approved" status
+            $customerPersonality = Personality::where('id', $customer->personality_id)
+                ->where('personality_status_code', $personalityId)
+                ->first();
+
+            // If an approved personality is found, add both customer and personality to the result array
+            if ($customerPersonality) {
+                $customerData[] = [
+                    'customer' => $customer,  // Include customer data
+                    'personality' => $customerPersonality,  // Include personality data
+                ];
             }
-
-            $i++;
         }
-
 
         return [
             'data' => $customerData,
         ];
+
     }
 
     public function update(Request $request, int $reqId, CustomerRequirementController $customerRequirementController, PersonalityController $personalityController, CustomerController $customerController)

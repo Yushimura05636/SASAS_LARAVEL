@@ -258,6 +258,9 @@ $loanApplicationNos = [];
 foreach ($paymentsArray as $payment) {
     // Check if 'original' and 'data' keys exist
     if (isset($payment['original']['data'])) {
+        return [
+            'data result' => $payment['original']['data'],
+        ];
         foreach ($payment['original']['data'] as $data) {
             // Get the loan_application_no value
             if (isset($data['loan_application_no'])) {

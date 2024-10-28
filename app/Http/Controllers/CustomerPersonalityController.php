@@ -223,9 +223,19 @@ class CustomerPersonalityController extends Controller
     {
         //get customers that has been approved
         $personalityId = Personality_Status_Map::where('description', 'Approved')->first()->id;
-        $customers = Personality::where('personality_status_code', $personalityId)
-        ->with('customers')
-        ->get();
+        $customers = Customer::get();
+
+        $customerData = [];
+        $i = 0;
+        //loop the customer
+        foreach($customers as $customer)
+        {
+            $customerData[$i] = Personality::where('id', $customer['personality_id'])
+            ->where('personality_status_code', $personalityId)
+            ->first();
+            $i++;
+        }
+
 
         return [
             'data' => $customers,

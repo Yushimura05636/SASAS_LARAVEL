@@ -30,8 +30,7 @@ class PaymentScheduleController extends Controller
         $payment = Payment_Schedule::where('payment_status_code', '!=', 'PARTIALLY PAID, FORWARDED')
         ->get(); // No arguments needed here
 
-        //$payment = new PaymentScheduleResource($payment);
-
+        $payment = new PaymentScheduleResource($payment);
 
         return response()->json([
                 'data' => $payment,

@@ -252,29 +252,23 @@ if ($paymentsArray === null) {
 }
 
 // Access the loan_application_no values
-$loanApplicationNos = [];
-$i = 0;
+// $loanApplicationNos = [];
+// $i = 0;
 
-// Loop through the payments array
-foreach ($paymentsArray as $payment) {
-    // Check if 'original' and 'data' keys exist
-    if($payment->loan_application_no)
-    {
-        $loanApplicationNos[$i] = $payment;
-    }
-
-    $i++;
-}
+// // Loop through the payments array
+// foreach ($paymentsArray as $payment) {
+//     // Check if 'original' and 'data' keys exist
+// }
 
 // Output the loan_application_no values
 if (empty($loanApplicationNos)) {
     echo "No loan application numbers found.\n";
     return [
-        'data' => $loanApplicationNos,
+        'data' => $paymentsArray,
     ];
 } else {
     return [
-        'data' => $loanApplicationNos,
+        'data' => $paymentsArray,
     ];
 }
 

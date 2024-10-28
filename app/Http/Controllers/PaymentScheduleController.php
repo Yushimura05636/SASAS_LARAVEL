@@ -33,9 +33,9 @@ class PaymentScheduleController extends Controller
 
         $payment = PaymentScheduleResource::collection($payment);
 
-        return response()->json([
-                'data' => $payment,
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        // return response()->json([
+        //         'data' => $payment,
+        //     ], Response::HTTP_INTERNAL_SERVER_ERROR);
 
         for($i = 0; $i < count($payment); $i++)
         {

@@ -366,7 +366,7 @@ protected function createPaymentLine($request, $payment, $schedule, $amountPaid,
     {
 
 // Call the method to get the payments response
-return $response = $paymentScheduleController->index($customerPersonalityController);
+$response = $paymentScheduleController->index($customerPersonalityController);
 
 
 $payments = null;

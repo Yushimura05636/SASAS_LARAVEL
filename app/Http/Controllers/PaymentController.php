@@ -258,7 +258,7 @@ $loanApplicationNos = [];
 foreach ($paymentsArray as $payment) {
     // Check if 'original' and 'data' keys exist
     return [
-        'data result' => $payment['data'],
+        'data result' => $payment,
     ];
 }
 

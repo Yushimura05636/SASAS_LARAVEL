@@ -10,6 +10,7 @@ use App\Interface\Service\PaymentServiceInterface;
 use App\Models\Loan_Release;
 use App\Models\Payment_Line;
 use App\Models\Payment_Schedule;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
@@ -227,51 +228,54 @@ protected function createPaymentLine($request, $payment, $schedule, $amountPaid,
 
     public function paymentLoanNO(string $id, CustomerPersonalityController $customerPersonalityController, PaymentScheduleController $paymentScheduleController)
     {
-        // //find the payment schedule using loan no
-        $payments = $paymentScheduleController->index($customerPersonalityController);
 
-        // Check the type of $payments
-        var_dump($payments); // Debugging line
+// Call the method to get the payments response
+$response = $paymentScheduleController->index($customerPersonalityController);
 
-        // If $payments is already an array, use it directly; otherwise decode it.
-        if (is_string($payments)) {
-            // Decode the JSON string into a PHP array
-            $paymentsArray = json_decode($payments, true);
+// Check if the response is a JsonResponse
+if ($response instanceof JsonResponse) {
+    // Get the content of the response
+    $payments = $response->getContent();
+} else {
+    // Handle the case where the response is not what you expect
+    echo "Unexpected response type.";
+    exit;
+}
 
-            // Check if decoding was successful
-            if ($paymentsArray === null) {
-                echo "Failed to decode JSON: " . json_last_error_msg();
-                exit;
-            }
-        } else {
-            // If it's an array, you can use it directly
-            $paymentsArray = $payments;
-        }
+// Decode the JSON string into a PHP array
+$paymentsArray = json_decode($payments, true);
 
-        // Access the loan_application_no values
-        $loanApplicationNos = [];
+// Check if decoding was successful
+if ($paymentsArray === null) {
+    echo "Failed to decode JSON: " . json_last_error_msg();
+    exit;
+}
 
-        // Loop through the payments array
-        foreach ($paymentsArray as $payment) {
-            // Check if 'original' and 'data' keys exist
-            if (isset($payment['original']['data'])) {
-                foreach ($payment['original']['data'] as $data) {
-                    // Get the loan_application_no value
-                    if (isset($data['loan_application_no'])) {
-                        $loanApplicationNos[] = $data['loan_application_no'];
-                    }
-                }
-            }
-        }
+// Access the loan_application_no values
+$loanApplicationNos = [];
 
-        // Output the loan_application_no values
-        if (empty($loanApplicationNos)) {
-            echo "No loan application numbers found.\n";
-        } else {
-            foreach ($loanApplicationNos as $loanNo) {
-                echo "Loan Application No: " . $loanNo . "\n";
+// Loop through the payments array
+foreach ($paymentsArray as $payment) {
+    // Check if 'original' and 'data' keys exist
+    if (isset($payment['original']['data'])) {
+        foreach ($payment['original']['data'] as $data) {
+            // Get the loan_application_no value
+            if (isset($data['loan_application_no'])) {
+                $loanApplicationNos[] = $data['loan_application_no'];
             }
         }
+    }
+}
+
+// Output the loan_application_no values
+if (empty($loanApplicationNos)) {
+    echo "No loan application numbers found.\n";
+} else {
+    foreach ($loanApplicationNos as $loanNo) {
+        echo "Loan Application No: " . $loanNo . "\n";
+    }
+}
+
 
     }
 

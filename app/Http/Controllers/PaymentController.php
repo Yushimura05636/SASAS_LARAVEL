@@ -234,11 +234,38 @@ protected function createPaymentLine($request, $payment, $schedule, $amountPaid,
 
         $payments = $paymentScheduleController->index($customerPersonalityController);
 
-        foreach($payments as $payment)
-        {
-            return [
-                $payments,
-            ];
+        // Decode the JSON string into a PHP array
+        $paymentsArray = json_decode($payments, true);
+
+        // Check if decoding was successful
+        if ($paymentsArray === null) {
+            echo "Failed to decode JSON.";
+            exit;
+        }
+
+        // Access the loan_application_no values
+        $loanApplicationNos = [];
+
+        // Loop through the payments array
+        foreach ($paymentsArray as $payment) {
+            // Check if 'original' and 'data' keys exist
+            if (isset($payment['original']['data'])) {
+                foreach ($payment['original']['data'] as $data) {
+                    // Get the loan_application_no value
+                    if (isset($data['loan_application_no'])) {
+                        $loanApplicationNos[] = $data['loan_application_no'];
+                    }
+                }
+            }
+        }
+
+        // Output the loan_application_no values
+        if (empty($loanApplicationNos)) {
+            echo "No loan application numbers found.\n";
+        } else {
+            foreach ($loanApplicationNos as $loanNo) {
+                echo "Loan Application No: " . $loanNo . "\n";
+            }
         }
 
     }

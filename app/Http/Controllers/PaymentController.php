@@ -234,9 +234,9 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
         {
             if(!is_null($schedule))
             {
-                if($schedule['id'] == $payment_schedule_id)
+                if($schedule->id == $payment_schedule_id)
                 {
-                    $loan_application_no = $schedule['loan_application_no'];
+                    $loan_application_no = $schedule->loan_application_no;
                 }
             }
         }

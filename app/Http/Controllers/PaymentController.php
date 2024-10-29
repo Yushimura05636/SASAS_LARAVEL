@@ -10,6 +10,7 @@ use App\Interface\Service\PaymentServiceInterface;
 use App\Models\Customer;
 use App\Models\Loan_Application;
 use App\Models\Loan_Release;
+use App\Models\Payment;
 use App\Models\Payment_Line;
 use App\Models\Payment_Schedule;
 use Illuminate\Http\JsonResponse;
@@ -116,56 +117,61 @@ class PaymentController extends Controller
      * Store a newly created resource in storage.
      */
     public function paymentApprove(Request $request, int $id, PaymentServiceInterface $paymentService, PaymentLineServiceInterface $paymentLineService, PaymentScheduleServiceInterface $paymentScheduleService, PaymentScheduleController $paymentScheduleController, CustomerPersonalityController $customerPersonalityController)
-{
-    // Start DB Transaction
-    DB::beginTransaction();
+    {
+        // Start DB Transaction
+        DB::beginTransaction();
 
+        try {
+            $payment = $request->input('state.payment');
 
-    try {
+            // Check for pending payments before approving the current payment
+            $hasPendingPayments = $this->hasPendingPayments($payment['customer_id'], $id);
 
-        $payment = $request->input('state.payment');
+            if ($hasPendingPayments) {
+                throw new \Exception('Cannot approve payment. There are pending payments before this one.');
+            }
 
+            // Create the payment record
+            $paymentData = [
+                'customer_id' => $payment['customer_id'],
+                'prepared_at' => now(),
+                'document_status_code' => 'APPROVED',
+                'prepared_by_id' => auth()->user()->id,
+                'amount_paid' => $payment['amount_paid'],
+                'notes' => $payment['notes'],
+            ];
 
-        // Create the payment record
-        $paymentData = [
-            'customer_id' => $payment['customer_id'],
-            'prepared_at' => now(),
-            'document_status_code' => 'APPROVED',
-            'prepared_by_id' => auth()->user()->id,
-            'amount_paid' => $payment['amount_paid'],
-            'notes' => $payment['notes'],
-        ];
+            if ($payment['amount_paid'] > 0) {
+                $paymentData = new Request($paymentData);
+                $paymentConfirm = $paymentService->updatePayment($paymentData, $id); // Save payment
 
+                $amount_paid = $payment['amount_paid'];
 
-        if($payment['amount_paid'] > 0)
-        {
-            $paymentData = new Request($paymentData);
+                // Step 2: Apply payment to schedule(s)
+                $this->applyPaymentToSchedules($paymentConfirm, $amount_paid, $request, $paymentLineService, $paymentScheduleService, $paymentScheduleController, $customerPersonalityController);
+            } else {
+                throw new \Exception('The amount should not be less than or equal zero');
+            }
 
-            $paymentConfirm = $paymentService->updatePayment($paymentData, $id); // Save payment
+            DB::commit();
 
-            $amount_paid = $payment['amount_paid'];
+            return response()->json(['message' => 'Payment created successfully'], 200);
 
-            // return response()->json([
-            //     //'data' => $paymentData,
-            //     'message' => $payment,
-            // ], Response::HTTP_INTERNAL_SERVER_ERROR);
-
-            // Step 2: Apply payment to schedule(s)
-            $this->applyPaymentToSchedules($paymentConfirm, $amount_paid, $request, $paymentLineService, $paymentScheduleService, $paymentScheduleController, $customerPersonalityController);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['error' => $e->getMessage()], 500);
         }
-        else
-        {
-            throw new \Exception('The amount should not be less than or equal zero');
-        }
-
-        DB::commit();
-
-        return response()->json(['message' => 'Payment created successfully'], 200);
-
-    } catch (\Exception $e) {
-        DB::rollBack();
-        return response()->json(['error' => $e->getMessage()], 500);
     }
+
+private function hasPendingPayments(int $customerId, int $currentPaymentId)
+{
+    // Check if there are any pending payments for the customer before the current payment
+    $pendingPayments = Payment::where('customer_id', $customerId)
+        ->where('document_status_code', 'PENDING') // Assuming 'PENDING' is the status code for pending payments
+        ->where('id', '<', $currentPaymentId) // Ensure that we check for payments with an ID less than the current payment's ID
+        ->exists();
+
+    return $pendingPayments;
 }
 
 protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $request, PaymentLineServiceInterface $paymentLineService, PaymentScheduleServiceInterface $paymentScheduleService, PaymentScheduleController $paymentScheduleController, CustomerPersonalityController $customerPersonalityController)

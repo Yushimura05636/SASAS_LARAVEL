@@ -385,9 +385,6 @@ class CustomerPersonalityController extends Controller
         ->orderBy('personality_id')
         ->get();
 
-        return response()->json([
-            'message' => $customers,
-        ], Response::HTTP_INTERNAL_SERVER_ERROR);
 
         $customerDatas = [];
         $i = 0;
@@ -401,6 +398,10 @@ class CustomerPersonalityController extends Controller
 
             $i++;
         }
+
+        return response()->json([
+            'message' => $customerDatas,
+        ], Response::HTTP_INTERNAL_SERVER_ERROR);
 
         if(count($customerDatas) > 0)
         {

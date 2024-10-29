@@ -387,17 +387,15 @@ class CustomerPersonalityController extends Controller
 
 
         $customerDatas = [];
-        $i = 0;
 
-        foreach($customers as $customer)
-        {
-            if($customer['personality']['personality_status_code'] == $personalityStatusId)
-            {
-                $customerDatas[$i] = $customer;
+        foreach ($customers as $customer) {
+            if ($customer['personality']['personality_status_code'] == $personalityStatusId) {
+                $customerDatas[] = $customer; // Using array shorthand
             }
-
-            $i++;
         }
+
+        // Debugging output
+        dd($customerDatas); // Check if the array has the expected data
 
         // return response()->json([
         //     'message group' => $customerDatas,
@@ -410,9 +408,9 @@ class CustomerPersonalityController extends Controller
             ], Response::HTTP_NOT_FOUND);
         }
 
-        return [
+        return response()->json([
             'data' => $customerDatas,
-        ];
+        ]);
 
 
     }

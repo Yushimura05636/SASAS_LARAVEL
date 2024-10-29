@@ -571,7 +571,7 @@ class DatabaseSeeder extends Seeder
         ]);
 
         Customer::create([
-            'group_id' => 2, // Adjust as necessary
+            'group_id' => 1, // Adjust as necessary
             'passbook_no' => 11123457, // Example passbook number
             'loan_count' => 1, // Example loan count
             'enable_mortuary' => 1, // Enable mortuary coverage
@@ -583,7 +583,7 @@ class DatabaseSeeder extends Seeder
         ]);
 
         Customer::create([
-            'group_id' => 3, // Adjust as necessary
+            'group_id' => 1, // Adjust as necessary
             'passbook_no' => 11123458, // Example passbook number
             'loan_count' => 1, // Example loan count
             'enable_mortuary' => 0, // Disable mortuary coverage
@@ -595,7 +595,7 @@ class DatabaseSeeder extends Seeder
         ]);
 
         Customer::create([
-            'group_id' => 4, // Adjust as necessary
+            'group_id' => 1, // Adjust as necessary
             'passbook_no' => 1123459, // Example passbook number
             'loan_count' => 1, // Initial loan count
             'enable_mortuary' => 1, // Enable mortuary coverage

@@ -89,249 +89,153 @@ class LoanApplicationController extends Controller
 
     }
 
-public function store(Request $request, PaymentScheduleServiceInterface $paymentScheduleService, LoanApplicationFeeController $loanApplicationFeeController , LoanApplicationCoMakerController $loanApplicationCoMakerController)
-{
-
-    $userId = auth()->user()->id;
-    $data = $request->input('allCustomerData');  // Assuming 'allCustomerData' is an array
-
-    // Start a database transaction
-    DB::beginTransaction();
-
-    //find the group id
-    $groupDatas = Customer::where('group_id', $data[0]['group_id'])->get();
-
-    // return response()->json([
-    //     'balance' => $groupDatas,
-    // ], Response::HTTP_INTERNAL_SERVER_ERROR);
-
-    for($i = 0; $i < count($groupDatas); $i++)
+    public function store(Request $request, PaymentScheduleServiceInterface $paymentScheduleService, LoanApplicationFeeController $loanApplicationFeeController, LoanApplicationCoMakerController $loanApplicationCoMakerController)
     {
+        // Start a database transaction
+        DB::beginTransaction();
 
-        // Fetch total due and total paid for the specific customer
-        $totals = Payment_Schedule::where('customer_id', $groupDatas[$i]['id'])
-        ->whereNotIn('payment_status_code', ['PAID', 'PARTIALLY PAID, FORWARDED']) // Exclude PAID and FORWARDED
-        ->selectRaw('(SUM(amount_due) - SUM(amount_paid)) AS balance')
-        ->first();
+        try {
+            $userId = auth()->user()->id;
+            $data = $request->input('allCustomerData');  // Assuming 'allCustomerData' is an array
 
-        $balance = $totals->balance;
+            // Loop through each customer data
+            for ($i = 0; $i < count($data); $i++) {
+                // Check for existing pending loans for the current customer
+                $pendingLoanExists = Loan_Application::where('customer_id', $data[$i]['customer_id'])
+                    ->where('document_status_code', 'PENDING')
+                    ->exists();
 
-        //return response()->json(['message' => $balance], Response::HTTP_INTERNAL_SERVER_ERROR);
+                if ($pendingLoanExists) {
+                    throw new \Exception('Cannot create a new loan application. There is already a pending loan for this customer.');
+                }
 
-        if($totals && $balance > 0)
-        {
-            throw new \Exception('There still member has not yet fully paid!');
-        }
+                // Find the group id
+                $groupDatas = Customer::where('group_id', $data[0]['group_id'])->get();
 
+                for ($j = 0; $j < count($groupDatas); $j++) {
+                    // Fetch total due and total paid for the specific customer
+                    $totals = Payment_Schedule::where('customer_id', $groupDatas[$j]['id'])
+                        ->whereNotIn('payment_status_code', ['PAID', 'PARTIALLY PAID', 'FORWARDED'])
+                        ->selectRaw('(SUM(amount_due) - SUM(amount_paid)) AS balance')
+                        ->first();
 
+                    $balance = $totals->balance ?? 0; // Set default balance to 0
 
-        // return response()->json([
-        //     'customer_id' => $totals,
-        // ], Response::HTTP_INTERNAL_SERVER_ERROR);
+                    if ($totals && $balance > 0) {
+                        throw new \Exception('There still member has not yet fully paid!');
+                    }
+                }
 
+                // Check if the customer data count is valid
+                if (count($data) < 6 || count($data) > 8) {
+                    return response()->json([
+                        'error' => 'The amount of customers should not be less than 6 or greater than 8',
+                        'message' => 'The amount of customers should not be less than 6 or greater than 8',
+                    ], Response::HTTP_CONFLICT);
+                }
 
+                // Check if the coMaker has remaining balance
+                if (isset($data[$i]['coMaker']) && $data[$i]['coMaker'] > 0) {
+                    $totals = Payment_Schedule::where('customer_id', $data[$i]['coMaker'])
+                        ->whereNotIn('payment_status_code', ['PAID', 'PARTIALLY PAID', 'FORWARDED'])
+                        ->selectRaw('(SUM(amount_due) - SUM(amount_paid)) AS balance')
+                        ->first();
 
-
-        // $totals = DB::table('payments')  // Replace 'payments' with your actual table name
-        //     ->where('customer_id', $customerId)
-        //     ->selectRaw('SUM(amount_due) as total_due, SUM(amount_paid) as total_paid')
-        //     ->first();
-
-    }
-
-    try {
-
-
-        //according kang sir mars recommended ang 8 but minimum of 6
-        // if(count($data) < 6 || count($data) > 8)
-        // {
-        //     return response()->json([
-        //         'error' => 'The amount of customers should not be less than 6 or greater than 8',
-        //         'message' => 'The amount of customers should not be less than 6 or greater than 8',
-        //     ], Response::HTTP_CONFLICT);
-        // }
-
-        //check if the coMaker has remaining balance
-        //isolate the loop because
-        for ($i = 0; $i < count($data); $i++)
-        {
-            //check if the coMaker has remaining balance
-            // Fetch total due and total paid for the specific customer
-            // Check if 'coMaker' exists and has a valid value
-            if (isset($data[$i]['coMaker']) && $data[$i]['coMaker'] > 0) {
-                // Fetch total due and total paid for the specific customer
-                $totals = Payment_Schedule::where('customer_id', $data[$i]['coMaker'])
-                ->whereNotIn('payment_status_code', ['PAID', 'PARTIALLY PAID', 'FORWARDED']) // Exclude specified statuses
-                ->selectRaw('(SUM(amount_due) - SUM(amount_paid)) AS balance')
-                ->first();
-
-                //return response()->json(['message' => $totals->balance], Response::HTTP_INTERNAL_SERVER_ERROR);
-
-                // Check if $totals is not empty and has a valid balance property
-                if ($totals && !empty($totals->balance)) {
-                    // Get the balance (in case balance is null, set it to 0)
-                    $balance = $totals->balance ?? 0;
-
-                    // Check if there's an outstanding balance
-                    if ($balance > 0) {
-                        // return response()->json([
-                        //     'data' => 'user: ' . $data[$i]['customer_id'] . ' ' . $data[$i]['coMaker'] . ' ' . $totals->balance,
-                        // ], Response::HTTP_INTERNAL_SERVER_ERROR);
+                    if ($totals && $totals->balance > 0) {
                         throw new \Exception($data[$i]['customer_id'] . ' The coMaker has not yet fully paid!');
                     }
                 }
 
+                // Loan count logic
+                $loanCountId = Customer::where('id', $data[$i]['customer_id'])->first()->loan_count;
+                $customerLoanAmount = $data[$i]['amount_loan'];
+                $min = Loan_Count::where('id', $loanCountId)->first()->min_amount;
+                $max = Loan_Count::where('id', $loanCountId)->first()->max_amount;
+
+                // Check loan amount validity
+                if (($customerLoanAmount < $min) || ($customerLoanAmount > $max)) {
+                    return response()->json([
+                        'message' => 'The customer loan amount is invalid',
+                    ], Response::HTTP_CONFLICT);
+                }
+
+                // Prepare data for loan application
+                $data[$i]['document_status_code'] = Document_Status_Code::where('description', $data[$i]['document_status_code'])->first()->id;
+                $data[$i]['datetime_prepared'] = now();
+                $data[$i]['prepared_by_id'] = $userId;
+                $data[$i]['last_modified_by_id'] = $userId;
+
+                // Convert into object
+                $payload = new Request($data[$i]);
+
+                // Insert the loan application
+                $this->loanApplicationService->createLoanApplication($payload);
+
+                // Handle coMaker
+                if (isset($data[$i]['coMaker']) && $data[$i]['coMaker'] > 0) {
+                    $loanId = Loan_Application::where('loan_application_no', $data[$i]['loan_application_no'])->first()->id;
+
+                    // Store the coMaker
+                    $coMaker = [
+                        'loan_application_id' => $loanId,
+                        'customer_id' => $data[$i]['customer_id'],
+                    ];
+
+                    $loanApplicationCoMakerController->store(new Request($coMaker));
+                }
+
+                // Process fees
+                for ($k = 0; $k < count($data[$i]['fees']); $k++) {
+                    $amount = Fees::where('id', $data[$i]['fees'][$k])->first()->amount;
+                    $loanId = Loan_Application::where('loan_application_no', $data[$i]['loan_application_no'])->first()->id;
+
+                    // Prepare fees data
+                    $fees = [
+                        'loan_application_id' => $loanId,
+                        'fee_id' => $data[$i]['fees'][$k],
+                        'amount' => $amount,
+                    ];
+
+                    // Prepare payment schedule payload
+                    $payload = [
+                        'customer_id' => $data[$i]['customer_id'],
+                        'loan_released_id' => null,
+                        'datetime_due' => now(),
+                        'amount_due' => $amount,
+                        'amount_interest' => 0, // Assuming equal interest distribution
+                        'amount_paid' => 0,
+                        'payment_status_code' => 'UNPAID', // Default status
+                        'remarks' => 'FEES',
+                    ];
+
+                    // Create payment schedule entry
+                    $paymentScheduleService->createPaymentSchedule(new Request($payload));
+
+                    // Store the fees
+                    $loanApplicationFeeController->store(new Request($fees));
+                }
             }
+
+            // If all is good, commit the transaction
+            DB::commit();
+
+            // Return a success message
+            return response()->json([
+                'message' => 'Loan applications and fees successfully inserted',
+                'data' => $data,
+            ], Response::HTTP_OK);
+        } catch (\Exception $e) {
+            // Rollback the transaction if something went wrong
+            DB::rollBack();
+
+            // Return an error message
+            return response()->json([
+                'message' => 'An error occurred while processing the transaction',
+                'error' => $e->getMessage(),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
-
-        // return response()->json([
-        //     'data' => 'hello',
-        // ], Response::HTTP_INTERNAL_SERVER_ERROR);
-
-        for ($i = 0; $i < count($data); $i++) {
-
-            // //check for coMakers
-            // if($data[$i]['coMaker'])
-            // {
-            //     //check here if the coMaker has still on going loans and still has balance
-            // }
-
-            //continue if there is not problem in CoMaker
-
-            //for loan count logic
-            $loanCountId = Customer::where('id', $data[$i]['customer_id'])->first()->loan_count;
-            $customerLoanAmount = $data[$i]['amount_loan'];
-            $min = Loan_Count::where('id', $loanCountId)->first()->min_amount;
-            $max = Loan_Count::where('id', $loanCountId)->first()->max_amount;
-
-            // if(($customerLoanAmount < $min) || ($customerLoanAmount > $max))
-            // {
-            //     return response()->json([
-            //         'message' => 'The customer loan amount is invalid',
-            //     ], Response::HTTP_CONFLICT);
-            // }
-
-            // Convert the PENDING name to value integer
-            $data[$i]['document_status_code'] = Document_Status_Code::where('description', $data[$i]['document_status_code'])->first()->id;
-
-            // Convert the time to now
-            $data[$i]['datetime_prepared'] = now();
-
-            //set in which who the user that modify and prepare the ui
-
-            //prepare
-            $data[$i]['prepared_by_id'] = $userId;
-
-            //modify
-            $data[$i]['last_modified_by_id '] = $userId;
-
-            // Convert into object
-            $payload = new Request($data[$i]);
-
-            // return response()->json([
-            //     'message' => 'An error occurred while processing the transaction',
-            //     'error' => $data[$i]['fees'],
-            // ], Response::HTTP_INTERNAL_SERVER_ERROR);
-            // Insert the loan application
-
-            $this->loanApplicationService->createLoanApplication($payload);
-
-            if(isset($data[$i]['coMaker']) && $data[$i]['coMaker'] > 0)
-            {
-                $loanId = Loan_Application::where('loan_application_no', $data[$i]['loan_application_no'])->first()->id;
-
-                //here will the store comaker if all is good
-                //store the coMaker
-                $coMaker = [
-                    'loan_application_id' => $loanId,
-                    'customer_id' => $data[$i]['customer_id'],
-                ];
-
-                // return response()->json([
-                //         'message' => 'An error occurred while processing the transaction',
-                //         'error' => $data[$i]['customer_id'],
-                //     ], Response::HTTP_INTERNAL_SERVER_ERROR);
-
-                $loanApplicationCoMakerController->store(new Request($coMaker));
-            }
-
-            // return response()->json([
-            //     'message' => 'An error occurred while processing the transaction',
-            //     'error' => $coMaker,
-            // ], Response::HTTP_INTERNAL_SERVER_ERROR);
-
-            //then save the fees value
-            for($k = 0; $k < count($data[$i]['fees']); $k++)
-            {
-
-
-                $amount = Fees::where('id', $data[$i]['fees'][$k])->first()->amount;
-                //loan id is here
-                $loanId = Loan_Application::where('loan_application_no', $data[$i]['loan_application_no'])->first()->id;
-
-                //get first the loan passbook no
-                $passbookNo = Customer::where('id', $data[$i]['customer_id'])->first()->passbook_no;
-
-
-                //$loanReleaseId = Loan_Release::where('passbook_number', $passbookNo)->where('loan_application_id', $loanId)->first()->id;
-
-                //convert fees and add amount
-                $fees = [
-                    'loan_application_id' => $loanId,
-                    'fee_id' => $data[$i]['fees'][$k],
-                    'amount' => $amount,
-                ];
-
-                //custom payload
-                $payload = [
-                    'customer_id' => $data[$i]['customer_id'],
-                    'loan_released_id' => null,
-                    'datetime_due' => now(),
-                    'amount_due' => $amount,
-                    'amount_interest' => 0, // Assuming equal interest distribution
-                    'amount_paid' => 0,
-                    'payment_status_code' => 'UNPAID', // Default status
-                    'remarks' => 'FEES',
-                ];
-
-                // return response()->json([
-                // 'message' => 'An error occurred while processing the transaction',
-                // 'error' => $payload,
-                // ], Response::HTTP_INTERNAL_SERVER_ERROR);
-
-                $payload = new Request($payload);
-
-                // Create payment schedule entry
-                $paymentScheduleService->createPaymentSchedule($payload);
-
-                //store the fees
-                $loanApplicationFeeController->store(new Request($fees));
-
-            }
-        }
-
-        // If all is good, commit the transaction
-        DB::commit();
-
-        // Return a success message
-        return response()->json([
-            'message' => 'Loan applications and fees successfully inserted',
-            'data' => $data,
-        ], Response::HTTP_OK);
-    } catch (\Exception $e) {
-        // Rollback the transaction if something went wrong
-        DB::rollBack();
-
-        // Log the exception if necessary
-        // Log::error($e->getMessage());
-
-        // Return an error message
-        return response()->json([
-            'message' => 'An error occurred while processing the transaction',
-            'error' => $e->getMessage(),
-        ], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
-}
+
 
 
     /**

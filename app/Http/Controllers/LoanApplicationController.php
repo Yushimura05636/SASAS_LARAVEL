@@ -92,160 +92,143 @@ class LoanApplicationController extends Controller
 
     public function store(Request $request, PaymentScheduleServiceInterface $paymentScheduleService, LoanApplicationFeeController $loanApplicationFeeController, LoanApplicationCoMakerController $loanApplicationCoMakerController)
     {
-        //return response()->json(['message' => 'hello'], Response::HTTP_INTERNAL_SERVER_ERROR);
-        // Start a database transaction
         DB::beginTransaction();
 
         try {
             $userId = auth()->user()->id;
-            $data = $request->input('allCustomerData');  // Assuming 'allCustomerData' is an array
+            $data = $request->input('allCustomerData');
 
-            // Loop through each customer data
-            for ($i = 0; $i < count($data); $i++) {
-                // Check for existing pending loans for the current customer
-                $pendingLoanExists = Loan_Application::where('customer_id', $data[$i]['customer_id'])
-                    ->where('document_status_code', 'PENDING')
-                    ->exists();
+            // Define helper functions within store
 
-                if ($pendingLoanExists) {
-                    throw new \Exception('Cannot create a new loan application. There is already a pending loan for this customer.');
+            $validateCustomerCount = function() use ($data) {
+                if (count($data) < 4) {
+                    throw new \Exception('The amount of customers should be at least 4');
                 }
+            };
 
-                // Find the group id
+            $checkPendingLoans = function() use ($data) {
+                foreach ($data as $customerData) {
+                    $pendingLoanExists = Loan_Application::where('customer_id', $customerData['customer_id'])
+                        ->where('document_status_code', 'PENDING')
+                        ->exists();
+
+                    if ($pendingLoanExists) {
+                        throw new \Exception('Cannot create a new loan application. There is already a pending loan for this customer.');
+                    }
+                }
+            };
+
+            $checkGroupBalances = function() use ($data) {
                 $groupDatas = Customer::where('group_id', $data[0]['group_id'])->get();
 
-                $balance = 0;
+                foreach ($groupDatas as $groupData) {
+                    $totals = Payment_Schedule::where('customer_id', $groupData->id)
+                        ->whereNotIn('payment_status_code', ['PAID', 'PARTIALLY PAID', 'PARTIALLY PAID, FORWARDED'])
+                        ->selectRaw('(SUM(amount_due) - SUM(amount_paid)) AS balance')
+                        ->first();
 
-                for ($j = 0; $j < count($groupDatas); $j++) {
-                    // Fetch total due and total paid for the specific customer
-                    $totals = Payment_Schedule::where('customer_id', $groupDatas[$j]['id'])
-                    ->whereNotIn('payment_status_code', ['PAID', 'PARTIALLY PAID', 'FORWARDED'])
-                    ->selectRaw('(SUM(amount_due) - SUM(amount_paid)) AS balance')
-                    ->first();
-
-                    $balance = $totals->balance ?? 0; // Set default balance to 0
-
+                    $balance = $totals->balance ?? 0;
 
                     if ($balance > 0) {
                         throw new \Exception('There still member has not yet fully paid!');
                     }
-
-                    //return response()->json(['message' => $totals], Response::HTTP_INTERNAL_SERVER_ERROR);
                 }
+            };
 
-                // Check if the customer data count is valid
-                if (count($data) < 4) {
-                    return response()->json([
-                        'error' => 'The amount of customers should be at least 4',
-                        'message' => 'The amount of customers should be at least 4',
-                    ], Response::HTTP_BAD_REQUEST);
-                }
+            $checkCoMakerBalances = function() use ($data) {
+                foreach ($data as $customerData) {
+                    if (isset($customerData['coMaker']) && $customerData['coMaker'] > 0) {
+                        $totals = Payment_Schedule::where('customer_id', $customerData['coMaker'])
+                            ->whereNotIn('payment_status_code', ['PAID', 'PARTIALLY PAID', 'FORWARDED'])
+                            ->selectRaw('(SUM(amount_due) - SUM(amount_paid)) AS balance')
+                            ->first();
 
-                // Check if the coMaker has remaining balance
-                if (isset($data[$i]['coMaker']) && $data[$i]['coMaker'] > 0) {
-                    $totals = Payment_Schedule::where('customer_id', $data[$i]['coMaker'])
-                        ->whereNotIn('payment_status_code', ['PAID', 'PARTIALLY PAID', 'FORWARDED'])
-                        ->selectRaw('(SUM(amount_due) - SUM(amount_paid)) AS balance')
-                        ->first();
-
-                    if ($totals && $totals->balance > 0) {
-                        throw new \Exception($data[$i]['customer_id'] . ' The coMaker has not yet fully paid!');
+                        if ($totals && $totals->balance > 0) {
+                            throw new \Exception($customerData['customer_id'] . ' The coMaker has not yet fully paid!');
+                        }
                     }
                 }
+            };
 
-                // Loan count logic
-                $loanCountId = Customer::where('id', $data[$i]['customer_id'])->first()->loan_count;
-                $customerLoanAmount = $data[$i]['amount_loan'];
-                $min = Loan_Count::where('id', $loanCountId)->first()->min_amount;
-                $max = Loan_Count::where('id', $loanCountId)->first()->max_amount;
+            // Move saveFeesAndPaymentSchedule function here so it's accessible to saveLoanApplication
+            $saveFeesAndPaymentSchedule = function($customerData) use ($paymentScheduleService, $loanApplicationFeeController) {
+                foreach ($customerData['fees'] as $feeId) {
+                    $amount = Fees::where('id', $feeId)->first()->amount;
+                    $loanId = Loan_Application::where('loan_application_no', $customerData['loan_application_no'])->first()->id;
 
-                // Check loan amount validity
-                if (($customerLoanAmount < $min) || ($customerLoanAmount > $max)) {
-                    return response()->json([
-                        'message' => 'The customer loan amount is invalid',
-                    ], Response::HTTP_CONFLICT);
-                }
-
-                // Prepare data for loan application
-                $data[$i]['document_status_code'] = Document_Status_Code::where('description', $data[$i]['document_status_code'])->first()->id;
-                $data[$i]['datetime_prepared'] = now();
-                $data[$i]['prepared_by_id'] = $userId;
-                $data[$i]['last_modified_by_id'] = $userId;
-
-                // Convert into object
-                $payload = new Request($data[$i]);
-
-                // Insert the loan application
-                $this->loanApplicationService->createLoanApplication($payload);
-
-                // Handle coMaker
-                if (isset($data[$i]['coMaker']) && $data[$i]['coMaker'] > 0) {
-                    $loanId = Loan_Application::where('loan_application_no', $data[$i]['loan_application_no'])->first()->id;
-
-                    // Store the coMaker
-                    $coMaker = [
-                        'loan_application_id' => $loanId,
-                        'customer_id' => $data[$i]['customer_id'],
-                    ];
-
-                    $loanApplicationCoMakerController->store(new Request($coMaker));
-                }
-
-                // Process fees
-                for ($k = 0; $k < count($data[$i]['fees']); $k++) {
-                    $amount = Fees::where('id', $data[$i]['fees'][$k])->first()->amount;
-                    $loanId = Loan_Application::where('loan_application_no', $data[$i]['loan_application_no'])->first()->id;
-
-                    // Prepare fees data
                     $fees = [
                         'loan_application_id' => $loanId,
-                        'fee_id' => $data[$i]['fees'][$k],
+                        'fee_id' => $feeId,
                         'amount' => $amount,
                     ];
-
-                    // Prepare payment schedule payload
                     $payload = [
-                        'customer_id' => $data[$i]['customer_id'],
+                        'customer_id' => $customerData['customer_id'],
                         'loan_released_id' => null,
                         'datetime_due' => now(),
                         'amount_due' => $amount,
-                        'amount_interest' => 0, // Assuming equal interest distribution
+                        'amount_interest' => 0,
                         'amount_paid' => 0,
-                        'payment_status_code' => 'UNPAID', // Default status
+                        'payment_status_code' => 'UNPAID',
                         'remarks' => 'FEES',
                     ];
 
-                    if($balance <= 0 || $balance == null)
-                    {
-                        // Create payment schedule entry
+                    if ($customerData['balance'] <= 0) {
                         $paymentScheduleService->createPaymentSchedule(new Request($payload));
-
-                        // Store the fees
                         $loanApplicationFeeController->store(new Request($fees));
                     }
-
                 }
+            };
+
+            $saveLoanApplication = function($customerData) use ($userId, $saveFeesAndPaymentSchedule, $loanApplicationCoMakerController) {
+                $customerData['document_status_code'] = Document_Status_Code::where('description', $customerData['document_status_code'])->first()->id;
+                $customerData['datetime_prepared'] = now();
+                $customerData['prepared_by_id'] = $userId;
+                $customerData['last_modified_by_id'] = $userId;
+
+                $payload = new Request($customerData);
+                $this->loanApplicationService->createLoanApplication($payload);
+
+                if (isset($customerData['coMaker']) && $customerData['coMaker'] > 0) {
+                    $loanId = Loan_Application::where('loan_application_no', $customerData['loan_application_no'])->first()->id;
+                    $coMaker = [
+                        'loan_application_id' => $loanId,
+                        'customer_id' => $customerData['customer_id'],
+                    ];
+                    $loanApplicationCoMakerController->store(new Request($coMaker));
+                }
+
+                $saveFeesAndPaymentSchedule($customerData);
+            };
+
+            // Run the validation and checks
+            $validateCustomerCount();
+            $checkPendingLoans();
+            $checkGroupBalances();
+            $checkCoMakerBalances();
+
+            // Insert loan applications
+            foreach ($data as $customerData) {
+                $saveLoanApplication($customerData);
             }
 
-            // If all is good, commit the transaction
             DB::commit();
 
-            // Return a success message
             return response()->json([
                 'message' => 'Loan applications and fees successfully inserted',
                 'data' => $data,
             ], Response::HTTP_OK);
+
         } catch (\Exception $e) {
-            // Rollback the transaction if something went wrong
             DB::rollBack();
 
-            // Return an error message
             return response()->json([
                 'error' => 'An error occurred while processing the transaction',
                 'message' => $e->getMessage(),
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
+
+
 
 
 

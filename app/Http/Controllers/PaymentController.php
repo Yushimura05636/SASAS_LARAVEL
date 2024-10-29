@@ -210,7 +210,6 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
     // Convert the array into an associative array keyed by 'id'
     $indexedSchedules = array_values($payment_schedule->original);
 
-    return response()->json(['message' => $indexedSchedules], Response::HTTP_INTERNAL_SERVER_ERROR);
 
     foreach ($indexedSchedules as $id => $schedule) {
         $debug = $schedule;
@@ -229,6 +228,21 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
         }
     }
 
+    if($loan_application_no != null || !is_null($loan_application_no))
+    {
+        foreach($indexedSchedules as $id => $schedule)
+        {
+            if(!is_null($schedule))
+            {
+                if($schedule['id'] == $payment_schedule_id)
+                {
+                    $loan_application_no = $schedule['loan_application_no'];
+                }
+            }
+        }
+    }
+
+    return response()->json(['message' => $indexedSchedules], Response::HTTP_INTERNAL_SERVER_ERROR);
     //return response()->json(['message' => $indexedSchedules], Response::HTTP_INTERNAL_SERVER_ERROR);
 
 

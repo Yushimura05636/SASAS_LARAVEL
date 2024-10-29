@@ -334,7 +334,7 @@ class DatabaseSeeder extends Seeder
             'first_name' => 'Mars',
             'middle_name' => 'Mars',
             'email' => 'MarsAmarillento@email.com',
-            'password' => Hash::make('password'),
+            'password' => Hash::make('marsamarillento123'),
             'employee_id' => 3,
             'status_id' => 1,
         ]);

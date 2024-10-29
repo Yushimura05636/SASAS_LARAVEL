@@ -127,11 +127,11 @@ class LoanApplicationController extends Controller
                 }
 
                 // Check if the customer data count is valid
-                if (count($data) < 6 || count($data) > 8) {
+                if (count($data) < 4) {
                     return response()->json([
-                        'error' => 'The amount of customers should not be less than 6 or greater than 8',
-                        'message' => 'The amount of customers should not be less than 6 or greater than 8',
-                    ], Response::HTTP_CONFLICT);
+                        'error' => 'The amount of customers should be at least 4',
+                        'message' => 'The amount of customers should be at least 4',
+                    ], Response::HTTP_BAD_REQUEST);
                 }
 
                 // Check if the coMaker has remaining balance

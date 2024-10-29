@@ -114,6 +114,8 @@ class LoanApplicationController extends Controller
                 // Find the group id
                 $groupDatas = Customer::where('group_id', $data[0]['group_id'])->get();
 
+                $balance = 0;
+
                 for ($j = 0; $j < count($groupDatas); $j++) {
                     // Fetch total due and total paid for the specific customer
                     $totals = Payment_Schedule::where('customer_id', $groupDatas[$j]['id'])
@@ -213,11 +215,15 @@ class LoanApplicationController extends Controller
                         'remarks' => 'FEES',
                     ];
 
-                    // Create payment schedule entry
-                    $paymentScheduleService->createPaymentSchedule(new Request($payload));
+                    if($balance <= 0 || $balance == null)
+                    {
+                        // Create payment schedule entry
+                        $paymentScheduleService->createPaymentSchedule(new Request($payload));
 
-                    // Store the fees
-                    $loanApplicationFeeController->store(new Request($fees));
+                        // Store the fees
+                        $loanApplicationFeeController->store(new Request($fees));
+                    }
+
                 }
             }
 

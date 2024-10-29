@@ -232,7 +232,6 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
     {
         foreach($indexedSchedules as $id => $schedule)
         {
-            return response()->json(['message' => $sched], Response::HTTP_INTERNAL_SERVER_ERROR);
             if(!is_null($schedule))
             {
                 if($schedule['id'] == $payment_schedule_id)
@@ -243,6 +242,7 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
         }
     }
 
+    return response()->json(['message' => $loan_application_no], Response::HTTP_INTERNAL_SERVER_ERROR);
     //return response()->json(['message' => $indexedSchedules], Response::HTTP_INTERNAL_SERVER_ERROR);
 
 

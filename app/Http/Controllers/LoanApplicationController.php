@@ -92,7 +92,7 @@ class LoanApplicationController extends Controller
 
     public function store(Request $request, PaymentScheduleServiceInterface $paymentScheduleService, LoanApplicationFeeController $loanApplicationFeeController, LoanApplicationCoMakerController $loanApplicationCoMakerController)
     {
-        return response()->json(['message' => 'hello'], Response::HTTP_INTERNAL_SERVER_ERROR);
+        //return response()->json(['message' => 'hello'], Response::HTTP_INTERNAL_SERVER_ERROR);
         // Start a database transaction
         DB::beginTransaction();
 
@@ -114,6 +114,7 @@ class LoanApplicationController extends Controller
                 // Find the group id
                 $groupDatas = Customer::where('group_id', $data[0]['group_id'])->get();
 
+                return response()->json(['message' => $groupDatas], Response::HTTP_INTERNAL_SERVER_ERROR);
                 for ($j = 0; $j < count($groupDatas); $j++) {
                     // Fetch total due and total paid for the specific customer
                     $totals = Payment_Schedule::where('customer_id', $groupDatas[$j]['id'])
@@ -123,7 +124,6 @@ class LoanApplicationController extends Controller
 
                     $balance = $totals->balance ?? 0; // Set default balance to 0
 
-                    return response()->json(['message' => $balance], Response::HTTP_INTERNAL_SERVER_ERROR);
 
                     if ($totals && $balance > 0) {
                         throw new \Exception('There still member has not yet fully paid!');

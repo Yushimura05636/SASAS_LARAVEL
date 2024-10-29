@@ -16,6 +16,7 @@ use App\Models\Customer;
 use App\Models\Document_Status_Code;
 use App\Models\Factor_Rate;
 use App\Models\Fees;
+use App\Models\Holiday;
 use App\Models\Loan_Application;
 use App\Models\Loan_Application_Comaker;
 use App\Models\Loan_Application_Fees;
@@ -389,8 +390,24 @@ class LoanApplicationController extends Controller
         return $this->loanApplicationService->deleteLoanApplication( $id);
     }
 
-    public function approve(Request $request,int $id, LoanApplicationServiceInterface $loanApplicationService, LoanReleaseServiceInterface $loanReleaseService, PaymentScheduleServiceInterface $paymentScheduleService)
+    public function approve(Request $request, int $id, LoanApplicationServiceInterface $loanApplicationService, LoanReleaseServiceInterface $loanReleaseService, PaymentScheduleServiceInterface $paymentScheduleService)
 {
+    // Helper function to check if a date is a holiday
+    function isHoliday($date) {
+        return Holiday::where('date', $date->toDateString())
+                      ->where('isActive', 1)
+                      ->exists();
+    }
+
+    // Helper function to adjust due date for Sundays and holidays
+    function adjustDueDate($dueDate) {
+        // Loop until due date is neither a Sunday nor a holiday
+        while ($dueDate->isSunday() || isHoliday($dueDate)) {
+            $dueDate->addDay();
+        }
+        return $dueDate;
+    }
+
     // Start the transaction
     DB::beginTransaction();
 
@@ -399,45 +416,32 @@ class LoanApplicationController extends Controller
         $customerId = $request['customer_id'];
         $loanId = $request['id'];
 
-
         $payableFee = Payment_Schedule::where('customer_id', $customerId)
-        ->where(function($query) {
-            $query->where('remarks', 'FEES')
-                ->orWhere('remarks', 'PARTIALLY PAID');
-        })
-        ->whereNotIn('payment_status_code', ['PAID', 'PARTIALLY PAID, FORWARDED']) // Exclude PAID and FORWARDED
-        ->selectRaw('SUM(amount_due) - SUM(amount_paid) as fee_balance')
-        ->first();
+            ->where(function($query) {
+                $query->where('remarks', 'FEES')
+                      ->orWhere('remarks', 'PARTIALLY PAID');
+            })
+            ->whereNotIn('payment_status_code', ['PAID', 'PARTIALLY PAID, FORWARDED'])
+            ->selectRaw('SUM(amount_due) - SUM(amount_paid) as fee_balance')
+            ->first();
 
-        // return response()->json([
-        //     'message' => $payableFee,
-        //     ], Response::HTTP_INTERNAL_SERVER_ERROR);
-
-        if($payableFee && $payableFee->fee_balance > 0)
-        {
-            throw new \Exception('Cannot approve there still fees need to be paid');
+        if ($payableFee && $payableFee->fee_balance > 0) {
+            throw new \Exception('Cannot approve: outstanding fees need to be paid');
         }
 
-
-        //find the 'APPROVE' description
         $loanApproveId = Document_Status_Code::where('description', 'Approved')->first()->id;
 
-        //Update the status code
         $loanApplication = Loan_Application::findOrFail($loanId);
         $loanApplication->document_status_code = $loanApproveId;
         $loanApplication->save();
         $loanApplication->fresh();
 
-
-        // // Get the passbook number
         $passbookNo = Customer::where('id', $customerId)->first()->passbook_no;
 
-        // Loan details
         $loanAmount = $request['amount_loan'];
         $factorRateId = $request['factor_rate'];
         $amountInterest = $request['amount_interest'];
 
-        // Fetch payment frequency and duration
         $factorRate = Factor_Rate::findOrFail($factorRateId);
         $paymentFrequencyId = $factorRate->payment_frequency_id;
         $paymentDurationId = $factorRate->payment_duration_id;
@@ -445,7 +449,6 @@ class LoanApplicationController extends Controller
         $paymentFrequency = Payment_Frequency::findOrFail($paymentFrequencyId);
         $paymentDuration = Payment_Duration::findOrFail($paymentDurationId);
 
-        // Prepare payload for loan release creation
         $loanReleasePayload = [
             'datetime_prepared' => now(),
             'passbook_number' => $passbookNo,
@@ -453,57 +456,46 @@ class LoanApplicationController extends Controller
             'prepared_by_id' => $userId,
             'amount_loan' => $loanAmount,
             'amount_interest' => $amountInterest,
-            'datetime_first_due' => now()->addDays($paymentFrequency->days_interval), // Calculate first due date based on frequency
+            'datetime_first_due' => now()->addDays($paymentFrequency->days_interval),
             'notes' => $request->get('notes', null),
         ];
 
-        //custom payload
         $loanReleasePayload = new Request($loanReleasePayload);
-
-
-        // Save the loan release
         $loanRelease = $loanReleaseService->createLoanRelease($loanReleasePayload);
 
-        // Create payment schedule entries
         $numberOfPayments = $paymentDuration->number_of_payments;
-        $amountDue = ($loanAmount + $amountInterest) / $numberOfPayments; // Distributing total amount over payments
+        $amountDue = ($loanAmount + $amountInterest) / $numberOfPayments;
         $firstDueDate = $loanReleasePayload['datetime_first_due'];
 
         for ($i = 0; $i < $numberOfPayments; $i++) {
-            // Calculate due date for each payment
-            $dueDate = $firstDueDate->copy()->addDays($i * $paymentFrequency->days_interval);
+            $dueDate = adjustDueDate($firstDueDate->copy()->addDays($i * $paymentFrequency->days_interval));
 
-            //custom payload
             $payload = [
                 'customer_id' => $customerId,
                 'loan_released_id' => $loanRelease->id,
                 'datetime_due' => $dueDate,
                 'amount_due' => $amountDue,
-                'amount_interest' => $amountInterest / $numberOfPayments, // Assuming equal interest distribution
+                'amount_interest' => $amountInterest / $numberOfPayments,
                 'amount_paid' => 0,
-                'payment_status_code' => 'UNPAID', // Default status
+                'payment_status_code' => 'UNPAID',
                 'remarks' => null,
             ];
 
-
             $payload = new Request($payload);
-
-            // Create payment schedule entry
             $paymentScheduleService->createPaymentSchedule($payload);
         }
 
-        // Commit the transaction
         DB::commit();
 
         return response()->json(['message' => 'Loan release and payment schedule created successfully.'], Response::HTTP_OK);
 
     } catch (\Exception $e) {
-        // Rollback the transaction in case of error
         DB::rollBack();
 
         return response()->json(['message' => 'An error occurred: ' . $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
 }
+
 
 public function createPayment(Request $request, PaymentServiceInterface $paymentService, PaymentLineServiceInterface $paymentLineService, PaymentScheduleServiceInterface $paymentScheduleService)
 {

@@ -123,11 +123,11 @@ class LoanApplicationController extends Controller
 
                     $balance = $totals->balance ?? 0; // Set default balance to 0
 
-                    return response()->json(['message' => $totals], Response::HTTP_INTERNAL_SERVER_ERROR);
 
-                    if (is_null($totals) && $balance > 0) {
+                    if (!is_null($totals) && $balance > 0) {
                         throw new \Exception('There still member has not yet fully paid!');
                     }
+                    return response()->json(['message' => $totals], Response::HTTP_INTERNAL_SERVER_ERROR);
                 }
 
                 // Check if the customer data count is valid

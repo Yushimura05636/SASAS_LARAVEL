@@ -127,7 +127,8 @@ class LoanApplicationController extends Controller
                     if (!is_null($totals) && $balance > 0) {
                         throw new \Exception('There still member has not yet fully paid!');
                     }
-                    return response()->json(['message' => $totals], Response::HTTP_INTERNAL_SERVER_ERROR);
+
+                    //return response()->json(['message' => $totals], Response::HTTP_INTERNAL_SERVER_ERROR);
                 }
 
                 // Check if the customer data count is valid

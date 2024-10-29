@@ -461,6 +461,149 @@ class DatabaseSeeder extends Seeder
             'isActive' => 1,
         ]);
 
+        //customer
+        Personality::create([
+            'datetime_registered' => now(),
+            'family_name' => 'Carter',
+            'middle_name' => 'John',
+            'first_name' => 'Lily',
+            'birthday' => '1985-06-15',
+            'civil_status' => 1, // Single
+            'gender_code' => 2, // Female
+            'house_street' => '45 Pine Street',
+            'purok_zone' => 'Zone 3',
+            'postal_code' => '2500',
+            'telephone_no' => '(045) 123-4567',
+            'email_address' => 'lily.carter@example.com',
+            'cellphone_no' => '+63 917 765 4321',
+            'name_type_code' => 2,
+            'personality_status_code' => 2,
+            'barangay_id' => 1, // Adjust based on your data
+            'city_id' => 4, // Adjust based on your data
+            'country_id' => 1, // Adjust based on your data
+            'province_id' => 2, // Adjust based on your data
+            'credit_status_id' => 1, // Adjust based on your data
+            'notes' => null, // If applicable, otherwise set to NULL
+        ]);
 
+        Personality::create([
+            'datetime_registered' => now(),
+            'family_name' => 'Ramirez',
+            'middle_name' => 'Ana',
+            'first_name' => 'Carlos',
+            'birthday' => '1990-03-22',
+            'civil_status' => 2, // Married
+            'gender_code' => 1, // Male
+            'house_street' => '102 Elm Road',
+            'purok_zone' => 'Zone 1',
+            'postal_code' => '2501',
+            'telephone_no' => '(045) 987-6543',
+            'email_address' => 'carlos.ramirez@example.com',
+            'cellphone_no' => '+63 917 123 4567',
+            'name_type_code' => 2,
+            'personality_status_code' => 2,
+            'barangay_id' => 2, // Adjust based on your data
+            'city_id' => 6, // Adjust based on your data
+            'country_id' => 1, // Adjust based on your data
+            'province_id' => 3, // Adjust based on your data
+            'credit_status_id' => 1, // Adjust based on your data
+            'notes' => null, // If applicable, otherwise set to NULL
+        ]);
+
+        Personality::create([
+            'datetime_registered' => now(),
+            'family_name' => 'Santos',
+            'middle_name' => 'Maria',
+            'first_name' => 'Juan',
+            'birthday' => '1995-12-30',
+            'civil_status' => 3, // Divorced
+            'gender_code' => 1, // Male
+            'house_street' => '12 Mango Avenue',
+            'purok_zone' => 'Zone 2',
+            'postal_code' => '2502',
+            'telephone_no' => '(045) 456-7890',
+            'email_address' => 'juan.santos@example.com',
+            'cellphone_no' => '+63 912 345 6789',
+            'name_type_code' => 2,
+            'personality_status_code' => 2,
+            'barangay_id' => 3, // Adjust based on your data
+            'city_id' => 8, // Adjust based on your data
+            'country_id' => 1, // Adjust based on your data
+            'province_id' => 4, // Adjust based on your data
+            'credit_status_id' => 2, // Adjust based on your data
+            'notes' => null, // If applicable, otherwise set to NULL
+        ]);
+
+        Personality::create([
+            'datetime_registered' => now(),
+            'family_name' => 'Lim',
+            'middle_name' => 'Wong',
+            'first_name' => 'Mei',
+            'birthday' => '1992-09-14',
+            'civil_status' => 1, // Single
+            'gender_code' => 2, // Female
+            'house_street' => '99 Orchid Street',
+            'purok_zone' => 'Zone 4',
+            'postal_code' => '2503',
+            'telephone_no' => '(045) 321-6547',
+            'email_address' => 'mei.lim@example.com',
+            'cellphone_no' => '+63 917 876 5432',
+            'name_type_code' => 2,
+            'personality_status_code' => 2,
+            'barangay_id' => 4, // Adjust based on your data
+            'city_id' => 10, // Adjust based on your data
+            'country_id' => 1, // Adjust based on your data
+            'province_id' => 5, // Adjust based on your data
+            'credit_status_id' => 1, // Adjust based on your data
+            'notes' => null, // If applicable, otherwise set to NULL
+        ]);
+
+        Customer::create([
+            'group_id' => 1, // Adjust as necessary
+            'passbook_no' => 11123456, // Example passbook number
+            'loan_count' => 1, // Initial loan count
+            'enable_mortuary' => 1, // Enable mortuary coverage (1 for yes, 0 for no)
+            'mortuary_coverage_start' => now(), // Start date for coverage
+            'mortuary_coverage_end' => now()->addYear(), // End date for coverage, one year from now
+            'personality_id' => 1, // ID of Lily Carter
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        Customer::create([
+            'group_id' => 2, // Adjust as necessary
+            'passbook_no' => 11123457, // Example passbook number
+            'loan_count' => 1, // Example loan count
+            'enable_mortuary' => 1, // Enable mortuary coverage
+            'mortuary_coverage_start' => now(),
+            'mortuary_coverage_end' => now()->addYear(),
+            'personality_id' => 2, // ID of Carlos Ramirez
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        Customer::create([
+            'group_id' => 3, // Adjust as necessary
+            'passbook_no' => 11123458, // Example passbook number
+            'loan_count' => 1, // Example loan count
+            'enable_mortuary' => 0, // Disable mortuary coverage
+            'mortuary_coverage_start' => null, // No coverage
+            'mortuary_coverage_end' => null,
+            'personality_id' => 3, // ID of Juan Santos
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        Customer::create([
+            'group_id' => 4, // Adjust as necessary
+            'passbook_no' => 1123459, // Example passbook number
+            'loan_count' => 1, // Initial loan count
+            'enable_mortuary' => 1, // Enable mortuary coverage
+            'mortuary_coverage_start' => now(),
+            'mortuary_coverage_end' => now()->addYear(),
+            'personality_id' => 4, // ID of Mei Lim
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
     }
 }

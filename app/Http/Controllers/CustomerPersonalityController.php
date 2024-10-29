@@ -399,9 +399,6 @@ class CustomerPersonalityController extends Controller
             $i++;
         }
 
-        // return response()->json([
-        //     'message' => $customerDatas,
-        // ], Response::HTTP_INTERNAL_SERVER_ERROR);
 
         if(count($customerDatas) > 0)
         {
@@ -409,6 +406,10 @@ class CustomerPersonalityController extends Controller
                 'data' => $customerDatas,
             ];
         }
+
+        return response()->json([
+            'message' => $customerDatas,
+        ], Response::HTTP_INTERNAL_SERVER_ERROR);
 
         return response()->json([
             'message' => 'there is no customer in this group'

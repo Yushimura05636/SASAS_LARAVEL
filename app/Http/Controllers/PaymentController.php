@@ -234,7 +234,12 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
         {
             if(!is_null($schedule))
             {
-                return response()->json(['message' => $schedule, 'message data' => $schedule->id], Response::HTTP_INTERNAL_SERVER_ERROR);
+                //$objId = $schedule->id;
+                //$arrId = $schedule['id'];
+                $altId = $schedule[0]['id'];
+                $altId2 = $schedule[0]->id;
+
+                return response()->json(['message' => $schedule, 'messabe data 2' => $altId, 'message data 3' => $altId2], Response::HTTP_INTERNAL_SERVER_ERROR);
                 if($schedule->id == $payment_schedule_id)
                 {
                     $loan_application_no = $schedule->loan_application_no;

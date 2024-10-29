@@ -217,7 +217,6 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
             $debug = count($schedule);
             foreach($schedule as $sched)
             {
-                return response()->json(['message' => $sched], Response::HTTP_INTERNAL_SERVER_ERROR);
                 if(!is_null($sched))
                 {
                     if($sched['id'] == $payment_schedule_id)
@@ -229,10 +228,11 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
         }
     }
 
-    if($loan_application_no != null || !is_null($loan_application_no))
+    if($loan_application_no == null || is_null($loan_application_no))
     {
         foreach($indexedSchedules as $id => $schedule)
         {
+            return response()->json(['message' => $sched], Response::HTTP_INTERNAL_SERVER_ERROR);
             if(!is_null($schedule))
             {
                 if($schedule['id'] == $payment_schedule_id)

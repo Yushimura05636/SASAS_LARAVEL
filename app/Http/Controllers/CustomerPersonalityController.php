@@ -385,6 +385,10 @@ class CustomerPersonalityController extends Controller
         ->orderBy('personality_id')
         ->get();
 
+        return response()->json([
+            'message' => $customers,
+        ], Response::HTTP_INTERNAL_SERVER_ERROR);
+
         $customerDatas = [];
         $i = 0;
 

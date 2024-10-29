@@ -237,9 +237,15 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
                 // $altId = $schedule[0]['id'];
                 // $altId2 = $schedule[0]->id;
 
-                if($schedule[0]->id == $payment_schedule_id)
+                if($schedule[0]->id == $payment_schedule_id || $schedule[0]['id'] == $payment_schedule_id)
                 {
+                    return response()->json(['message' => $schedule], Response::HTTP_INTERNAL_SERVER_ERROR);
                     $loan_application_no = $schedule[0]->loan_application_no;
+
+                    if(is_null($loan_application_no))
+                    {
+                        $loan_application_no = $schedule[0]['loan_application_no'];
+                    }
                 }
             }
         }
@@ -247,7 +253,7 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
 
     //return response()->json(['message' => $schedule, 'messabe data 2' => $altId, 'message data 3' => $altId2], Response::HTTP_INTERNAL_SERVER_ERROR);
 
-    //return response()->json(['message' => $indexedSchedules], Response::HTTP_INTERNAL_SERVER_ERROR);
+    return response()->json(['message' => $indexedSchedules], Response::HTTP_INTERNAL_SERVER_ERROR);
 
 
 

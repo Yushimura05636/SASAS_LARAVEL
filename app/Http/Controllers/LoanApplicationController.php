@@ -172,10 +172,8 @@ class LoanApplicationController extends Controller
                         'remarks' => 'FEES',
                     ];
 
-                    if ($customerData['balance'] <= 0) {
-                        $paymentScheduleService->createPaymentSchedule(new Request($payload));
-                        $loanApplicationFeeController->store(new Request($fees));
-                    }
+                    $paymentScheduleService->createPaymentSchedule(new Request($payload));
+                    $loanApplicationFeeController->store(new Request($fees));
                 }
             };
 

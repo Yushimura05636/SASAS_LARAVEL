@@ -114,14 +114,14 @@ class LoanApplicationController extends Controller
                 // Find the group id
                 $groupDatas = Customer::where('group_id', $data[0]['group_id'])->get();
 
-                return response()->json(['message' => $groupDatas], Response::HTTP_INTERNAL_SERVER_ERROR);
                 for ($j = 0; $j < count($groupDatas); $j++) {
                     // Fetch total due and total paid for the specific customer
                     $totals = Payment_Schedule::where('customer_id', $groupDatas[$j]['id'])
-                        ->whereNotIn('payment_status_code', ['PAID', 'PARTIALLY PAID', 'FORWARDED'])
-                        ->selectRaw('(SUM(amount_due) - SUM(amount_paid)) AS balance')
-                        ->first();
+                    ->whereNotIn('payment_status_code', ['PAID', 'PARTIALLY PAID', 'FORWARDED'])
+                    ->selectRaw('(SUM(amount_due) - SUM(amount_paid)) AS balance')
+                    ->first();
 
+                    return response()->json(['message' => $totals], Response::HTTP_INTERNAL_SERVER_ERROR);
                     $balance = $totals->balance ?? 0; // Set default balance to 0
 
 

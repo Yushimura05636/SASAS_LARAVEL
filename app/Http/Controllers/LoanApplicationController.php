@@ -230,8 +230,8 @@ class LoanApplicationController extends Controller
 
             // Return an error message
             return response()->json([
-                'message' => 'An error occurred while processing the transaction',
-                'error' => $e->getMessage(),
+                'error' => 'An error occurred while processing the transaction',
+                'message' => $e->getMessage(),
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }

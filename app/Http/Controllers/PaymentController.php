@@ -210,6 +210,8 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
     // Convert the array into an associative array keyed by 'id'
     $indexedSchedules = array_values($payment_schedule->original);
 
+    return response()->json(['message' => $indexedSchedules], Response::HTTP_INTERNAL_SERVER_ERROR);
+
     foreach ($indexedSchedules as $id => $schedule) {
         $debug = $schedule;
         if (!is_null($schedule)) {

@@ -124,7 +124,7 @@ class LoanApplicationController extends Controller
                     $balance = $totals->balance ?? 0; // Set default balance to 0
 
 
-                    if (!is_null($totals) && $balance > 0) {
+                    if ($balance > 0) {
                         throw new \Exception('There still member has not yet fully paid!');
                     }
 

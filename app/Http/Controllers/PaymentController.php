@@ -239,7 +239,7 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
 
                 if($schedule[0]->id == $payment_schedule_id || $schedule[0]['id'] == $payment_schedule_id)
                 {
-                    return response()->json(['message' => $schedule], Response::HTTP_INTERNAL_SERVER_ERROR);
+                    return response()->json(['message create' => $schedule], Response::HTTP_INTERNAL_SERVER_ERROR);
                     $loan_application_no = $schedule[0]->loan_application_no;
 
                     if(is_null($loan_application_no))

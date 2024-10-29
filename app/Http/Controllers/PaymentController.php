@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\PaymentStoreRequest;
 use App\Http\Requests\PaymentUpdateRequest;
+use App\Http\Resources\PaymentScheduleResource;
 use App\Interface\Service\PaymentLineServiceInterface;
 use App\Interface\Service\PaymentScheduleServiceInterface;
 use App\Interface\Service\PaymentServiceInterface;
@@ -13,8 +14,10 @@ use App\Models\Loan_Release;
 use App\Models\Payment;
 use App\Models\Payment_Line;
 use App\Models\Payment_Schedule;
+use App\Models\User_Account;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 
@@ -34,14 +37,21 @@ class PaymentController extends Controller
     {
         $payment = $this->paymentService->findPayment();
 
+
         for($i = 0; $i < count($payment); $i++)
         {
+            //payment line
+            $payment_line = Payment_Line::where('payment_id', $payment[$i]['id'])->first();
+
+            //payment schedule
+            $payment_schedule = Payment_Schedule::where('id', $payment_line->payment_schedule_id)->first();
 
             $customerPersonality = $customerPersonalityController->show($payment[$i]['customer_id']);
 
             $payment[$i]['family_name'] = " " . $customerPersonality->original['personality']['family_name'];
             $payment[$i]['first_name'] = " " . $customerPersonality->original['personality']['first_name'];
             $payment[$i]['middle_name'] = " " . $customerPersonality->original['personality']['middle_name'];
+            $payment[$i]['loan_application_no'] = $payment_schedule->loan_application_no;
         }
 
         return response()->json([
@@ -382,10 +392,39 @@ protected function createPaymentLine($request, $payment, $schedule, $amountPaid,
     /**
      * Display the specified resource.
      */
-    public function show(int $id)
+    public function show(int $id, PaymentScheduleController $paymentScheduleController, CustomerPersonalityController $customerPersonalityController)
     {
-        return $this->paymentService->findPaymentById($id);
+        //get the payment
+        $payment = $this->paymentService->findPaymentById($id);
 
+        //payment line
+        $payment_line = Payment_Line::where('payment_id', $payment->id)->first();
+
+        //payment schedule
+        //$payment_schedule = Payment_Schedule::where('id', $payment_line->payment_schedule_id)->first();
+        $payment_schedule = $paymentScheduleController->index($customerPersonalityController);
+
+        //return response()->json(['message success' => $payment_schedule]);
+
+        foreach($payment_schedule->original as $index=> $schedule)
+        {
+            foreach($schedule as $sched)
+            {
+                if($payment_line->payment_schedule_id == $sched->id)
+                {
+                    $payment->loan_application_no = $sched->loan_application_no;
+                }
+            }
+        }
+
+        $user = User_Account::where('id', $payment->prepared_by_id)->first();
+
+        //return response()->json(['message success' => $payment->loan_application_no]);
+
+        return response()->json([
+            'data' => $payment,
+            'user' => $user,
+        ], Response::HTTP_OK);
     }
 
     public function paymentLoanNO(string $id, CustomerPersonalityController $customerPersonalityController, PaymentScheduleController $paymentScheduleController)

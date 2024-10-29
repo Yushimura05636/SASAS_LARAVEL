@@ -288,11 +288,23 @@ class LoanApplicationController extends Controller
         // Find co-makers associated with the loan application ID
         $loanCoMakers = Loan_Application_Comaker::where('loan_application_id', $loanApplicationId)->get();
 
+        $factorRate = Factor_Rate::where('id', $loanApp->factor_rate)->first();
+
+        $loanApp->factor_rate_value = $factorRate->value;
+
+        foreach ($loanFees as $loanFee)
+        {
+            $Fee = Fees::where('id', $loanFee->fee_id)->first();
+
+            $loanFee->description = $Fee->description;
+        }
+
+        //return response()->json(['message' => $Fee], Response::HTTP_INTERNAL_SERVER_ERROR);
         // Format the result as needed
         $loanData = [
             'loan_applications' => $loanApp,     // Loan application details
-            'fees' => $loanFees,           // Loan fees array
-            'comakers' => $loanCoMakers    // Loan co-makers array
+            'fees' => $loanFees,
+            'comakers' => $loanCoMakers,
         ];
 
         return response()->json([

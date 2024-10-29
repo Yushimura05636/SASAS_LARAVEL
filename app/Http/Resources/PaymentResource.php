@@ -25,6 +25,7 @@ class PaymentResource extends JsonResource
             'prepared_by_id' => $this->prepared_by_id,
             'amount_paid' => $this->amount_paid,
             'notes' => $this->notes,
+            'loan_application_no' => $this->loan_application_no,
         ];
     }
 }

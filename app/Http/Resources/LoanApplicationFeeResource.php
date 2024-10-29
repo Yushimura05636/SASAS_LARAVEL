@@ -22,6 +22,7 @@ class LoanApplicationFeeResource extends JsonResource
             'encoding_order' => $this->encoding_order,           // Assuming 'encoding_order' should be mapped from $this->encoding_order
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
+            'description' => $this->description,
         ];
     }
 }

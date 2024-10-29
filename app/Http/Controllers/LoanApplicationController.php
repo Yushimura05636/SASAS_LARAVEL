@@ -92,6 +92,7 @@ class LoanApplicationController extends Controller
 
     public function store(Request $request, PaymentScheduleServiceInterface $paymentScheduleService, LoanApplicationFeeController $loanApplicationFeeController, LoanApplicationCoMakerController $loanApplicationCoMakerController)
     {
+        return response()->json(['message' => 'hello'], Response::HTTP_INTERNAL_SERVER_ERROR);
         // Start a database transaction
         DB::beginTransaction();
 

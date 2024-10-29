@@ -408,7 +408,7 @@ class CustomerPersonalityController extends Controller
         }
 
         return response()->json([
-            'message' => $customerDatas,
+            'message group' => $customerDatas,
         ], Response::HTTP_INTERNAL_SERVER_ERROR);
 
         return response()->json([

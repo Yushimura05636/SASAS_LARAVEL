@@ -121,11 +121,11 @@ class LoanApplicationController extends Controller
                     ->selectRaw('(SUM(amount_due) - SUM(amount_paid)) AS balance')
                     ->first();
 
-                    return response()->json(['message' => $totals], Response::HTTP_INTERNAL_SERVER_ERROR);
                     $balance = $totals->balance ?? 0; // Set default balance to 0
 
+                    return response()->json(['message' => $totals], Response::HTTP_INTERNAL_SERVER_ERROR);
 
-                    if ($totals && $balance > 0) {
+                    if (is_null($totals) && $balance > 0) {
                         throw new \Exception('There still member has not yet fully paid!');
                     }
                 }

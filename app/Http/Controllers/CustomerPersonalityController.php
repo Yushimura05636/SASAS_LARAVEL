@@ -399,21 +399,21 @@ class CustomerPersonalityController extends Controller
             $i++;
         }
 
-        return response()->json([
-            'message group' => $customerDatas,
-        ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        // return response()->json([
+        //     'message group' => $customerDatas,
+        // ], Response::HTTP_INTERNAL_SERVER_ERROR);
 
-        if(count($customerDatas) > 0)
+        if(!count($customerDatas) > 0)
         {
-            return [
-                'data' => $customerDatas,
-            ];
+            return response()->json([
+                'message' => 'there is no customer in this group'
+            ], Response::HTTP_NOT_FOUND);
         }
 
+        return [
+            'data' => $customerDatas,
+        ];
 
-        return response()->json([
-            'message' => 'there is no customer in this group'
-        ], Response::HTTP_NOT_FOUND);
 
     }
 

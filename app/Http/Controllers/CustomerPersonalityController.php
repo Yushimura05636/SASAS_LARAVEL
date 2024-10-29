@@ -394,9 +394,6 @@ class CustomerPersonalityController extends Controller
             }
         }
 
-        // Debugging output
-        dd($customerDatas); // Check if the array has the expected data
-
         // return response()->json([
         //     'message group' => $customerDatas,
         // ], Response::HTTP_INTERNAL_SERVER_ERROR);

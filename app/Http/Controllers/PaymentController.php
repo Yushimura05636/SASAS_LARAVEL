@@ -255,14 +255,13 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
             break; // No more payment left to allocate
         }
 
-        $amountDue = $schedule->amount_due; // Calculate remaining balance
+        $amountDue = $schedule->amount_due - $schedule->amount_paid; // Calculate remaining balance
 
-        //return response()->json(['message' => $schedule->amount_paid], Response::HTTP_INTERNAL_SERVER_ERROR);
+        //return response()->json(['message' => $totalAmountPaid . ' ' . $amountDue], Response::HTTP_INTERNAL_SERVER_ERROR);
 
         if ($totalAmountPaid >= $amountDue) {
             // Full payment case
             $schedule->amount_paid += $amountDue;
-            $schedule->amount_due = 0; // Ensure amount_due is zero
             $schedule->payment_status_code = 'PAID';
             $schedule->save();
 

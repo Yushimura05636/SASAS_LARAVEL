@@ -158,7 +158,7 @@ class PaymentController extends Controller
                 $amount_paid = $payment['amount_paid'];
 
                 // Step 2: Apply payment to schedule(s)
-                $this->applyPaymentToSchedules($paymentConfirm, $amount_paid, $request, $paymentLineService, $paymentScheduleService, $paymentScheduleController, $customerPersonalityController);
+                return $this->applyPaymentToSchedules($paymentConfirm, $amount_paid, $request, $paymentLineService, $paymentScheduleService, $paymentScheduleController, $customerPersonalityController);
             } else {
                 throw new \Exception('The amount should not be less than or equal zero');
             }

@@ -460,5 +460,7 @@ class DatabaseSeeder extends Seeder
             'date' => '2024-03-30',
             'isActive' => 1,
         ]);
+
+
     }
 }

@@ -234,28 +234,18 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
         {
             if(!is_null($schedule))
             {
-                foreach($schedule as $id => $sched)
-                {
-                    if(!is_null($sched))
-                    {
-                        $altId = $schedule['id'];
-                        $altId2 = $schedule->id;
-                        return response()->json(['message' => $schedule, 'messabe data 2' => $altId, 'message data 3' => $altId2], Response::HTTP_INTERNAL_SERVER_ERROR);
-                    }
-                }
-                //$objId = $schedule->id;
-                //$arrId = $schedule['id'];
-                $altId = $schedule[0]['id'];
-                $altId2 = $schedule[0]->id;
+                // $altId = $schedule[0]['id'];
+                // $altId2 = $schedule[0]->id;
 
-                return response()->json(['message' => $schedule, 'messabe data 2' => $altId, 'message data 3' => $altId2], Response::HTTP_INTERNAL_SERVER_ERROR);
-                if($schedule->id == $payment_schedule_id)
+                if($schedule[0]->id == $payment_schedule_id)
                 {
-                    $loan_application_no = $schedule->loan_application_no;
+                    $loan_application_no = $schedule[0]->loan_application_no;
                 }
             }
         }
     }
+
+    //return response()->json(['message' => $schedule, 'messabe data 2' => $altId, 'message data 3' => $altId2], Response::HTTP_INTERNAL_SERVER_ERROR);
 
     //return response()->json(['message' => $indexedSchedules], Response::HTTP_INTERNAL_SERVER_ERROR);
 

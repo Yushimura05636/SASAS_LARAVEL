@@ -234,6 +234,15 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
         {
             if(!is_null($schedule))
             {
+                foreach($schedule as $id => $sched)
+                {
+                    if(!is_null($sched))
+                    {
+                        $altId = $schedule['id'];
+                        $altId2 = $schedule->id;
+                        return response()->json(['message' => $schedule, 'messabe data 2' => $altId, 'message data 3' => $altId2], Response::HTTP_INTERNAL_SERVER_ERROR);
+                    }
+                }
                 //$objId = $schedule->id;
                 //$arrId = $schedule['id'];
                 $altId = $schedule[0]['id'];

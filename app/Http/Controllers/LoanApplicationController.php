@@ -122,6 +122,8 @@ class LoanApplicationController extends Controller
 
                     $balance = $totals->balance ?? 0; // Set default balance to 0
 
+                    return response()->json(['message' => $balance], Response::HTTP_INTERNAL_SERVER_ERROR);
+
                     if ($totals && $balance > 0) {
                         throw new \Exception('There still member has not yet fully paid!');
                     }

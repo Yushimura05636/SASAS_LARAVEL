@@ -242,7 +242,7 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
         }
     }
 
-    return response()->json(['message' => $indexedSchedules], Response::HTTP_INTERNAL_SERVER_ERROR);
+    return response()->json(['message' => $loan_application_no], Response::HTTP_INTERNAL_SERVER_ERROR);
     //return response()->json(['message' => $indexedSchedules], Response::HTTP_INTERNAL_SERVER_ERROR);
 
 

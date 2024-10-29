@@ -53,7 +53,7 @@ class DatabaseSeeder extends Seeder
         $this->c = 500;
         $this->f = 1;
 
-        for($i = 0; $i < 14; $i++)
+        for($i = 0; $i < 3; $i++)
         {
             Personality::create([
                 'datetime_registered'=>now(),
@@ -268,6 +268,15 @@ class DatabaseSeeder extends Seeder
             'personality_id' => 2,
         ]);
 
+        Employee::create([
+            'sss_no' => $faker->unique()->randomDigit(),
+            'phic_no' => $faker->unique()->randomDigit(),
+            'tin_no' => $faker->unique()->randomDigit(),
+            'datetime_hired' => $faker->unique()->date(),
+            'datetime_resigned' => $faker->unique()->date(),
+            'personality_id' => 3,
+        ]);
+
         Requirements::create([
             'description' => 'Barangay Certificate',
             'isActive' => 1,
@@ -287,18 +296,18 @@ class DatabaseSeeder extends Seeder
 
         //'LN' . '-' . $faker->randomDigit() . trim(strtoupper($faker->lexify('??????')), ' ')
 
-        for($i = 0; $i < 10; $i++)
-        {
-            Customer::create([
-                'group_id' => 1,
-                'passbook_no' => $faker->randomDigitNotZero() . $faker->randomNumber(),
-                'loan_count' => 1,
-                'enable_mortuary' => $faker->numberBetween(1,2),
-                'mortuary_coverage_start' => null,
-                'mortuary_coverage_end' => null,
-                'personality_id' => $faker->numberBetween(3, 14),
-            ]);
-        }
+        // for($i = 0; $i < 10; $i++)
+        // {
+        //     Customer::create([
+        //         'group_id' => 1,
+        //         'passbook_no' => $faker->randomDigitNotZero() . $faker->randomNumber(),
+        //         'loan_count' => 1,
+        //         'enable_mortuary' => $faker->numberBetween(1,2),
+        //         'mortuary_coverage_start' => null,
+        //         'mortuary_coverage_end' => null,
+        //         'personality_id' => $faker->numberBetween(3, 14),
+        //     ]);
+        // }
 
         User_Account::create([
             'last_name' => 'Sasas',
@@ -317,6 +326,16 @@ class DatabaseSeeder extends Seeder
             'email' => 'Eric@email.com',
             'password' => Hash::make('password'),
             'employee_id' => 2,
+            'status_id' => 1,
+        ]);
+
+        User_Account::create([
+            'last_name' => 'Mars',
+            'first_name' => 'Mars',
+            'middle_name' => 'Mars',
+            'email' => 'MarsAmarillento@email.com',
+            'password' => Hash::make('password'),
+            'employee_id' => 3,
             'status_id' => 1,
         ]);
 

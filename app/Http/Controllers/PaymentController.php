@@ -211,6 +211,7 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
         }
     }
 
+    //return response()->json(['message' => $indexedSchedules], Response::HTTP_INTERNAL_SERVER_ERROR);
 
 
 
@@ -257,7 +258,6 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
 
         $amountDue = $schedule->amount_due - $schedule->amount_paid; // Calculate remaining balance
 
-        //return response()->json(['message' => $totalAmountPaid . ' ' . $amountDue], Response::HTTP_INTERNAL_SERVER_ERROR);
 
         if ($totalAmountPaid >= $amountDue) {
             // Full payment case

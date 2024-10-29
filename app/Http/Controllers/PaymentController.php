@@ -158,7 +158,7 @@ class PaymentController extends Controller
                 $amount_paid = $payment['amount_paid'];
 
                 // Step 2: Apply payment to schedule(s)
-                return $this->applyPaymentToSchedules($paymentConfirm, $amount_paid, $request, $paymentLineService, $paymentScheduleService, $paymentScheduleController, $customerPersonalityController);
+                $this->applyPaymentToSchedules($paymentConfirm, $amount_paid, $request, $paymentLineService, $paymentScheduleService, $paymentScheduleController, $customerPersonalityController);
             } else {
                 throw new \Exception('The amount should not be less than or equal zero');
             }
@@ -234,12 +234,12 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
         {
             if(!is_null($schedule))
             {
-                // $altId = $schedule[0]['id'];
-                // $altId2 = $schedule[0]->id;
+                $payment_schedule_id = $schedule[0]['id'];
+                $paymentScheduleId = $schedule[0]->id;
 
-                if($schedule[0]->id == $payment_schedule_id || $schedule[0]['id'] == $payment_schedule_id)
+                if($payment_schedule_id == $payment_schedule_id || $paymentScheduleId == $payment_schedule_id)
                 {
-                    return response()->json(['message create' => $schedule], Response::HTTP_INTERNAL_SERVER_ERROR);
+                    //return response()->json(['message create' => $schedule], Response::HTTP_INTERNAL_SERVER_ERROR);
                     $loan_application_no = $schedule[0]->loan_application_no;
 
                     if(is_null($loan_application_no))
@@ -253,7 +253,7 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
 
     //return response()->json(['message' => $schedule, 'messabe data 2' => $altId, 'message data 3' => $altId2], Response::HTTP_INTERNAL_SERVER_ERROR);
 
-    return response()->json(['message' => $indexedSchedules], Response::HTTP_INTERNAL_SERVER_ERROR);
+    //return response()->json(['message' => $loan_application_no], Response::HTTP_INTERNAL_SERVER_ERROR);
 
 
 

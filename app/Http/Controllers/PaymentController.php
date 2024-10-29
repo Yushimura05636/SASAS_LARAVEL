@@ -234,7 +234,7 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
         {
             if(!is_null($schedule))
             {
-                return response()->json(['message' => $schedule], Response::HTTP_INTERNAL_SERVER_ERROR);
+                return response()->json(['message' => $schedule, 'message data' => $schedule->id, 'message data 2' => $schedule['id']], Response::HTTP_INTERNAL_SERVER_ERROR);
                 if($schedule->id == $payment_schedule_id)
                 {
                     $loan_application_no = $schedule->loan_application_no;

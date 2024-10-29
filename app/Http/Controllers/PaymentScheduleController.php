@@ -27,9 +27,79 @@ class PaymentScheduleController extends Controller
      */
     public function index(CustomerPersonalityController $customerPersonalityController)
     {
-        $payment = Payment_Schedule::where('payment_status_code', '!=', 'PARTIALLY PAID, FORWARDED')
-        ->get(); // No arguments needed here
+        // $payment = Payment_Schedule::where('payment_status_code', 'not like', '%FORWARDED%')
+        // ->where('payment_status_code', 'not like', '%PAID%')
+        // ->get(); // No arguments needed here
 
+        $payment = Payment_Schedule::where('payment_status_code', 'like', '%UNPAID%')
+        ->orWhere('payment_status_code', '=' ,'PARTIALLY PAID')
+        ->get();
+
+
+
+        $payment = PaymentScheduleResource::collection($payment);
+
+
+        for($i = 0; $i < count($payment); $i++)
+        {
+            //search the customer id
+            $customerPersonality = $customerPersonalityController->show($payment[$i]['customer_id']);
+
+            $payment[$i]['family_name'] = " " . $customerPersonality->original['personality']['family_name'];
+            $payment[$i]['first_name'] = " " . $customerPersonality->original['personality']['first_name'];
+            $payment[$i]['middle_name'] = " " . $customerPersonality->original['personality']['middle_name'];
+
+            // Adjust balance calculation to account for forwarded amounts
+            //$originalDue = $payment[$i]['amount_due'] + $payment[$i]['amount_paid']; // or replace with stored original_amount_due if available
+            $balance = $payment[$i]['balance'] = $payment[$i]['amount_due'] - $payment[$i]['amount_paid'];
+
+            // return response()->json([
+            //     'data' => $balance,
+            // ], Response::HTTP_INTERNAL_SERVER_ERROR);
+
+
+            if($payment[$i]['loan_released_id'] && $payment[$i]['loan_released_id'] > 0)
+            {
+                //get the loan application id
+                $loanAppId = Loan_Release::where('id', $payment[$i]['loan_released_id'])->first()->loan_application_id;
+
+                //get the loan_application_no
+                $loanApplicationNo = Loan_Application::where('id', $loanAppId)->first()->loan_application_no;
+
+                $payment[$i]['loan_application_no'] = $loanApplicationNo;
+            }
+            else
+            {
+                $loanApplications = DB::table('loan_application_fees AS laf')
+                ->join('loan_application AS la', 'laf.loan_application_id', '=', 'la.id')
+                ->where('la.customer_id', $payment[$i]['customer_id'])
+                ->select('la.loan_application_no', 'laf.amount', 'la.customer_id', 'laf.loan_application_id')
+                ->first();
+
+                $payment[$i]['loan_application_no'] = $loanApplications->loan_application_no;
+
+            }
+
+
+
+
+        }
+
+        return response()->json([
+            'data' => $payment,
+        ]);
+
+        //'data' => $customerPersonality->original['customer']['id'],
+
+    }
+
+    public function indexAll(CustomerPersonalityController $customerPersonalityController)
+    {
+        // $payment = Payment_Schedule::where('payment_status_code', 'not like', '%FORWARDED%')
+        // ->where('payment_status_code', 'not like', '%PAID%')
+        // ->get(); // No arguments needed here
+
+        $payment = Payment_Schedule::get();
 
         $payment = PaymentScheduleResource::collection($payment);
 

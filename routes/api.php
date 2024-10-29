@@ -445,6 +445,7 @@ Route::middleware('auth:sanctum')->prefix('PAYMENT_FREQUENCIES')->group(function
 // Loan Schedules routes
 Route::middleware('auth:sanctum')->prefix('PAYMENT_SCHEDULES')->group(function () use ($PAYMENT_SCHEDULES, $VIEW, $CREATE, $UPDATE, $DELETE) {
     Route::get('/', [PaymentScheduleController::class, 'index'])->middleware("document_access:$PAYMENT_SCHEDULES, $VIEW");
+    Route::get('/all', [PaymentScheduleController::class, 'indexAll'])->middleware("document_access:$PAYMENT_SCHEDULES, $VIEW");
     Route::get('/NoAUTH', [PaymentScheduleController::class, 'index']);
     Route::get('/NoAUTH/{id}', [PaymentScheduleController::class, 'show']);
     Route::get('/{id}', [PaymentScheduleController::class, 'show'])->middleware("document_access:$PAYMENT_SCHEDULES, $VIEW");

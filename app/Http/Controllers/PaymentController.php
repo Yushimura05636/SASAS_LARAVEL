@@ -120,9 +120,11 @@ class PaymentController extends Controller
     // Start DB Transaction
     DB::beginTransaction();
 
+
     try {
 
         $payment = $request->input('state.payment');
+
 
         // Create the payment record
         $paymentData = [
@@ -155,11 +157,6 @@ class PaymentController extends Controller
         {
             throw new \Exception('The amount should not be less than or equal zero');
         }
-
-        // return response()->json([
-        //         //'data' => $paymentData,
-        //         'message' => $payment,
-        //     ], Response::HTTP_INTERNAL_SERVER_ERROR);
 
         DB::commit();
 
@@ -194,16 +191,29 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
     // $payment_schedule = $paymentScheduleService->findPaymentScheduleById($payment_schedule_id);
     $payment_schedule = $paymentScheduleController->index($customerPersonalityController);
 
-    $i = 0;
-    // Assuming $payment_schedule->original is an array of schedules
-    foreach ($payment_schedule->original as $schedule) {
-        // Check if the current schedule's id matches the payment_schedule_id
-        if ($schedule[$i]['id'] == $payment_schedule_id) {
-            // If a match is found, retrieve the loan_application_no
-            $loan_application_no = $schedule[$i]['loan_application_no']; // Correct the spelling of 'loan_application_no'
-            break; // Optional: break the loop since we've found the match
+    // Convert the array into an associative array keyed by 'id'
+    $indexedSchedules = array_values($payment_schedule->original);
+
+    foreach ($indexedSchedules as $id => $schedule) {
+        $debug = $schedule;
+        if (!is_null($schedule)) {
+            $debug = count($schedule);
+            foreach($schedule as $sched)
+            {
+                if(!is_null($sched))
+                {
+                    if($sched['id'] == $payment_schedule_id)
+                    {
+                        $loan_application_no = $sched['loan_application_no'];
+                    }
+                }
+            }
         }
     }
+
+
+
+
 
     $loan_application = Loan_Application::where('loan_application_no', $loan_application_no)->first();
 
@@ -225,13 +235,15 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
         $loanReleaseId = null;
     }
 
-
-
     $schedules = Payment_Schedule::where('customer_id', $payment->customer_id)
     ->where('loan_released_id', $loanReleaseId)
-    ->whereIn('payment_status_code', ['UNPAID', 'PARTIALLY PAID'])
-    ->where('payment_status_code', 'not like', '%FORWARDED%')
+    ->whereIn('payment_status_code', ['UNPAID', 'PARTIALLY PAID']) // Include UNPAID and PARTIALLY PAID
+    ->orWhere('payment_status_code', 'not like', '%FORWARDED%') // Exclude any that have FORWARDED
+    ->orWhere('payment_status_code', 'not like', '%PAID%') // Exclude any that have PAID
     ->get();
+
+
+
 
     foreach ($schedules as $index => $schedule) {
         // Skip any schedule marked as "FORWARDED"
@@ -243,7 +255,9 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
             break; // No more payment left to allocate
         }
 
-        $amountDue = $schedule->amount_due - $schedule->amount_paid; // Calculate remaining balance
+        $amountDue = $schedule->amount_due; // Calculate remaining balance
+
+        //return response()->json(['message' => $schedule->amount_paid], Response::HTTP_INTERNAL_SERVER_ERROR);
 
         if ($totalAmountPaid >= $amountDue) {
             // Full payment case
@@ -261,11 +275,9 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
             // Partial payment case
             $remainingBalance = $amountDue - $totalAmountPaid; // Calculate remaining balance after partial payment
 
+            //return response()->json(['message' => $remainingBalance], Response::HTTP_INTERNAL_SERVER_ERROR);
             // Update the schedule's amount paid with the partial amount
             $schedule->amount_paid += $totalAmountPaid;
-
-            // Reduce the current schedule's amount_due by the total amount paid
-            $schedule->amount_due -= $totalAmountPaid;
 
             // Check if the schedule still has a balance
             if ($schedule->amount_due > 0) {
@@ -286,16 +298,18 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
 
             // Forward the remaining balance to the next schedule only if this is not the last schedule
             $nextSchedule = ($index < count($schedules) - 1)
-                ? Payment_Schedule::where('id', '>', $schedule->id)
-                    ->orderBy('id')
-                    ->first()
-                : null;
+            ? Payment_Schedule::where('id', '>', $schedule->id)
+            ->orderBy('id')
+            ->first()
+            : null;
 
             if ($nextSchedule) {
                 $nextSchedule->amount_due += $remainingBalance; // Forward remaining balance to the next schedule
+                $nextSchedule->amount_interest += $remainingBalance;
                 $nextSchedule->save();
             }
 
+            //return response()->json(['message' => $nextSchedule], Response::HTTP_INTERNAL_SERVER_ERROR);
             // Create a payment line for the partial payment
             $this->createPaymentLine($request, $payment, $schedule, $totalAmountPaid, 'Partial payment', $paymentLineService);
 
@@ -374,7 +388,6 @@ protected function createPaymentLine($request, $payment, $schedule, $amountPaid,
 
 // Call the method to get the payments response
 $response = $paymentScheduleController->index($customerPersonalityController);
-
 
 $payments = null;
 // Check if the response is a JsonResponse

@@ -110,11 +110,13 @@ public function store(Request $request, PaymentScheduleServiceInterface $payment
 
         // Fetch total due and total paid for the specific customer
         $totals = Payment_Schedule::where('customer_id', $groupDatas[$i]['id'])
+        ->whereNotIn('payment_status_code', ['PAID', 'PARTIALLY PAID, FORWARDED']) // Exclude PAID and FORWARDED
         ->selectRaw('(SUM(amount_due) - SUM(amount_paid)) AS balance')
         ->first();
 
         $balance = $totals->balance;
 
+        //return response()->json(['message' => $balance], Response::HTTP_INTERNAL_SERVER_ERROR);
 
         if($totals && $balance > 0)
         {
@@ -159,8 +161,11 @@ public function store(Request $request, PaymentScheduleServiceInterface $payment
             if (isset($data[$i]['coMaker']) && $data[$i]['coMaker'] > 0) {
                 // Fetch total due and total paid for the specific customer
                 $totals = Payment_Schedule::where('customer_id', $data[$i]['coMaker'])
+                ->whereNotIn('payment_status_code', ['PAID', 'PARTIALLY PAID', 'FORWARDED']) // Exclude specified statuses
                 ->selectRaw('(SUM(amount_due) - SUM(amount_paid)) AS balance')
                 ->first();
+
+                //return response()->json(['message' => $totals->balance], Response::HTTP_INTERNAL_SERVER_ERROR);
 
                 // Check if $totals is not empty and has a valid balance property
                 if ($totals && !empty($totals->balance)) {
@@ -491,10 +496,12 @@ public function store(Request $request, PaymentScheduleServiceInterface $payment
         $loanId = $request['id'];
 
 
-        //before all this it will go first to check if all the FEES is paid!
         $payableFee = Payment_Schedule::where('customer_id', $customerId)
-        ->where('remarks', 'FEES')
-        ->orWhere('remarks', 'PARTIALLY PAID')
+        ->where(function($query) {
+            $query->where('remarks', 'FEES')
+                ->orWhere('remarks', 'PARTIALLY PAID');
+        })
+        ->whereNotIn('payment_status_code', ['PAID', 'PARTIALLY PAID, FORWARDED']) // Exclude PAID and FORWARDED
         ->selectRaw('SUM(amount_due) - SUM(amount_paid) as fee_balance')
         ->first();
 

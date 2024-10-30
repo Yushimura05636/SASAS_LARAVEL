@@ -42,6 +42,7 @@ class LoanApplicationController extends Controller
     /**
      * Display a listing of the resource.
      */
+    
     public function index(LoanApplicationFeeServiceInterface $loanApplicationFeeService, LoanApplicationCoMakerServiceInterface $loanApplicationCoMakerService)
     {
         $loanFees = $loanApplicationFeeService->findLoanFees();
@@ -394,12 +395,12 @@ class LoanApplicationController extends Controller
     }
 
     public function approve(Request $request, int $id, LoanApplicationServiceInterface $loanApplicationService, LoanReleaseServiceInterface $loanReleaseService, PaymentScheduleServiceInterface $paymentScheduleService)
-{
+    {   
     // Helper function to check if a date is a holiday
     function isHoliday($date) {
         return Holiday::where('date', $date->toDateString())
-                      ->where('isActive', 1)
-                      ->exists();
+                    ->where('isActive', 1)
+                    ->exists();
     }
 
     // Helper function to adjust due date for Sundays and holidays
@@ -422,7 +423,7 @@ class LoanApplicationController extends Controller
         $payableFee = Payment_Schedule::where('customer_id', $customerId)
             ->where(function($query) {
                 $query->where('remarks', 'FEES')
-                      ->orWhere('remarks', 'PARTIALLY PAID');
+                    ->orWhere('remarks', 'PARTIALLY PAID');
             })
             ->whereNotIn('payment_status_code', ['PAID', 'PARTIALLY PAID, FORWARDED'])
             ->selectRaw('SUM(amount_due) - SUM(amount_paid) as fee_balance')
@@ -435,7 +436,11 @@ class LoanApplicationController extends Controller
         $loanApproveId = Document_Status_Code::where('description', 'Approved')->first()->id;
 
         $loanApplication = Loan_Application::findOrFail($loanId);
+        
         $loanApplication->document_status_code = $loanApproveId;
+        $loanApplication->approved_by_id = $userId;
+        $loanApplication->released_by_id = $userId;
+        $loanApplication->datetime_approved = now();
         $loanApplication->save();
         $loanApplication->fresh();
 

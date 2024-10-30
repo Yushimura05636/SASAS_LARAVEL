@@ -6,6 +6,7 @@ use App\Http\Requests\LoanCountStoreRequest;
 use App\Http\Requests\LoanCountUpdateRequest;
 use App\Interface\Service\LoanCountServiceInterface;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 class LoanCountController extends Controller
 {
@@ -23,6 +24,10 @@ class LoanCountController extends Controller
     public function show(int $id)
     {
         return $this->loanCountService->findLoanCountById($id);
+
+        // return response()->json([
+        //     'data' => $loan_count,
+        // ], Response::HTTP_OK);
     }
 
     public function store(Request $request)

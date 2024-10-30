@@ -445,19 +445,19 @@ class DatabaseSeeder extends Seeder
         //holy week
         Holiday::create([
             'description' => 'Maundy Thursday',
-            'date' => '2024-03-28',
+            'date' => '2024-11-06',
             'isActive' => 1,
         ]);
 
         Holiday::create([
             'description' => 'Good Friday',
-            'date' => '2024-03-29',
+            'date' => '2024-11-14',
             'isActive' => 1,
         ]);
 
         Holiday::create([
             'description' => 'Black Saturday',
-            'date' => '2024-03-30',
+            'date' => '2024-11-22',
             'isActive' => 1,
         ]);
 

@@ -18,6 +18,7 @@ class LoanApplicationResource extends JsonResource
             'id' => $this->id,
             'customer_id' => $this->customer_id,
             'group_id' => $this->group_id,
+            'datetime_prepared' => $this->datetime_prepared,
             'document_status_code' => $this->document_status_code,
             'loan_application_no' => $this->loan_application_no,
             'amount_loan' => $this->amount_loan,

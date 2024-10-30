@@ -260,15 +260,20 @@ class CustomerPersonalityController extends Controller
         $personalityData = $request->input('personality');
         $requirementDatas = $request->input('requirements');
 
-        // Check if personality_status_code is provided; otherwise, set it to "Pending"
+        // //get the personality status code
+        // $personalityStatusId = Personality_Status_Map::where('description', 'Pending')->first()->id;
+
+        // //set the personality status code
+        // $personalityData['personality_status_code'] = $personalityStatusId;
+
+                // Check if personality_status_code is provided; otherwise, set it to "Pending"
         if (isset($personalityData['personality_status_code'])) {
             $personalityStatusId = $personalityData['personality_status_code'];
         } else {
             $personalityStatusId = Personality_Status_Map::where('description', 'Pending')->first()->id;
         }
 
-
-        //set the personality status code
+        // Set the personality status code
         $personalityData['personality_status_code'] = $personalityStatusId;
 
         // Merge data for validation

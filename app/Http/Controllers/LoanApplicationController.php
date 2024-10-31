@@ -12,6 +12,7 @@ use App\Interface\Service\LoanReleaseServiceInterface;
 use App\Interface\Service\PaymentLineServiceInterface;
 use App\Interface\Service\PaymentScheduleServiceInterface;
 use App\Interface\Service\PaymentServiceInterface;
+use App\Models\Credit_Status;
 use App\Models\Customer;
 use App\Models\Document_Status_Code;
 use App\Models\Factor_Rate;
@@ -25,7 +26,9 @@ use App\Models\Loan_Release;
 use App\Models\Payment_Duration;
 use App\Models\Payment_Frequency;
 use App\Models\Payment_Schedule;
+use App\Models\Personality_Status_Map;
 use App\Service\LoanApplicationFeeService;
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -92,6 +95,7 @@ class LoanApplicationController extends Controller
 
     public function store(Request $request, PaymentScheduleServiceInterface $paymentScheduleService, LoanApplicationFeeController $loanApplicationFeeController, LoanApplicationCoMakerController $loanApplicationCoMakerController)
     {
+        //return response()->json(['message' => 'hello'], Response::HTTP_INTERNAL_SERVER_ERROR);
         DB::beginTransaction();
 
         try {
@@ -108,9 +112,16 @@ class LoanApplicationController extends Controller
 
             $checkPendingLoans = function() use ($data) {
                 foreach ($data as $customerData) {
+
+
+                    $document_status_code = Document_Status_Code::where('description', 'like', '%PENDING%')->first();
+
+                    //get the pending loan
                     $pendingLoanExists = Loan_Application::where('customer_id', $customerData['customer_id'])
-                        ->where('document_status_code', 'PENDING')
-                        ->exists();
+                    ->where('document_status_code', $document_status_code->id)
+                    ->exists();
+
+                    //return response()->json(['message create' => $debug],Response::HTTP_INTERNAL_SERVER_ERROR);
 
                     if ($pendingLoanExists) {
                         throw new \Exception('Cannot create a new loan application. There is already a pending loan for this customer.');
@@ -393,24 +404,8 @@ class LoanApplicationController extends Controller
         return $this->loanApplicationService->deleteLoanApplication( $id);
     }
 
-    public function approve(Request $request, int $id, LoanApplicationServiceInterface $loanApplicationService, LoanReleaseServiceInterface $loanReleaseService, PaymentScheduleServiceInterface $paymentScheduleService)
+    public function approve(Request $request, CustomerPersonalityController $customerPersonalityController, int $id, LoanApplicationServiceInterface $loanApplicationService, LoanReleaseServiceInterface $loanReleaseService, PaymentScheduleServiceInterface $paymentScheduleService)
 {
-    // Helper function to check if a date is a holiday
-    function isHoliday($date) {
-        return Holiday::where('date', $date->toDateString())
-                      ->where('isActive', 1)
-                      ->exists();
-    }
-
-    // Helper function to adjust due date for Sundays and holidays
-    function adjustDueDate($dueDate) {
-        // Loop until due date is neither a Sunday nor a holiday
-        while ($dueDate->isSunday() || isHoliday($dueDate)) {
-            $dueDate->addDay();
-        }
-        return $dueDate;
-    }
-
     // Start the transaction
     DB::beginTransaction();
 
@@ -419,17 +414,58 @@ class LoanApplicationController extends Controller
         $customerId = $request['customer_id'];
         $loanId = $request['id'];
 
-        $payableFee = Payment_Schedule::where('customer_id', $customerId)
-            ->where(function($query) {
-                $query->where('remarks', 'FEES')
-                      ->orWhere('remarks', 'PARTIALLY PAID');
-            })
-            ->whereNotIn('payment_status_code', ['PAID', 'PARTIALLY PAID, FORWARDED'])
-            ->selectRaw('SUM(amount_due) - SUM(amount_paid) as fee_balance')
-            ->first();
+        //check if the group mates has its own dues
+        $customer_data = $customerPersonalityController->index();
 
-        if ($payableFee && $payableFee->fee_balance > 0) {
-            throw new \Exception('Cannot approve: outstanding fees need to be paid');
+        $customer_group_id = null;
+
+        //this loop will check if a member is not active nor approved in the personality
+        foreach($customer_data as $id => $data)
+        {
+            if(!is_null($data))
+            {
+                foreach($data as $dat)
+                {
+                    if(!is_null($dat))
+                    {
+                        if(!($dat['personality']['personality_status_code'] == Personality_Status_Map::where('description', 'like', '%APPROVED%')->first()->id)
+                        && !($dat['personality']['credit_status_id'] == Credit_Status::where('description', 'like', '%ACTIVE%')->first()->id))
+                        {
+                            throw new \Exception('A member in the group is not APPROVED nor ACTIVE');
+                        }
+                    }
+                }
+            }
+        }
+
+        //get the group id of the current customer
+        $customer_group_id = Customer::where('id', $customerId)->first()->group_id;
+
+        $payableFee = null;
+        foreach($customer_data as $id => $data)
+        {
+            if(!is_null($data))
+            {
+                foreach($data as $dat)
+                {
+                    if(!is_null($dat))
+                    {
+                        if($dat['customer']['group_id'] == $customer_group_id)
+                        {
+                            $payableFee = Payment_Schedule::where('customer_id', $dat['customer']['id'])
+                            ->where('payment_status_code', 'like', '%UNPAID%')
+                            ->orWhere('payment_status_code', 'like', '%PARTIALLY PAID%')
+                            ->whereNotIn('payment_status_code', ['PAID', 'PARTIALLY PAID, FORWARDED'])
+                            ->selectRaw('SUM(amount_due) - SUM(amount_paid) as fee_balance')
+                            ->first();
+
+                            if ($payableFee && $payableFee->fee_balance > 0) {
+                                throw new \Exception('Cannot approve: outstanding fees need to be paid');
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         $loanApproveId = Document_Status_Code::where('description', 'Approved')->first()->id;
@@ -470,13 +506,27 @@ class LoanApplicationController extends Controller
         $amountDue = ($loanAmount + $amountInterest) / $numberOfPayments;
         $firstDueDate = $loanReleasePayload['datetime_first_due'];
 
-        for ($i = 0; $i < $numberOfPayments; $i++) {
-            $dueDate = adjustDueDate($firstDueDate->copy()->addDays($i * $paymentFrequency->days_interval));
+        $paymentFrequency = $paymentFrequency->days_interval; // Weekly interval in days
+
+        $holidays = Holiday::get();
+
+        for($i = 0; $i < $numberOfPayments; $i++)
+        {
+            foreach($holidays as $k => $holiday)
+            {
+                if(!is_null($holiday))
+                {
+                    if($firstDueDate == $holiday->date || $firstDueDate->isSunday())
+                    {
+                        $debug[$i] = $firstDueDate = $firstDueDate->addDays();
+                    }
+                }
+            }
 
             $payload = [
                 'customer_id' => $customerId,
                 'loan_released_id' => $loanRelease->id,
-                'datetime_due' => $dueDate,
+                'datetime_due' => $firstDueDate,
                 'amount_due' => $amountDue,
                 'amount_interest' => $amountInterest / $numberOfPayments,
                 'amount_paid' => 0,
@@ -486,7 +536,12 @@ class LoanApplicationController extends Controller
 
             $payload = new Request($payload);
             $paymentScheduleService->createPaymentSchedule($payload);
+
+            $dateDebug[$i] = $firstDueDate = $firstDueDate->copy()->addDays($paymentFrequency);
         }
+
+
+        //return response()->json(['message' => $debug, 'message date' => $dateDebug], Response::HTTP_INTERNAL_SERVER_ERROR);
 
         DB::commit();
 

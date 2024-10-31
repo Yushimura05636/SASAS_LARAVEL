@@ -45,6 +45,7 @@ class LoanApplicationController extends Controller
     /**
      * Display a listing of the resource.
      */
+
     public function index(LoanApplicationFeeServiceInterface $loanApplicationFeeService, LoanApplicationCoMakerServiceInterface $loanApplicationCoMakerService)
     {
         $loanFees = $loanApplicationFeeService->findLoanFees();
@@ -471,7 +472,11 @@ class LoanApplicationController extends Controller
         $loanApproveId = Document_Status_Code::where('description', 'Approved')->first()->id;
 
         $loanApplication = Loan_Application::findOrFail($loanId);
+
         $loanApplication->document_status_code = $loanApproveId;
+        $loanApplication->approved_by_id = $userId;
+        $loanApplication->released_by_id = $userId;
+        $loanApplication->datetime_approved = now();
         $loanApplication->save();
         $loanApplication->fresh();
 

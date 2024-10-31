@@ -59,7 +59,7 @@ class UserController extends Controller
 
     }
 
-    public function test()
+    public function getUserLogged()
     {
         return $this->userService->getUserLogin();
 

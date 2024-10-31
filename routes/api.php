@@ -665,5 +665,7 @@ Route::get('/test/{id}', [CustomerController::class, 'test']);
 
 Route::get('/loan-test/{id}', [PaymentScheduleController::class, 'test']);
 
-Route::middleware('auth')->get('/testCustomer', [UserController::class, 'test']);
+//GET USER WHO IS LOGGED// TO RECORD WHO APPROVE AND RELEASE
+Route::middleware('auth:sanctum')->get('/USER_LOGGED', [UserController::class, 'getUserLogged']);
+
 Route::get('/HOLIDAY-TEST', [HolidayController::class, 'index']);

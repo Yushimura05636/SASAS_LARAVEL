@@ -476,7 +476,7 @@ class DatabaseSeeder extends Seeder
             'telephone_no' => '(045) 123-4567',
             'email_address' => 'lily.carter@example.com',
             'cellphone_no' => '+63 917 765 4321',
-            'name_type_code' => 2,
+            'name_type_code' => 1,
             'personality_status_code' => 2,
             'barangay_id' => 1, // Adjust based on your data
             'city_id' => 4, // Adjust based on your data
@@ -500,7 +500,7 @@ class DatabaseSeeder extends Seeder
             'telephone_no' => '(045) 987-6543',
             'email_address' => 'carlos.ramirez@example.com',
             'cellphone_no' => '+63 917 123 4567',
-            'name_type_code' => 2,
+            'name_type_code' => 1,
             'personality_status_code' => 2,
             'barangay_id' => 2, // Adjust based on your data
             'city_id' => 6, // Adjust based on your data
@@ -524,13 +524,13 @@ class DatabaseSeeder extends Seeder
             'telephone_no' => '(045) 456-7890',
             'email_address' => 'juan.santos@example.com',
             'cellphone_no' => '+63 912 345 6789',
-            'name_type_code' => 2,
+            'name_type_code' => 1,
             'personality_status_code' => 2,
             'barangay_id' => 3, // Adjust based on your data
             'city_id' => 8, // Adjust based on your data
             'country_id' => 1, // Adjust based on your data
             'province_id' => 4, // Adjust based on your data
-            'credit_status_id' => 2, // Adjust based on your data
+            'credit_status_id' => 1, // Adjust based on your data
             'notes' => null, // If applicable, otherwise set to NULL
         ]);
 
@@ -548,15 +548,112 @@ class DatabaseSeeder extends Seeder
             'telephone_no' => '(045) 321-6547',
             'email_address' => 'mei.lim@example.com',
             'cellphone_no' => '+63 917 876 5432',
-            'name_type_code' => 2,
+            'name_type_code' => 1,
             'personality_status_code' => 2,
-            'barangay_id' => 4, // Adjust based on your data
-            'city_id' => 10, // Adjust based on your data
+            'barangay_id' => 1, // Adjust based on your data
+            'city_id' => 1, // Adjust based on your data
             'country_id' => 1, // Adjust based on your data
-            'province_id' => 5, // Adjust based on your data
+            'province_id' => 1, // Adjust based on your data
             'credit_status_id' => 1, // Adjust based on your data
             'notes' => null, // If applicable, otherwise set to NULL
         ]);
+
+        Personality::create([
+            'datetime_registered' => now(),
+            'family_name' => 'Santos J',
+            'middle_name' => 'Maria',
+            'first_name' => 'Juan',
+            'birthday' => '1985-02-25',
+            'civil_status' => 2, // Married
+            'gender_code' => 1, // Male
+            'house_street' => '45 Rose Avenue',
+            'purok_zone' => 'Zone 5',
+            'postal_code' => '2504',
+            'telephone_no' => '(045) 222-3333',
+            'email_address' => 'juan.santos@example.com',
+            'cellphone_no' => '+63 918 765 4321',
+            'name_type_code' => 1,
+            'personality_status_code' => 2,
+            'barangay_id' => 1, // Adjust based on your data
+            'city_id' => 1, // Adjust based on your data
+            'country_id' => 1, // Adjust based on your data
+            'province_id' => 1, // Adjust based on your data
+            'credit_status_id' => 1, // Adjust based on your data
+            'notes' => null,
+        ]);
+
+        Personality::create([
+            'datetime_registered' => now(),
+            'family_name' => 'De Guzman',
+            'middle_name' => 'Alfonso',
+            'first_name' => 'Ana',
+            'birthday' => '1990-06-30',
+            'civil_status' => 1, // Single
+            'gender_code' => 2, // Female
+            'house_street' => '88 Daisy Lane',
+            'purok_zone' => 'Zone 3',
+            'postal_code' => '2505',
+            'telephone_no' => '(045) 123-4567',
+            'email_address' => 'ana.deguzman@example.com',
+            'cellphone_no' => '+63 915 543 2100',
+            'name_type_code' => 1,
+            'personality_status_code' => 2,
+            'barangay_id' => 1, // Adjust based on your data
+            'city_id' => 1, // Adjust based on your data
+            'country_id' => 1, // Adjust based on your data
+            'province_id' => 1, // Adjust based on your data
+            'credit_status_id' => 1, // Adjust based on your data
+            'notes' => null,
+        ]);
+
+        Personality::create([
+            'datetime_registered' => now(),
+            'family_name' => 'Reyes',
+            'middle_name' => 'Lorenzo',
+            'first_name' => 'Pedro',
+            'birthday' => '1982-12-12',
+            'civil_status' => 1, // Married
+            'gender_code' => 1, // Male
+            'house_street' => '32 Lily Boulevard',
+            'purok_zone' => 'Zone 1',
+            'postal_code' => '2506',
+            'telephone_no' => '(045) 654-3210',
+            'email_address' => 'pedro.reyes@example.com',
+            'cellphone_no' => '+63 911 234 5678',
+            'name_type_code' => 1,
+            'personality_status_code' => 2,
+            'barangay_id' => 1, // Adjust based on your data
+            'city_id' => 1, // Adjust based on your data
+            'country_id' => 1, // Adjust based on your data
+            'province_id' => 1, // Adjust based on your data
+            'credit_status_id' => 1, // Adjust based on your data
+            'notes' => 'Frequent traveler.',
+        ]);
+
+        Personality::create([
+            'datetime_registered' => now(),
+            'family_name' => 'Tan',
+            'middle_name' => 'Li',
+            'first_name' => 'Xiu',
+            'birthday' => '1995-07-15',
+            'civil_status' => 1, // Single
+            'gender_code' => 2, // Female
+            'house_street' => '7 Bamboo Street',
+            'purok_zone' => 'Zone 6',
+            'postal_code' => '2507',
+            'telephone_no' => '(045) 111-2222',
+            'email_address' => 'xiu.tan@example.com',
+            'cellphone_no' => '+63 917 123 4567',
+            'name_type_code' => 1,
+            'personality_status_code' => 2,
+            'barangay_id' => 5, // Adjust based on your data
+            'city_id' => 1, // Adjust based on your data
+            'country_id' => 1, // Adjust based on your data
+            'province_id' => 1, // Adjust based on your data
+            'credit_status_id' => 1, // Adjust based on your data
+            'notes' => 'New to the area.',
+        ]);
+
 
         Customer::create([
             'group_id' => 1, // Adjust as necessary
@@ -565,7 +662,7 @@ class DatabaseSeeder extends Seeder
             'enable_mortuary' => 1, // Enable mortuary coverage (1 for yes, 0 for no)
             'mortuary_coverage_start' => now(), // Start date for coverage
             'mortuary_coverage_end' => now()->addYear(), // End date for coverage, one year from now
-            'personality_id' => 1, // ID of Lily Carter
+            'personality_id' => 3, // ID of Lily Carter
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -577,7 +674,7 @@ class DatabaseSeeder extends Seeder
             'enable_mortuary' => 1, // Enable mortuary coverage
             'mortuary_coverage_start' => now(),
             'mortuary_coverage_end' => now()->addYear(),
-            'personality_id' => 2, // ID of Carlos Ramirez
+            'personality_id' => 4, // ID of Carlos Ramirez
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -589,7 +686,7 @@ class DatabaseSeeder extends Seeder
             'enable_mortuary' => 0, // Disable mortuary coverage
             'mortuary_coverage_start' => null, // No coverage
             'mortuary_coverage_end' => null,
-            'personality_id' => 3, // ID of Juan Santos
+            'personality_id' => 5, // ID of Juan Santos
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -601,7 +698,55 @@ class DatabaseSeeder extends Seeder
             'enable_mortuary' => 1, // Enable mortuary coverage
             'mortuary_coverage_start' => now(),
             'mortuary_coverage_end' => now()->addYear(),
-            'personality_id' => 4, // ID of Mei Lim
+            'personality_id' => 6, // ID of Mei Lim
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        Customer::create([
+            'group_id' => 2, // Group ID for all entries
+            'passbook_no' => 11123464, // Example passbook number
+            'loan_count' => 1, // Example loan count
+            'enable_mortuary' => 1, // Enable mortuary coverage
+            'mortuary_coverage_start' => now(),
+            'mortuary_coverage_end' => now()->addYear(),
+            'personality_id' => 7, // ID of another personality
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        Customer::create([
+            'group_id' => 2, // Group ID for all entries
+            'passbook_no' => 11123465, // Example passbook number
+            'loan_count' => 1, // Example loan count
+            'enable_mortuary' => 1, // Enable mortuary coverage
+            'mortuary_coverage_start' => now(),
+            'mortuary_coverage_end' => now()->addYear(),
+            'personality_id' => 8, // ID of another personality
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        Customer::create([
+            'group_id' => 2, // Group ID for all entries
+            'passbook_no' => 11123466, // Example passbook number
+            'loan_count' => 1, // Example loan count
+            'enable_mortuary' => 1, // Enable mortuary coverage
+            'mortuary_coverage_start' => now(),
+            'mortuary_coverage_end' => now()->addYear(),
+            'personality_id' => 9, // ID of another personality
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        Customer::create([
+            'group_id' => 2, // Group ID for all entries
+            'passbook_no' => 11123467, // Example passbook number
+            'loan_count' => 1, // Example loan count
+            'enable_mortuary' => 1, // Enable mortuary coverage
+            'mortuary_coverage_start' => now(),
+            'mortuary_coverage_end' => now()->addYear(),
+            'personality_id' => 10, // ID of another personality
             'created_at' => now(),
             'updated_at' => now(),
         ]);

@@ -93,20 +93,10 @@ Route::middleware('auth:sanctum')->prefix('USER_AUTH')->group(function () use ($
     });
 });
 
-// User Auth routes
-Route::middleware('auth:sanctum')->prefix('USER_AUTH')->group(function () use ($BUTTON_AUTHORIZATIONS, $CREATE, $UPDATE) {
-    Route::post('/', function () {
-        return response()->json(['message' => 'Access granted']);
-    })->middleware("document_access:$BUTTON_AUTHORIZATIONS, $CREATE");
-
-    Route::put('/', function () {
-        return response()->json(['message' => 'Access granted']);
-    })->middleware("document_access:$BUTTON_AUTHORIZATIONS, $UPDATE");
-});
-
 // Users routes
 Route::middleware('auth:sanctum')->prefix('USERS')->group(function () use ($USER_ACCOUNTS, $VIEW, $CREATE, $UPDATE, $DELETE) {
     Route::get('/', [UserController::class, 'index'])->middleware("document_access:$USER_ACCOUNTS, $VIEW");
+    Route::get('/NoAUTH', [UserController::class, 'showOwnDetails']);
     Route::get('/NoUSERID', [UserController::class, '']);
     Route::get('/{id}', [UserController::class, 'show'])->middleware("document_access:$USER_ACCOUNTS, $VIEW");
     Route::post('/', [UserController::class, 'store'])->middleware("document_access:$USER_ACCOUNTS, $CREATE");

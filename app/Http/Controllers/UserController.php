@@ -42,6 +42,13 @@ class UserController extends Controller
         return $this->userService->findUserById($id);
 
     }
+
+    public function showOwnDetails()
+    {
+        $userId = auth()->user()->id;
+
+        return $this->userService->findUserById($userId);
+    }
     /**
      * Update the specified resource in storage.
      */

@@ -102,7 +102,7 @@ class UserController extends Controller
             return $emailVerificaiton->sendEmailVerification();
         }
 
-        else if($request->method == 'phone')
+        if($request->method == 'phone')
         {
             $request->validate([
                 'phone_number' => 'required',
@@ -111,7 +111,8 @@ class UserController extends Controller
             $phoneVerification = new PhoneVerificationController($request);
             return $phoneVerification->sendPhoneVerification();
         }
-        else if($request->method == 'forgot')
+
+        if($request->method == 'forgot')
         {
             $emailVerificaiton = new ForgotPasswordController($request);
             return $emailVerificaiton->sendResetLink();
@@ -133,7 +134,7 @@ class UserController extends Controller
             return $verifyEmail->verifyEmailCode();
         }
 
-        else if($request->method == 'phone')
+        if($request->method == 'phone')
         {
             $request->validate(['code' => 'required']);
             $request->validate(['phone_number' => 'required']);
@@ -141,7 +142,7 @@ class UserController extends Controller
             return $verifyPhone->verifyPhoneCode();
         }
 
-        else if($request->method == 'forgot')
+        if($request->method == 'forgot')
         {
             $request->validate(['token' => 'required']);
             $verifyEmailAndToken = new ForgotPasswordController($request);

@@ -101,6 +101,7 @@ Route::middleware('auth:sanctum')->prefix('USER_AUTH')->group(function () use ($
 Route::post('/NoAUTH/SendVerification', [UserController::class, 'sendCode']);
 Route::post('/NoAUTH/VerifyVerification/{code}', [UserController::class, 'verifyCode']);
 Route::put('/NoAUTH/ChangePassword/{code}', [UserController::class, 'changePassword']);
+Route::get('/NoAUTH/checkEmail', [UserController::class, 'checkEmail']);
 
 // Users routes
 Route::middleware('auth:sanctum')->prefix('USERS')->group(function () use ($USER_ACCOUNTS, $VIEW, $CREATE, $UPDATE, $DELETE) {

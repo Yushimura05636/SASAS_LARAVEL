@@ -209,4 +209,16 @@ class UserController extends Controller
     }
 
     }
+
+    public function checkEmail(Request $request) {
+        $request->validate(['email' => 'required']);
+        $user = User_Account::where('email', $request->email)->first();
+
+        if(!$user)
+        {
+            return response()->json(['success' => false, 'message' => 'Email does not exists!'], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+
+        return response()->json(['success' => true, 'message' => 'Email exists!'], Response::HTTP_OK);
+    }
 }

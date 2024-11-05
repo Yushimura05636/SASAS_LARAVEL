@@ -306,10 +306,10 @@ class DatabaseSeeder extends Seeder
         // }
 
         User_Account::create([
-            'last_name' => 'Sasas',
-            'first_name' => 'Sasas',
-            'middle_name' => 'Sasas',
-            'email' => 'Sasas@email.com',
+            'last_name' => 'Eric',
+            'first_name' => 'Eric',
+            'middle_name' => 'Eric',
+            'email' => 'ericramonesexb@gmail.com',
             'phone_number' => '09536404961',
             'password' => Hash::make('password'),
             'employee_id' => 1,

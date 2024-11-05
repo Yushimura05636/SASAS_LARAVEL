@@ -151,13 +151,6 @@ class UserController extends Controller
 
     public function changePassword(Request $request)
     {
-        use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Http\Response;
-use Illuminate\Support\Facades\Validator;
-
-public function resetPassword(Request $request)
-{
     // Validate request data
     $validatedData = $request->validate([
         'email' => 'required|email',

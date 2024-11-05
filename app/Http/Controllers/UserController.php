@@ -155,7 +155,7 @@ class UserController extends Controller
     $validatedData = $request->validate([
         'email' => 'required|email',
         'token' => 'required',
-        'password' => 'required|min:8|confirmed',
+        'password' => 'required',
     ]);
 
     // Start the transaction

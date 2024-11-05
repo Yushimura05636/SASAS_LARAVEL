@@ -6,6 +6,7 @@ use App\Http\Resources\AuthResource;
 use App\Http\Resources\UserResource;
 use App\Interface\Repository\UserRepositoryInterface;
 use App\Interface\Service\AuthenticationServiceInterface;
+use App\Models\User_Account;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Hash;
 
@@ -21,6 +22,8 @@ class AuthenticationService implements AuthenticationServiceInterface
     public function authenticate(object $payload)
     {
         $user = $this->userRepository->findByEmail($payload->email);
+
+        //return response()->json(['message' => $user], Response::HTTP_INTERNAL_SERVER_ERROR);
 
         if (!$user) {
             return response()->json([

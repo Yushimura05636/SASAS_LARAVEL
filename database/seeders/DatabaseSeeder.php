@@ -309,7 +309,7 @@ class DatabaseSeeder extends Seeder
             'last_name' => 'Sasas',
             'first_name' => 'Sasas',
             'middle_name' => 'Sasas',
-            'email' => 'Sasas@email',
+            'email' => 'Sasas@email.com',
             'phone_number' => '09536404961',
             'password' => Hash::make('password'),
             'employee_id' => 1,

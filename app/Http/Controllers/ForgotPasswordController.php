@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Mail\ResetPasswordMail;
 use App\Mail\TwoFactorCodeMail;
+use App\Models\User_Account;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
@@ -28,6 +29,14 @@ class ForgotPasswordController extends Controller
         try {
             // Begin the transaction
             DB::beginTransaction();
+
+            //check if user exists
+            $user = User_Account::where('email', $this->request->email)->first();
+
+            if(is_null($user))
+            {
+                return response()->json(['success' => false, 'message' => 'User does not exists'], Response::HTTP_INTERNAL_SERVER_ERROR);
+            }
 
             $reset = DB::table('password_reset_tokens')->updateOrInsert(
                 ['email' => $email], // Condition to check if email exists

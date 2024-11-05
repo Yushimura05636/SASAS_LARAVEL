@@ -211,7 +211,7 @@ class UserController extends Controller
     }
 
     public function checkEmail(Request $request) {
-        return response()->json(['success' => false, 'message' => $request->all()], Response::HTTP_INTERNAL_SERVER_ERROR);
+        //return response()->json(['success' => false, 'message' => $request->all()], Response::HTTP_INTERNAL_SERVER_ERROR);
         $request->validate(['email' => 'required']);
         $user = User_Account::where('email', $request->email)->first();
 

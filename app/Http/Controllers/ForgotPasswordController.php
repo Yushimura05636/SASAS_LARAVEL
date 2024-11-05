@@ -22,7 +22,7 @@ class ForgotPasswordController extends Controller
 
         $token = Str::random(60);
 $email = $this->request->email;
-$link = env('APP_UI_URL') . "/forgot_password/forgot_password_form?token=$token&email=$email";
+$link = env('APP_UI_URL') . "forgot_password/forgot_password_form?token=$token&email=$email";
 
 try {
     // Begin the transaction

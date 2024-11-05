@@ -121,8 +121,6 @@ class UserController extends Controller
     public function verifyCode(Request $request)
     {
         $request->validate(['email' => 'required']);
-        $request->validate(['code' => 'required']);
-
         // return response()->json([
         //     'message' => 'hello',
         // ], Response::HTTP_INTERNAL_SERVER_ERROR);
@@ -130,12 +128,14 @@ class UserController extends Controller
 
         if($request->method == 'email')
         {
+            $request->validate(['code' => 'required']);
             $verifyEmail = new EmailVerificationController($request);
             return $verifyEmail->verifyEmailCode();
         }
 
         else if($request->method == 'phone')
         {
+            $request->validate(['code' => 'required']);
             $request->validate(['phone_number' => 'required']);
             $verifyPhone = new PhoneVerificationController($request);
             return $verifyPhone->verifyPhoneCode();

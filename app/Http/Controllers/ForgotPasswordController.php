@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Mail\ResetPasswordMail;
+use App\Mail\TwoFactorCodeMail;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
@@ -21,23 +22,25 @@ class ForgotPasswordController extends Controller
     public function sendResetLink() {
 
         $token = Str::random(60);
-$email = $this->request->email;
-$link = env('APP_UI_URL') . "forgot_password/forgot_password_form?token=$token&email=$email";
+        $email = $this->request->email;
+        $link = env('APP_UI_URL') . "forgot_password/forgot_password_form?token=$token&email=$email";
 
-try {
-    // Begin the transaction
-    DB::beginTransaction();
+        try {
+            // Begin the transaction
+            DB::beginTransaction();
 
-    // Insert token in the password reset table
-    DB::table('password_reset_tokens')->insert([
-        'email' => $email,
-        'token' => $token,
-        'created_at' => now(),
-    ]);
+            $reset = DB::table('password_reset_tokens')->updateOrInsert(
+                ['email' => $email], // Condition to check if email exists
+                [
+                    'token' => $token,
+                    'created_at' => now(),
+                    ]
+                );
 
-    // Send the email
-    Mail::to($email)->send(new ResetPasswordMail($link));
+                // Send the email
+                Mail::to($this->request->email)->send(new ResetPasswordMail($link));
 
+                //return response()->json(['success' => false, 'message' => $mail], Response::HTTP_INTERNAL_SERVER_ERROR);
     // Commit the transaction if successful
     DB::commit();
 

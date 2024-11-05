@@ -193,6 +193,12 @@ class UserController extends Controller
 
         // Commit transaction and return success response
         DB::commit();
+
+        //clear the data
+        DB::table('password_reset_tokens')
+        ->where('email', $request->email)
+        ->delete();
+
         return response()->json(['success' => true, 'message' => 'Password updated successfully'], Response::HTTP_OK);
 
     } catch (\Exception $e) {

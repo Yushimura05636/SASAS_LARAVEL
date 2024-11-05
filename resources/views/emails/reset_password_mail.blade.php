@@ -44,7 +44,7 @@
         <h1>Your Reset Password Link</h1>
         <p>Please use the button below to complete your password reset:</p>
         <a class="button" href="{{ $link }}">Reset Password</a>
-        <p>This link will expire in 10 minutes.</p>
+        <p>This link will expire in 1 hour.</p>
     </div>
 </body>
 </html>

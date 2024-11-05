@@ -33,6 +33,7 @@ try {
         'email' => $email,
         'token' => $token,
         'created_at' => now(),
+        'expires_at' => now()->addHour(),
     ]);
 
     // Send the email
@@ -81,11 +82,11 @@ try {
         $user = DB::table('password_reset_tokens')
         ->where('token', $this->request->token)
         ->where('email', $this->request->email)
+        ->where('expires_at', '>', now()) // Token must not be expired
         ->first();
 
-        if(!$user)
-        {
-            return response()->json(['message' => 'Email or Token doesn not matched!'], Response::HTTP_INTERNAL_SERVER_ERROR);
+        if (!$user) {
+            return response()->json(['message' => 'Token has expired or is invalid.'], Response::HTTP_BAD_REQUEST);
         }
 
         // Commit the transaction if successful

@@ -419,6 +419,41 @@ class CustomerPersonalityController extends Controller
 
     }
 
+    public function showGroupWithData(int $id)
+    {
+        //get first the approve id
+        $personalityStatusId = Personality_Status_Map::where('description', 'Approved')->first()->id;
+
+        $customers = Customer::where('group_id', $id)
+        ->with('personality')  // Include related personality data
+        ->orderBy('personality_id')
+        ->get();
+
+
+        $customerDatas = [];
+
+        foreach ($customers as $customer) {
+            if ($customer['personality']['personality_status_code'] == $personalityStatusId) {
+                $customerDatas[] = $customer; // Using array shorthand
+            }
+        }
+
+        // return response()->json([
+        //     'message group' => $customerDatas,
+        // ], Response::HTTP_INTERNAL_SERVER_ERROR);
+
+        if(!count($customerDatas) > 0)
+        {
+            return response()->json([
+                'message' => 'there is no customer in this group'
+            ], Response::HTTP_NOT_FOUND);
+        }
+
+        return response()->json([
+            'data' => $customerDatas,
+        ]);
+    }
+
     public function destroy(int $reqId)
     {
         try {

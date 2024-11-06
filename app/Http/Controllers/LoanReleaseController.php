@@ -38,7 +38,7 @@ class LoanReleaseController extends Controller
     public function show(int $id)
     {
         return $this->loanReleaseService->findLoanReleaseById($id);
-    
+
     }
 
     /**
@@ -47,7 +47,7 @@ class LoanReleaseController extends Controller
     public function update(LoanReleaseUpdateRequest $request, int $id)
     {
         return $this->loanReleaseService->updateLoanRelease($request, $id);
-        
+
     }
 
     /**
@@ -56,5 +56,10 @@ class LoanReleaseController extends Controller
     public function destroy(int $id)
     {
         return $this->loanReleaseService->deleteLoanRelease($id);
+    }
+
+    public function generateSchedule(Request $request)
+    {
+
     }
 }

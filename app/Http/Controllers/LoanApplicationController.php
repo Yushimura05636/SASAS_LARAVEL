@@ -411,6 +411,7 @@ class LoanApplicationController extends Controller
     DB::beginTransaction();
 
     try {
+
         $userId = auth()->user()->id;
         $customerId = $request['customer_id'];
         $loanId = $request['id'];
@@ -419,25 +420,6 @@ class LoanApplicationController extends Controller
         $customer_data = $customerPersonalityController->index();
 
         $customer_group_id = null;
-
-        //this loop will check if a member is not active nor approved in the personality
-        foreach($customer_data as $id => $data)
-        {
-            if(!is_null($data))
-            {
-                foreach($data as $dat)
-                {
-                    if(!is_null($dat))
-                    {
-                        if(!($dat['personality']['personality_status_code'] == Personality_Status_Map::where('description', 'like', '%APPROVED%')->first()->id)
-                        && !($dat['personality']['credit_status_id'] == Credit_Status::where('description', 'like', '%ACTIVE%')->first()->id))
-                        {
-                            throw new \Exception('A member in the group is not APPROVED nor ACTIVE');
-                        }
-                    }
-                }
-            }
-        }
 
         //get the group id of the current customer
         $customer_group_id = Customer::where('id', $customerId)->first()->group_id;
@@ -462,6 +444,12 @@ class LoanApplicationController extends Controller
 
                             if ($payableFee && $payableFee->fee_balance > 0) {
                                 throw new \Exception('Cannot approve: outstanding fees need to be paid');
+                            }
+
+                            if(!($dat['personality']['personality_status_code'] == Personality_Status_Map::where('description', 'like', '%APPROVED%')->first()->id)
+                            && !($dat['personality']['credit_status_id'] == Credit_Status::where('description', 'like', '%ACTIVE%')->first()->id))
+                            {
+                                throw new \Exception('A member in the group is not APPROVED nor ACTIVE');
                             }
                         }
                     }

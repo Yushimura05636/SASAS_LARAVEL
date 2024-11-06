@@ -142,7 +142,7 @@ class LoanApplicationController extends Controller
 
                     $balance = $totals->balance ?? 0;
 
-                    if ($balance > 0 && is_null($totals)) {
+                    if ($balance > 0 && !is_null($totals)) {
                         throw new \Exception('There still member has not yet fully paid!');
                     }
                 }
@@ -156,7 +156,9 @@ class LoanApplicationController extends Controller
                             ->selectRaw('(SUM(amount_due) - SUM(amount_paid)) AS balance')
                             ->first();
 
-                        if ($totals && $totals->balance > 0) {
+                        $balance = $totals->balance ?? 0;
+
+                        if ($balance > 0 && !is_null($totals)) {
                             throw new \Exception($customerData['customer_id'] . ' The coMaker has not yet fully paid!');
                         }
                     }
@@ -556,6 +558,18 @@ class LoanApplicationController extends Controller
 
         $customer_group_id = null;
 
+        foreach($AllCustomerData as $data)
+        {
+            if(!is_null($data))
+            {
+                $customer_group_id = $data['group_id'];
+                break;
+            }
+        }
+
+
+
+
 
         $payableFee = null;
         foreach($customer_data as $id => $data)
@@ -567,12 +581,6 @@ class LoanApplicationController extends Controller
                 {
                     if(!is_null($dat))
                     {
-                        if($customer_group_id < 0)
-                        {
-                            $cId = $dat['customer']['id'];
-                            //get the group id of the current customer
-                            $customer_group_id = Customer::where('id', $cId)->first()->group_id;
-                        }
 
                         if($dat['customer']['group_id'] == $customer_group_id)
                         {
@@ -597,6 +605,8 @@ class LoanApplicationController extends Controller
                 }
             }
         }
+
+        //return response()->json(['message' => 'done no error'], Response::HTTP_INTERNAL_SERVER_ERROR);
 
         foreach($AllCustomerData as $data)
         {

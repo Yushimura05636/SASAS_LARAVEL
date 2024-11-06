@@ -10,6 +10,7 @@ use App\Http\Resources\CustomerResource;
 use App\Http\Resources\PersonalityResource;
 use App\Interface\Service\CustomerServiceInterface;
 use App\Interface\Service\PersonalityServiceInterface;
+use App\Models\Credit_Status;
 use App\Models\Customer;
 use App\Models\Customer_Requirements;
 use App\Models\Personality;
@@ -221,10 +222,12 @@ class CustomerPersonalityController extends Controller
         }
     }
 
+
     public function indexApprove()
     {
         // Get the personality status code for "Approved"
-        $personalityId = Personality_Status_Map::where('description', 'Approved')->first()->id;
+        $personalityId = Personality_Status_Map::where('description', 'like', '%Approved%')->first()->id;
+        $creditId = Credit_Status::where('description', 'like', '%Active%')->first()->id;
         $customers = Customer::get();
 
         $customerData = [];
@@ -234,6 +237,7 @@ class CustomerPersonalityController extends Controller
             // Find the related personality with the "Approved" status
             $customerPersonality = Personality::where('id', $customer->personality_id)
                 ->where('personality_status_code', $personalityId)
+                ->where('credit_status_id', $creditId)
                 ->first();
 
             // If an approved personality is found, add both customer and personality to the result array

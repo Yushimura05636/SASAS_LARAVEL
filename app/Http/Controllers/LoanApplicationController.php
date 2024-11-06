@@ -14,6 +14,7 @@ use App\Interface\Service\PaymentScheduleServiceInterface;
 use App\Interface\Service\PaymentServiceInterface;
 use App\Models\Credit_Status;
 use App\Models\Customer;
+use App\Models\Customer_Group;
 use App\Models\Document_Status_Code;
 use App\Models\Factor_Rate;
 use App\Models\Fees;
@@ -331,6 +332,136 @@ class LoanApplicationController extends Controller
 
     }
 
+    public function seeWithPending(string $id, CustomerPersonalityController $customerPersonalityController, LoanApplicationFeeServiceInterface $loanApplicationFeeService, LoanApplicationCoMakerServiceInterface $loanApplicationCoMakerService)
+    {
+        //customer with approved and active
+        $customer = $customerPersonalityController->indexApprove();
+
+        $customerData = null;
+
+        foreach($customer as $cus)
+        {
+            if(!is_null($cus))
+            {
+                foreach($cus as $c)
+                {
+                    // $d = $c['customer']->id;
+                    // return response()->json(['message' => $d], Response::HTTP_NOT_FOUND);
+                    if(!is_null($c))
+                    {
+                        if($c['customer']->id == $id)
+                        {
+                            $customerData = $c;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        if(is_null($customerData))
+        {
+            return response()->json(['message' => 'There is no customer found'], Response::HTTP_NOT_FOUND);
+        }
+
+        // Loan status id
+        $loanDocumentId = Document_Status_Code::where('description', 'like', '%Pending%')->first()->id;
+
+        // Find loan application by user ID and should be pending
+        $loanApp = Loan_Application::where('customer_id', $customerData['customer']->id)
+        ->where('document_status_code', $loanDocumentId)
+        ->first();
+
+        //get the loan application fees
+        $loanFee = Loan_Application_Fees::where('loan_application_id', $loanApp->id)->get();
+
+        $loanFeeData = [];
+        foreach($loanFee as $fee)
+        {
+            if(!is_null($fee))
+            {
+                //get the loan fee description
+                $loanFeeDescription = Fees::where('id', $fee->fee_id)->first()->description;
+                $loanFee = [
+                    'id' => $fee->id,  // Dynamically populated from the loan fee object
+                    'loan_application_id' => $fee->loan_application_id,  // Dynamically populated from the loan fee object
+                    'fee_id' => $fee->fee_id,  // Dynamically populated from the loan fee object
+                    'amount' => $fee->amount,  // Dynamically populated from the loan fee object
+                    'encoding_order' => $fee->encoding_order,  // Dynamically populated from the loan fee object
+                    'created_at' => $fee->created_at,  // Dynamically populated from the loan fee object
+                    'updated_at' => $fee->updated_at,  // Dynamically populated from the loan fee object
+                    'description' => $loanFeeDescription,
+                ];
+
+                $loanFeeData[] = $loanFee;
+            }
+        }
+
+        //return response()->json(['error' => $loanFeeData], 404);
+
+
+
+        if(!$loanApp) {
+            return response()->json(['error' => 'Loan Application not found'], 404);
+        }
+        // Convert the result to an array and then to an object to ensure it’s not wrapped in an array
+
+        // return [
+        //     $loanAppObject
+        // ];
+
+        $customerData['customer']['factor_rate_value'] = 12;
+
+        //get the factor rate value
+        $factor_rate_value = Factor_Rate::where('id', $loanApp->factor_rate)->first()->value;
+
+        $payment_frequency_description = Payment_Frequency::where('id', $loanApp->payment_frequency_id)->first()->description;
+        $payment_duration_description = Payment_Duration::where('id', $loanApp->payment_duration_id)->first()->description;
+
+        $loanApp = [
+            'id' => $loanApp->id,  // Dynamically populated from the loan application
+            'customer_id' => $loanApp->customer_id,  // Dynamically populated from the loan application
+            'group_id' => $loanApp->group_id,  // Dynamically populated from the loan application
+            'datetime_prepared' => $loanApp->datetime_prepared,  // Dynamically populated from the loan application
+            'document_status_code' => $loanApp->document_status_code,  // Dynamically populated from the loan application
+            'loan_application_no' => $loanApp->loan_application_no,  // Dynamically populated from the loan application
+            'amount_loan' => $loanApp->amount_loan,  // Dynamically populated from the loan application
+            'factor_rate' => $loanApp->factor_rate,  // Dynamically populated from the loan application
+            'amount_interest' => $loanApp->amount_interest,  // Dynamically populated from the loan application
+            'amount_paid' => $loanApp->amount_paid,  // Dynamically populated from the loan application
+            'datetime_target_release' => $loanApp->datetime_target_release,  // Dynamically populated from the loan application
+            'datetime_fully_paid' => $loanApp->datetime_fully_paid,  // Dynamically populated from the loan application
+            'datetime_approved' => $loanApp->datetime_approved,  // Dynamically populated from the loan application
+            'payment_frequency_id' => $loanApp->payment_frequency_id,  // Dynamically populated from the loan application
+            'payment_duration_id' => $loanApp->payment_duration_id,  // Dynamically populated from the loan application
+            'approved_by_id' => $loanApp->approved_by_id,  // Dynamically populated from the loan application
+            'prepared_by_id' => $loanApp->prepared_by_id,  // Dynamically populated from the loan application
+            'released_by_id' => $loanApp->released_by_id,  // Dynamically populated from the loan application
+            'last_modified_by_id' => $loanApp->last_modified_by_id,  // Dynamically populated from the loan application
+            'notes' => $loanApp->notes,  // Dynamically populated from the loan application
+            'created_at' => $loanApp->created_at,  // Dynamically populated from the loan application
+            'updated_at' => $loanApp->updated_at,  // Dynamically populated from the loan application
+            'factor_rate_value' => $factor_rate_value,
+            'payment_frequency_description' =>  $payment_frequency_description,
+            'payment_duration_description' => $payment_duration_description,
+            'fees' => $loanFeeData,
+        ];
+
+        $loanApp = [
+            'customer' => $customerData['customer'],
+            'personality' => $customerData['personality'],
+            'loan' => $loanApp,
+        ];
+
+        // Convert to an object if necessary
+        $loanAppObject = (object) $loanApp;
+
+        return response()->json([
+            'data' => $loanAppObject,
+        ]);
+
+    }
+
     /**
      * Update the specified resource in storage.
      */
@@ -416,23 +547,33 @@ class LoanApplicationController extends Controller
         $customerId = $request['customer_id'];
         $loanId = $request['id'];
 
+        $AllCustomerData = $request->input('allCustomerData');
+
+
+
         //check if the group mates has its own dues
         $customer_data = $customerPersonalityController->index();
 
         $customer_group_id = null;
 
-        //get the group id of the current customer
-        $customer_group_id = Customer::where('id', $customerId)->first()->group_id;
 
         $payableFee = null;
         foreach($customer_data as $id => $data)
         {
+
             if(!is_null($data))
             {
                 foreach($data as $dat)
                 {
                     if(!is_null($dat))
                     {
+                        if($customer_group_id < 0)
+                        {
+                            $cId = $dat['customer']['id'];
+                            //get the group id of the current customer
+                            $customer_group_id = Customer::where('id', $cId)->first()->group_id;
+                        }
+
                         if($dat['customer']['group_id'] == $customer_group_id)
                         {
                             $payableFee = Payment_Schedule::where('customer_id', $dat['customer']['id'])
@@ -457,80 +598,93 @@ class LoanApplicationController extends Controller
             }
         }
 
-        $loanApproveId = Document_Status_Code::where('description', 'Approved')->first()->id;
-
-        $loanApplication = Loan_Application::findOrFail($loanId);
-
-        $loanApplication->document_status_code = $loanApproveId;
-        $loanApplication->approved_by_id = $userId;
-        $loanApplication->released_by_id = $userId;
-        $loanApplication->datetime_approved = now();
-        $loanApplication->save();
-        $loanApplication->fresh();
-
-        $passbookNo = Customer::where('id', $customerId)->first()->passbook_no;
-
-        $loanAmount = $request['amount_loan'];
-        $factorRateId = $request['factor_rate'];
-        $amountInterest = $request['amount_interest'];
-
-        $factorRate = Factor_Rate::findOrFail($factorRateId);
-        $paymentFrequencyId = $factorRate->payment_frequency_id;
-        $paymentDurationId = $factorRate->payment_duration_id;
-
-        $paymentFrequency = Payment_Frequency::findOrFail($paymentFrequencyId);
-        $paymentDuration = Payment_Duration::findOrFail($paymentDurationId);
-
-        $loanReleasePayload = [
-            'datetime_prepared' => now(),
-            'passbook_number' => $passbookNo,
-            'loan_application_id' => $loanId,
-            'prepared_by_id' => $userId,
-            'amount_loan' => $loanAmount,
-            'amount_interest' => $amountInterest,
-            'datetime_first_due' => now()->addDays($paymentFrequency->days_interval),
-            'notes' => $request->get('notes', null),
-        ];
-
-        $loanReleasePayload = new Request($loanReleasePayload);
-        $loanRelease = $loanReleaseService->createLoanRelease($loanReleasePayload);
-
-        $numberOfPayments = $paymentDuration->number_of_payments;
-        $amountDue = ($loanAmount + $amountInterest) / $numberOfPayments;
-        $firstDueDate = $loanReleasePayload['datetime_first_due'];
-
-        $paymentFrequency = $paymentFrequency->days_interval; // Weekly interval in days
-
-        $holidays = Holiday::get();
-
-        for($i = 0; $i < $numberOfPayments; $i++)
+        foreach($AllCustomerData as $data)
         {
-            foreach($holidays as $k => $holiday)
+            if(!is_null($data))
             {
-                if(!is_null($holiday))
+                //return response()->json(['message' => $data], Response::HTTP_INTERNAL_SERVER_ERROR);
+                $loanApplicationNo = $data['loan_application_no'];
+                $customerId = $data['customer_id'];
+                //search loang application id
+                $loanId = Loan_Application::where('loan_application_no', $loanApplicationNo)->first()->id;
+            $loanApproveId = Document_Status_Code::where('description', 'Approved')->first()->id;
+
+            $loanApplication = Loan_Application::findOrFail($loanId);
+
+            $loanApplication->document_status_code = $loanApproveId;
+            $loanApplication->approved_by_id = $userId;
+            $loanApplication->released_by_id = $userId;
+            $loanApplication->datetime_approved = now();
+            $loanApplication->save();
+            $loanApplication->fresh();
+
+            $passbookNo = Customer::where('id', $customerId)->first()->passbook_no;
+
+            $loanAmount = $data['amount_loan'];
+            $factorRateId = $data['factor_rate'];
+            $amountInterest = $data['amount_interest'];
+
+            $factorRate = Factor_Rate::findOrFail($factorRateId);
+            $paymentFrequencyId = $factorRate->payment_frequency_id;
+            $paymentDurationId = $factorRate->payment_duration_id;
+
+            $paymentFrequency = Payment_Frequency::findOrFail($paymentFrequencyId);
+            $paymentDuration = Payment_Duration::findOrFail($paymentDurationId);
+
+            $loanReleasePayload = [
+                'datetime_prepared' => now(),
+                'passbook_number' => $passbookNo,
+                'loan_application_id' => $loanId,
+                'prepared_by_id' => $userId,
+                'amount_loan' => $loanAmount,
+                'amount_interest' => $amountInterest,
+                'datetime_first_due' => now()->addDays($paymentFrequency->days_interval),
+                'notes' => $request->get('notes', null),
+            ];
+
+            $loanReleasePayload = new Request($loanReleasePayload);
+            $loanRelease = $loanReleaseService->createLoanRelease($loanReleasePayload);
+
+            $numberOfPayments = $paymentDuration->number_of_payments;
+            $amountDue = ($loanAmount + $amountInterest) / $numberOfPayments;
+            $firstDueDate = $loanReleasePayload['datetime_first_due'];
+
+            $paymentFrequency = $paymentFrequency->days_interval; // Weekly interval in days
+
+            $holidays = Holiday::get();
+
+            for($i = 0; $i < $numberOfPayments; $i++)
+            {
+                foreach($holidays as $k => $holiday)
                 {
-                    if($firstDueDate == $holiday->date || $firstDueDate->isSunday())
+                    if(!is_null($holiday))
                     {
-                        $debug[$i] = $firstDueDate = $firstDueDate->addDays();
+                        if($firstDueDate == $holiday->date || $firstDueDate->isSunday())
+                        {
+                            $debug[$i] = $firstDueDate = $firstDueDate->addDays();
+                        }
                     }
+                }
+
+                $payload = [
+                    'customer_id' => $customerId,
+                    'loan_released_id' => $loanRelease->id,
+                    'datetime_due' => $firstDueDate,
+                    'amount_due' => $amountDue,
+                    'amount_interest' => $amountInterest / $numberOfPayments,
+                    'amount_paid' => 0,
+                    'payment_status_code' => 'UNPAID',
+                    'remarks' => null,
+                ];
+
+                $payload = new Request($payload);
+                $paymentScheduleService->createPaymentSchedule($payload);
+
+                $dateDebug[$i] = $firstDueDate = $firstDueDate->copy()->addDays($paymentFrequency);
                 }
             }
 
-            $payload = [
-                'customer_id' => $customerId,
-                'loan_released_id' => $loanRelease->id,
-                'datetime_due' => $firstDueDate,
-                'amount_due' => $amountDue,
-                'amount_interest' => $amountInterest / $numberOfPayments,
-                'amount_paid' => 0,
-                'payment_status_code' => 'UNPAID',
-                'remarks' => null,
-            ];
 
-            $payload = new Request($payload);
-            $paymentScheduleService->createPaymentSchedule($payload);
-
-            $dateDebug[$i] = $firstDueDate = $firstDueDate->copy()->addDays($paymentFrequency);
         }
 
 

@@ -521,8 +521,10 @@ Route::middleware('auth:sanctum')->prefix('LOAN_APPLICATIONS')->group(function (
     Route::get('/{id}', [LoanApplicationController::class, 'show'])->middleware("document_access:$LOAN_APPLICATIONS, $VIEW");
     Route::get('/loanno/{id}', [LoanApplicationController::class, 'look'])->middleware("document_access:$LOAN_APPLICATIONS, $VIEW");;
     Route::get('/loanno/NoAUTH/{id}', [LoanApplicationController::class, 'look']);
+    Route::get('/loannoWithPending/NoAUTH/{id}', [LoanApplicationController::class, 'customerLoanApplicationNoPending']);
     Route::get('/customer/{id}', [LoanApplicationController::class, 'see'])->middleware("document_access:$LOAN_APPLICATIONS, $VIEW");
     Route::get('/customer/NoAUTH/{id}', [LoanApplicationController::class, 'see']);
+    Route::get('/customerWithPending/NoAUTH/{id}', [LoanApplicationController::class, 'seeWithPending']);
     Route::post('/', [LoanApplicationController::class, 'store'])->middleware("document_access:$LOAN_APPLICATIONS, $CREATE");
     Route::put('/{id}', [LoanApplicationController::class, 'update'])->middleware("document_access:$LOAN_APPLICATIONS, $UPDATE");
     Route::delete('/{id}', [LoanApplicationController::class, 'destroy'])->middleware("document_access:$LOAN_APPLICATIONS, $DELETE");
@@ -688,3 +690,7 @@ Route::prefix('REGISTER_LIBRARIES_NOT')->group(function () {
 
 
 
+
+//test
+Route::get('/NoAUTH/CustomerAPPROVE', [CustomerPersonalityController::class, 'indexApprove']);
+Route::get('/customerWithPending/NoAUTH/{id}', [LoanApplicationController::class, 'seeWithPending']);

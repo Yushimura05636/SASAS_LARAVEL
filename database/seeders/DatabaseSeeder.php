@@ -345,15 +345,18 @@ class DatabaseSeeder extends Seeder
         // Fetch all document permissions
         $documentPermissions = Document_Permission_Map::all();
 
-        // Loop through each document map and permission, and assign to user_id 1
-        foreach ($documentMaps as $documentMap) {
-            foreach ($documentPermissions as $documentPermission) {
-                Document_Permission::create([
-                    'user_id' => 1, // Assuming you are granting permissions to user with ID 1
-                    'document_map_code' => $documentMap->id, // Use document map id as code
-                    'document_permission' => $documentPermission->id, // Use document permission id
-                    'datetime_granted' => now() // Current timestamp
-                ]);
+        for($i = 0; $i < 3; $i++)
+        {
+            // Loop through each document map and permission, and assign to user_id 1
+            foreach ($documentMaps as $documentMap) {
+                foreach ($documentPermissions as $documentPermission) {
+                    Document_Permission::create([
+                        'user_id' => $i+1, // Assuming you are granting permissions to user with ID 1
+                        'document_map_code' => $documentMap->id, // Use document map id as code
+                        'document_permission' => $documentPermission->id, // Use document permission id
+                        'datetime_granted' => now() // Current timestamp
+                    ]);
+                }
             }
         }
 

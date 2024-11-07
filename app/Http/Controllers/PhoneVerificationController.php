@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User_Account;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Twilio\Rest\Client;
@@ -16,40 +17,65 @@ class PhoneVerificationController extends Controller
 
     public function sendPhoneVerification()
     {
-        // Generate a 6-digit verification code
-        $code = random_int(100000, 999999);
+        $user = User_Account::where('email', $this->request->email)->first();
 
-        // Store the code in cache with an expiration time
-        Cache::put('sms_verification_code_' . $this->request->phone_number, $code, now()->addMinutes(10));
-
-        // Send SMS using Twilio
         $twilio = new Client(env('TWILIO_SID'), env('TWILIO_AUTH_TOKEN'));
-        $twilio->messages->create($this->request->phone_number, [
-            'MessagingServiceSid' => 'MGb7c6095df324624d8d3f470049ad12b0',
-            'body' => "Your verification code is: $code"
-        ]);
 
-        return response()->json(['message' => 'Verification code sent successfully.']);
+        try {
+            // Send SMS verification code
+            $verification = $twilio->verify->v2->services(env('TWILIO_VSID'))
+                ->verifications
+                ->create($this->request->phone_number, "sms");
+
+            // Save the code and expiration
+            $user->two_factor_code = null;
+            $user->two_factor_expires_at = null;
+            $user->save();
+
+            // Check if the status is "pending" (indicating the message was sent)
+            if ($verification->status === 'pending') {
+                return response()->json(['message' => 'Verification code sent successfully.']);
+            } else {
+                return response()->json(['error' => 'Failed to send verification code.'], 500);
+            }
+        } catch (\Exception $e) {
+            // Handle any errors from the Twilio API
+            return response()->json(['error' => 'An error occurred: ' . $e->getMessage()], 500);
+        }
+
     }
 
     public function verifyPhoneCode()
     {
-        // Retrieve code from cache
-        $cachedCode = Cache::get('sms_verification_code_' . $this->request->phone_number);
+        $user = User_Account::where('email', $this->request->email)->first();
 
-        $token = $user->createToken('auth-token')->plainTextToken;
+        // Send SMS using Twilio
+        $twilio = new Client(env('TWILIO_SID'), env('TWILIO_AUTH_TOKEN'));
 
-        $data = (object) [
-            'token' => $token,
-        ];
+        // Verify the user-provided code
+        $verification_check = $twilio->verify->v2->services(env('TWILIO_VSID'))
+        ->verificationChecks
+        ->create([
+            "to" => '+63' . $this->request->phone_number,
+            "code" => $this->request->code
+        ]);
 
-        if ($cachedCode && $cachedCode == $this->request->code) {
-            // Clear the code from cache after successful verification
-            Cache::forget('sms_verification_code_' . $this->request->phone_number);
+            //return response()->json(['success' => false, 'message' => $verification_check->status], 400);
+
+        if ($verification_check->status == 'approved') {
+            $token = $user->createToken('auth-token')->plainTextToken;
+            $data = (object) [
+                'token' => $token,
+            ];
+
+            // Save the code and expiration
+            $user->two_factor_code = null;
+            $user->two_factor_expires_at = null;
+            $user->save();
 
             return response()->json(['success' => true, 'message' => `Code verified successfully.`, 'data' => $data]);
+        } else {
+            return response()->json(['success' => false, 'message' => 'Invalid code or code expired.'], 400);
         }
-
-        return response()->json(['success' => false, 'message' => 'Invalid code or code expired.'], 400);
     }
 }

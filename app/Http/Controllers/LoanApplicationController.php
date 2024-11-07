@@ -551,8 +551,6 @@ class LoanApplicationController extends Controller
 
         $AllCustomerData = $request->input('allCustomerData');
 
-
-
         //check if the group mates has its own dues
         $customer_data = $customerPersonalityController->index();
 
@@ -566,10 +564,6 @@ class LoanApplicationController extends Controller
                 break;
             }
         }
-
-
-
-
 
         $payableFee = null;
         foreach($customer_data as $id => $data)

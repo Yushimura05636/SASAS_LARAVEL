@@ -13,6 +13,7 @@ use App\Interface\Service\PersonalityServiceInterface;
 use App\Models\Credit_Status;
 use App\Models\Customer;
 use App\Models\Customer_Requirements;
+use App\Models\Loan_Application;
 use App\Models\Personality;
 use App\Models\Personality_Status_Map;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -223,7 +224,7 @@ class CustomerPersonalityController extends Controller
     }
 
 
-    public function indexApprove()
+    public function indexApproveActive()
     {
         // Get the personality status code for "Approved"
         $personalityId = Personality_Status_Map::where('description', 'like', '%Approved%')->first()->id;
@@ -246,6 +247,46 @@ class CustomerPersonalityController extends Controller
                     'customer' => $customer,  // Include customer data
                     'personality' => $customerPersonality,  // Include personality data
                 ];
+            }
+        }
+
+        return [
+            'data' => $customerData,
+        ];
+
+    }
+
+    public function indexApproveActivePending()
+    {
+        // Get the personality status code for "Approved"
+        $personalityId = Personality_Status_Map::where('description', 'like', '%Approved%')->first()->id;
+        $creditId = Credit_Status::where('description', 'like', '%Active%')->first()->id;
+        $customers = Customer::get();
+
+        //get
+        $loans = Loan_Application::where('document_status_code', 'like', '%Pending%')->get();
+        //loans->customer_id to get the customer id on loans
+
+        $loanCustomerIds = $loans->pluck('customer_id')->toArray(); // Get all customer IDs from loans
+
+        $customerData = [];
+        // Loop through each customer
+        foreach ($customers as $customer) {
+            // Check if the customer ID exists in the loan customer IDs
+            if (in_array($customer->id, $loanCustomerIds)) {
+                // Find the related personality with the "Approved" status
+                $customerPersonality = Personality::where('id', $customer->personality_id)
+                    ->where('personality_status_code', $personalityId)
+                    ->where('credit_status_id', $creditId)
+                    ->first();
+
+                // If an approved personality is found, add both customer and personality to the result array
+                if ($customerPersonality) {
+                    $customerData[] = [
+                        'customer' => $customer,  // Include customer data
+                        'personality' => $customerPersonality,  // Include personality data
+                    ];
+                }
             }
         }
 
@@ -401,6 +442,49 @@ class CustomerPersonalityController extends Controller
 
         foreach ($customers as $customer) {
             if ($customer['personality']['personality_status_code'] == $personalityStatusId) {
+                $customerDatas[] = $customer; // Using array shorthand
+            }
+        }
+
+        // return response()->json([
+        //     'message group' => $customerDatas,
+        // ], Response::HTTP_INTERNAL_SERVER_ERROR);
+
+        if(!count($customerDatas) > 0)
+        {
+            return response()->json([
+                'message' => 'there is no customer in this group'
+            ], Response::HTTP_NOT_FOUND);
+        }
+
+        return response()->json([
+            'data' => $customerDatas,
+        ]);
+
+
+    }
+
+    public function showGroupApproveActive(int $id)
+    {
+
+        //get first the approve id
+        $personalityStatusId = Personality_Status_Map::where('description', 'like', '%Approved%')
+        ->first()->id;
+
+        $creditStatusId = Credit_Status::where('description', 'like', '%Active%')
+        ->first()->id;
+
+        $customers = Customer::where('group_id', $id)
+        ->with('personality')  // Include related personality data
+        ->orderBy('personality_id')
+        ->get();
+
+
+        $customerDatas = [];
+
+        foreach ($customers as $customer) {
+            if ($customer['personality']['personality_status_code'] == $personalityStatusId
+            && $customer['personality']['credit_status_id'] == $creditStatusId) {
                 $customerDatas[] = $customer; // Using array shorthand
             }
         }

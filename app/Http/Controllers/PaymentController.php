@@ -65,6 +65,12 @@ class PaymentController extends Controller
         // Start DB Transaction
         DB::beginTransaction();
 
+        //check the customer payment dues
+        $schedules = Payment_Schedule::where('customer_id', $request['customer_id'])
+        ->where('payment_status_code', 'like', '%Unpaid%')
+        ->orWhere('payment_status_code', 'PARTIALLY PAID')
+        ->get();
+
         try {
 
             // Loop through the decoded array to get the ids
@@ -81,7 +87,15 @@ class PaymentController extends Controller
                         'notes' => ''
                     ];
 
+                    if(!(count($schedules) > 1))
+                    {
+                        // Check if the amount paid is within the balance
+                        if ($paymentData['amount_paid'] > $item['balance']) {
+                            return response()->json(['message' => 'Payment amount exceeds remaining balance'], Response::HTTP_BAD_REQUEST);
+                        }
+                    }
 
+                    //return response()->json(['message' => 'stop'], Response::HTTP_INTERNAL_SERVER_ERROR);
 
                     if($paymentData['amount_paid'] > 0)
                     {
@@ -137,6 +151,8 @@ class PaymentController extends Controller
             // Check for pending payments before approving the current payment
             $hasPendingPayments = $this->hasPendingPayments($payment['customer_id'], $id);
 
+            //return response()->json(['message' => $hasPendingPayments], Response::HTTP_INTERNAL_SERVER_ERROR);
+
             if ($hasPendingPayments) {
                 throw new \Exception('Cannot approve payment. There are pending payments before this one.');
             }
@@ -177,7 +193,7 @@ private function hasPendingPayments(int $customerId, int $currentPaymentId)
 {
     // Check if there are any pending payments for the customer before the current payment
     $pendingPayments = Payment::where('customer_id', $customerId)
-        ->where('document_status_code', 'PENDING') // Assuming 'PENDING' is the status code for pending payments
+        ->where('document_status_code', 'like', '%Pending%') // Assuming 'PENDING' is the status code for pending payments
         ->where('id', '<', $currentPaymentId) // Ensure that we check for payments with an ID less than the current payment's ID
         ->exists();
 
@@ -204,59 +220,106 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
         }
     }
 
-    // $payment_schedule = $paymentScheduleService->findPaymentScheduleById($payment_schedule_id);
-    $payment_schedule = $paymentScheduleController->index($customerPersonalityController);
+    //$payment_schedule = $paymentScheduleService->findPaymentScheduleById($payment_schedule_id);
+    //$payment_schedule = $paymentScheduleController->index($customerPersonalityController);
 
-    // Convert the array into an associative array keyed by 'id'
-    $indexedSchedules = array_values($payment_schedule->original);
+    $payment = Payment_Schedule::where('id', $payment_schedule_id)
+        ->where('payment_status_code', 'like', '%UNPAID%')
+        ->orWhere('payment_status_code', '=' ,'PARTIALLY PAID')
+        ->get();
 
+        $payment = PaymentScheduleResource::collection($payment);
 
-    foreach ($indexedSchedules as $id => $schedule) {
-        $debug = $schedule;
-        if (!is_null($schedule)) {
-            $debug = count($schedule);
-            foreach($schedule as $sched)
-            {
-                if(!is_null($sched))
-                {
-                    if($sched['id'] == $payment_schedule_id)
-                    {
-                        $loan_application_no = $sched['loan_application_no'];
-                    }
-                }
-            }
-        }
-    }
-
-    if($loan_application_no == null || is_null($loan_application_no))
-    {
-        foreach($indexedSchedules as $id => $schedule)
+        foreach($payment as $pay)
         {
-            if(!is_null($schedule))
+            if(!is_null($pay))
             {
-                $payment_schedule_id = $schedule[0]['id'];
-                $paymentScheduleId = $schedule[0]->id;
 
-                if($payment_schedule_id == $payment_schedule_id || $paymentScheduleId == $payment_schedule_id)
+                $customerPersonality = $customerPersonalityController->show($pay['customer_id']);
+
+                $pay['family_name'] = " " . $customerPersonality->original['personality']['family_name'];
+                $pay['first_name'] = " " . $customerPersonality->original['personality']['first_name'];
+                $pay['middle_name'] = " " . $customerPersonality->original['personality']['middle_name'];
+
+
+                // Adjust balance calculation to account for forwarded amounts
+                //$originalDue = $payment[$i]['amount_due'] + $payment[$i]['amount_paid']; // or replace with stored original_amount_due if available
+                $balance = $pay['balance'] = $pay['amount_due'] - $pay['amount_paid'];
+
+                // return response()->json([
+                //     'data' => $balance,
+                // ], Response::HTTP_INTERNAL_SERVER_ERROR);
+
+
+                if($pay['loan_released_id'] && $pay['loan_released_id'] > 0)
                 {
-                    //return response()->json(['message create' => $schedule], Response::HTTP_INTERNAL_SERVER_ERROR);
-                    $loan_application_no = $schedule[0]->loan_application_no;
+                    //get the loan application id
+                    $loanAppId = Loan_Release::where('id', $pay['loan_released_id'])->first()->loan_application_id;
 
-                    if(is_null($loan_application_no))
-                    {
-                        $loan_application_no = $schedule[0]['loan_application_no'];
-                    }
+                    //get the loan_application_no
+                    $loanApplicationNo = Loan_Application::where('id', $loanAppId)->first()->loan_application_no;
+
+                    $pay['loan_application_no'] = $loanApplicationNo;
                 }
+                else
+                {
+                    $loanApplications = DB::table('loan_application_fees AS laf')
+                    ->join('loan_application AS la', 'laf.loan_application_id', '=', 'la.id')
+                    ->where('la.customer_id', $pay['customer_id'])
+                    ->select('la.loan_application_no', 'laf.amount', 'la.customer_id', 'laf.loan_application_id')
+                    ->first();
+
+                    $pay['loan_application_no'] = $loanApplications->loan_application_no;
+
+                }
+
+
+                //search the customer id
+                $customerPersonality = $customerPersonalityController->show($pay['customer_id']);
+
+                $pay['family_name'] = " " . $customerPersonality->original['personality']['family_name'];
+                $pay['first_name'] = " " . $customerPersonality->original['personality']['first_name'];
+                $pay['middle_name'] = " " . $customerPersonality->original['personality']['middle_name'];
+
+                // Adjust balance calculation to account for forwarded amounts
+                //$originalDue = $payment[$i]['amount_due'] + $payment[$i]['amount_paid']; // or replace with stored original_amount_due if available
+                $balance = $pay['balance'] = $pay['amount_due'] - $pay['amount_paid'];
+
+
+
+
+                if($pay['loan_released_id'] && $pay['loan_released_id'] > 0)
+                {
+                    //get the loan application id
+                    $loanAppId = Loan_Release::where('id', $pay['loan_released_id'])->first()->loan_application_id;
+
+                    //get the loan_application_no
+                    $loanApplicationNo = Loan_Application::where('id', $loanAppId)->first()->loan_application_no;
+
+                    $pay['loan_application_no'] = $loanApplicationNo;
+                }
+                else
+                {
+                    $loanApplications = DB::table('loan_application_fees AS laf')
+                    ->join('loan_application AS la', 'laf.loan_application_id', '=', 'la.id')
+                    ->where('la.customer_id', $pay['customer_id'])
+                    ->select('la.loan_application_no', 'laf.amount', 'la.customer_id', 'laf.loan_application_id')
+                    ->first();
+
+                    $pay['loan_application_no'] = $loanApplications->loan_application_no;
+
+                }
+                // // Convert the array into an associative array keyed by 'id'
+                // $indexedSchedules = array_values($payment_schedule->original);
             }
+            $payment = $pay;
         }
-    }
+
+    $loan_application_no = $payment['loan_application_no'];
 
     //return response()->json(['message' => $schedule, 'messabe data 2' => $altId, 'message data 3' => $altId2], Response::HTTP_INTERNAL_SERVER_ERROR);
 
     //return response()->json(['message' => $loan_application_no], Response::HTTP_INTERNAL_SERVER_ERROR);
-
-
-
 
     $loan_application = Loan_Application::where('loan_application_no', $loan_application_no)->first();
 
@@ -265,8 +328,6 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
 
     //Empty schedule
     $schedules = '';
-
-
 
     if(!$loanReleaseId->isEmpty()){
         $loanReleaseId = Loan_Release::where('loan_application_id', $loan_application->id)->where('passbook_number', $request['customer.passbook_no'])
@@ -280,13 +341,11 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
 
     $schedules = Payment_Schedule::where('customer_id', $payment->customer_id)
     ->where('loan_released_id', $loanReleaseId)
-    ->whereIn('payment_status_code', ['UNPAID', 'PARTIALLY PAID']) // Include UNPAID and PARTIALLY PAID
-    ->orWhere('payment_status_code', 'not like', '%FORWARDED%') // Exclude any that have FORWARDED
-    ->orWhere('payment_status_code', 'not like', '%PAID%') // Exclude any that have PAID
+    ->where('payment_status_code', 'like', '%Unpaid%')
+    ->orWhere('payment_status_code', 'PARTIALLY PAID')
     ->get();
 
-
-
+    // return response()->json(['message' => $schedules], Response::HTTP_INTERNAL_SERVER_ERROR);
 
     foreach ($schedules as $index => $schedule) {
         // Skip any schedule marked as "FORWARDED"
@@ -310,7 +369,7 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
             $totalAmountPaid -= $amountDue; // Deduct the paid amount from total
 
             // Create a payment line for full payment
-            $this->createPaymentLine($request, $payment, $schedule, $amountDue, 'Full payment', $paymentLineService);
+            $this->createPaymentLine($request, $payment, $schedule, $amountDue, 'APPROVED', $paymentLineService);
 
         } else {
             // Partial payment case
@@ -377,39 +436,43 @@ protected function createPaymentLine($request, $payment, $schedule, $amountPaid,
 
     (float) $balance = $totals->balance;
 
-    // return response()->json([
-    //     'paid' => $totals->balance,
-    //     'due' => $totals->due,
-    // ], Response::HTTP_INTERNAL_SERVER_ERROR);
-
     $paymentLineData = [
-        'payment_id' => $payment->id,
+        'payment_id' => $request['id'],
         'payment_schedule_id' => $schedule->id,
         'balance' => $balance - $amountPaid,
         'amount_paid' => $amountPaid,
         'remarks' => $remarks,
     ];
 
-    // return response()->json([
-    //             'data' => $paymentLineData,
-    //             'pay' => $schedule->amount_paid,
-    //             'due' => $schedule->amount_due,
-    //             'new Balance if zero' => $totals,
-    //             'all' => $totals,
-    //         ], Response::HTTP_INTERNAL_SERVER_ERROR);
 
+    // //convert object
+    // $paymentLineData = new Request($paymentLineData);
 
+    // // Save payment line
+    // $payment = $paymentLineService->createPaymentLine($paymentLineData);
 
-    //convert object
-    $paymentLineData = new Request($paymentLineData);
+    // if (!$payment || !$payment->id) {
+    //     throw new \Exception('Failed to create payment');
+    // }
 
-    // Insert or update the record as necessary
-    // Payment_Line::updateOrCreate(
-    //     ['payment_id' => $payment->id, 'payment_schedule_id' => $schedule->id, 'balance' => $schedule->amount_due - $schedule->amount_paid, 'amount_paid' => $amountPaid, 'remarks' => $remarks],
-    //     $paymentLineData
-    // );
-    // Save payment line
-    $paymentLineService->createPaymentLine($paymentLineData);
+    // Define the conditions to identify the existing record
+    $conditions = [
+        'payment_id' => $request['id'],
+        'payment_schedule_id' => $schedule->id,
+    ];
+
+    //throw new \Exception('' . $conditions['payment_id']);
+
+    // Define the data to update or insert if the record does not exist
+    $paymentLineData = [
+        'balance' => $schedule->amount_due - $schedule->amount_paid,
+        'amount_paid' => $amountPaid,
+        'remarks' => $remarks, // Optional: Only include if you want to set remarks on create or update
+    ];
+
+    // Use updateOrCreate
+    Payment_Line::updateOrCreate($conditions, $paymentLineData);
+
 }
 
 

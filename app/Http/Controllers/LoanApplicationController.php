@@ -328,6 +328,16 @@ class LoanApplicationController extends Controller
             return response()->json(['error' => 'Loan Application not found'], 404);
         }
 
+        // foreach($loanApp as $loan)
+        // {
+        //     if(!is_null($loanApp))
+        //     {
+        //         $loanApp = $loan;
+        //     }
+        // }
+
+        //throw new \Exception(count($loanApp));
+
         return response()->json([
             'data' => $loanApp,
         ]);
@@ -337,7 +347,10 @@ class LoanApplicationController extends Controller
     public function seeWithPending(string $id, CustomerPersonalityController $customerPersonalityController, LoanApplicationFeeServiceInterface $loanApplicationFeeService, LoanApplicationCoMakerServiceInterface $loanApplicationCoMakerService)
     {
         //customer with approved and active
-        $customer = $customerPersonalityController->indexApprove();
+        $customer = $customerPersonalityController->indexApproveActivePending();
+
+
+        //return response()->json(['message' => $customer], Response::HTTP_NOT_FOUND);
 
         $customerData = null;
 
@@ -348,7 +361,6 @@ class LoanApplicationController extends Controller
                 foreach($cus as $c)
                 {
                     // $d = $c['customer']->id;
-                    // return response()->json(['message' => $d], Response::HTTP_NOT_FOUND);
                     if(!is_null($c))
                     {
                         if($c['customer']->id == $id)

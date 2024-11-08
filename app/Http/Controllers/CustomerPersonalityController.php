@@ -13,6 +13,8 @@ use App\Interface\Service\PersonalityServiceInterface;
 use App\Models\Credit_Status;
 use App\Models\Customer;
 use App\Models\Customer_Requirements;
+use App\Models\Document_Permission_Map;
+use App\Models\Document_Status_Code;
 use App\Models\Loan_Application;
 use App\Models\Personality;
 use App\Models\Personality_Status_Map;
@@ -263,9 +265,13 @@ class CustomerPersonalityController extends Controller
         $creditId = Credit_Status::where('description', 'like', '%Active%')->first()->id;
         $customers = Customer::get();
 
+        $documentStatusId = Document_Status_Code::where('description', 'like', '%Pending%')->first()->id;
+
         //get
-        $loans = Loan_Application::where('document_status_code', 'like', '%Pending%')->get();
+        $loans = Loan_Application::where('document_status_code', $documentStatusId)->get();
         //loans->customer_id to get the customer id on loans
+        //return response()->json(['message' => $documentStatusId], Response::HTTP_INTERNAL_SERVER_ERROR);
+
 
         $loanCustomerIds = $loans->pluck('customer_id')->toArray(); // Get all customer IDs from loans
 

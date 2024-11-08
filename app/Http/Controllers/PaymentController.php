@@ -38,21 +38,26 @@ class PaymentController extends Controller
         $payment = $this->paymentService->findPayment();
 
 
-        for($i = 0; $i < count($payment); $i++)
+        foreach($payment as $pay)
         {
-            //payment line
-            $payment_line = Payment_Line::where('payment_id', $payment[$i]['id'])->first();
+            if(!is_null($pay))
+            {
 
-            //payment schedule
-            $payment_schedule = Payment_Schedule::where('id', $payment_line->payment_schedule_id)->first();
+                //payment line
+                $payment_line = Payment_Line::where('payment_id', $pay['id'])->first();
 
-            $customerPersonality = $customerPersonalityController->show($payment[$i]['customer_id']);
+                //payment schedule
+                $payment_schedule = Payment_Schedule::where('id', $payment_line['payment_schedule_id'])->first();
 
-            $payment[$i]['family_name'] = " " . $customerPersonality->original['personality']['family_name'];
-            $payment[$i]['first_name'] = " " . $customerPersonality->original['personality']['first_name'];
-            $payment[$i]['middle_name'] = " " . $customerPersonality->original['personality']['middle_name'];
-            $payment[$i]['loan_application_no'] = $payment_schedule->loan_application_no;
+                $customerPersonality = $customerPersonalityController->show($pay['customer_id']);
+
+                $pay['family_name'] = " " . $customerPersonality->original['personality']['family_name'];
+                $pay['first_name'] = " " . $customerPersonality->original['personality']['first_name'];
+                $pay['middle_name'] = " " . $customerPersonality->original['personality']['middle_name'];
+                $pay['loan_application_no'] = $payment_schedule->loan_application_no;
+            }
         }
+        //return response()->json(['message' => $payment], Response::HTTP_INTERNAL_SERVER_ERROR);
 
         return response()->json([
             'data' => $payment,
@@ -70,6 +75,7 @@ class PaymentController extends Controller
         ->where('payment_status_code', 'like', '%Unpaid%')
         ->orWhere('payment_status_code', 'PARTIALLY PAID')
         ->get();
+
 
         try {
 
@@ -97,6 +103,7 @@ class PaymentController extends Controller
 
                     //return response()->json(['message' => 'stop'], Response::HTTP_INTERNAL_SERVER_ERROR);
 
+
                     if($paymentData['amount_paid'] > 0)
                     {
                         $paymentData = new Request($paymentData);
@@ -112,11 +119,13 @@ class PaymentController extends Controller
                             'payment_id' => $payment_id,
                             'payment_schedule_id' => $payment_schedule_id,
                             'balance' => $item['balance'],
-                            'amount_paid' => 0,
+                            'amount_paid' => $item['amount_paid'],
                             'remarks' => 'PENDING',
                         ];
 
+
                         $payload = new Request($payload);
+
 
                         $payment_line = $paymentLineController->store($payload);
                     }
@@ -204,6 +213,8 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
 {
 
     $customer = Customer::where('id', $payment->customer_id)->first();
+
+
 
     //get the loan application
     $payment_line = $paymentLineService->findPaymentLine();
@@ -317,6 +328,8 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
 
     $loan_application_no = $payment['loan_application_no'];
 
+
+
     //return response()->json(['message' => $schedule, 'messabe data 2' => $altId, 'message data 3' => $altId2], Response::HTTP_INTERNAL_SERVER_ERROR);
 
     //return response()->json(['message' => $loan_application_no], Response::HTTP_INTERNAL_SERVER_ERROR);
@@ -324,15 +337,17 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
     $loan_application = Loan_Application::where('loan_application_no', $loan_application_no)->first();
 
     //get first the loan app id
-    $loanReleaseId = Loan_Release::where('loan_application_id', $loan_application->loan_application_no)->where('passbook_number', $customer->passbook_no)->get();
+    $loanReleaseId = Loan_Release::where('loan_application_id', $loan_application->id)->where('passbook_number', $customer->passbook_no)->get();
+
 
     //Empty schedule
     $schedules = '';
 
     if(!$loanReleaseId->isEmpty()){
-        $loanReleaseId = Loan_Release::where('loan_application_id', $loan_application->id)->where('passbook_number', $request['customer.passbook_no'])
-        ->first()
-        ->id;
+        $loanReleaseId = Loan_Release::where('loan_application_id', $loan_application->id)->where('passbook_number', $customer->passbook_no)
+        ->first();
+
+        $loanReleaseId = (int)  $loanReleaseId['id'];
     }
     else
     {
@@ -344,8 +359,6 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
     ->where('payment_status_code', 'like', '%Unpaid%')
     ->orWhere('payment_status_code', 'PARTIALLY PAID')
     ->get();
-
-    // return response()->json(['message' => $schedules], Response::HTTP_INTERNAL_SERVER_ERROR);
 
     foreach ($schedules as $index => $schedule) {
         // Skip any schedule marked as "FORWARDED"
@@ -375,7 +388,7 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
             // Partial payment case
             $remainingBalance = $amountDue - $totalAmountPaid; // Calculate remaining balance after partial payment
 
-            //return response()->json(['message' => $remainingBalance], Response::HTTP_INTERNAL_SERVER_ERROR);
+
             // Update the schedule's amount paid with the partial amount
             $schedule->amount_paid += $totalAmountPaid;
 

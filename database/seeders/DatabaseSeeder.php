@@ -476,9 +476,9 @@ class DatabaseSeeder extends Seeder
             'purok_zone' => 'Zone 3',
             'postal_code' => '2500',
             'telephone_no' => '(045) 123-4567',
-            'email_address' => 'lily.carter@example.com',
+            'email_address' => 'ericramones1253@gmail.com',
             'cellphone_no' => '+63 917 765 4321',
-            'name_type_code' => 1,
+            'name_type_code' => 2,
             'personality_status_code' => 2,
             'barangay_id' => 1, // Adjust based on your data
             'city_id' => 4, // Adjust based on your data
@@ -502,7 +502,7 @@ class DatabaseSeeder extends Seeder
             'telephone_no' => '(045) 987-6543',
             'email_address' => 'carlos.ramirez@example.com',
             'cellphone_no' => '+63 917 123 4567',
-            'name_type_code' => 1,
+            'name_type_code' => 2,
             'personality_status_code' => 2,
             'barangay_id' => 2, // Adjust based on your data
             'city_id' => 6, // Adjust based on your data
@@ -526,7 +526,7 @@ class DatabaseSeeder extends Seeder
             'telephone_no' => '(045) 456-7890',
             'email_address' => 'juan.santos@example.com',
             'cellphone_no' => '+63 912 345 6789',
-            'name_type_code' => 1,
+            'name_type_code' => 2,
             'personality_status_code' => 2,
             'barangay_id' => 3, // Adjust based on your data
             'city_id' => 8, // Adjust based on your data
@@ -550,7 +550,7 @@ class DatabaseSeeder extends Seeder
             'telephone_no' => '(045) 321-6547',
             'email_address' => 'mei.lim@example.com',
             'cellphone_no' => '+63 917 876 5432',
-            'name_type_code' => 1,
+            'name_type_code' => 2,
             'personality_status_code' => 2,
             'barangay_id' => 1, // Adjust based on your data
             'city_id' => 1, // Adjust based on your data
@@ -574,7 +574,7 @@ class DatabaseSeeder extends Seeder
             'telephone_no' => '(045) 222-3333',
             'email_address' => 'juan.santos@example.com',
             'cellphone_no' => '+63 918 765 4321',
-            'name_type_code' => 1,
+            'name_type_code' => 2,
             'personality_status_code' => 2,
             'barangay_id' => 1, // Adjust based on your data
             'city_id' => 1, // Adjust based on your data
@@ -598,7 +598,7 @@ class DatabaseSeeder extends Seeder
             'telephone_no' => '(045) 123-4567',
             'email_address' => 'ana.deguzman@example.com',
             'cellphone_no' => '+63 915 543 2100',
-            'name_type_code' => 1,
+            'name_type_code' => 2,
             'personality_status_code' => 2,
             'barangay_id' => 1, // Adjust based on your data
             'city_id' => 1, // Adjust based on your data
@@ -622,7 +622,7 @@ class DatabaseSeeder extends Seeder
             'telephone_no' => '(045) 654-3210',
             'email_address' => 'pedro.reyes@example.com',
             'cellphone_no' => '+63 911 234 5678',
-            'name_type_code' => 1,
+            'name_type_code' => 2,
             'personality_status_code' => 2,
             'barangay_id' => 1, // Adjust based on your data
             'city_id' => 1, // Adjust based on your data
@@ -646,7 +646,7 @@ class DatabaseSeeder extends Seeder
             'telephone_no' => '(045) 111-2222',
             'email_address' => 'xiu.tan@example.com',
             'cellphone_no' => '+63 917 123 4567',
-            'name_type_code' => 1,
+            'name_type_code' => 2,
             'personality_status_code' => 2,
             'barangay_id' => 5, // Adjust based on your data
             'city_id' => 1, // Adjust based on your data
@@ -665,6 +665,7 @@ class DatabaseSeeder extends Seeder
             'mortuary_coverage_start' => now(), // Start date for coverage
             'mortuary_coverage_end' => now()->addYear(), // End date for coverage, one year from now
             'personality_id' => 3, // ID of Lily Carter
+            'password' => Hash::make('password'),
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -677,6 +678,7 @@ class DatabaseSeeder extends Seeder
             'mortuary_coverage_start' => now(),
             'mortuary_coverage_end' => now()->addYear(),
             'personality_id' => 4, // ID of Carlos Ramirez
+            'password' => Hash::make('password'),
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -689,6 +691,7 @@ class DatabaseSeeder extends Seeder
             'mortuary_coverage_start' => null, // No coverage
             'mortuary_coverage_end' => null,
             'personality_id' => 5, // ID of Juan Santos
+            'password' => Hash::make('password'),
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -701,6 +704,7 @@ class DatabaseSeeder extends Seeder
             'mortuary_coverage_start' => now(),
             'mortuary_coverage_end' => now()->addYear(),
             'personality_id' => 6, // ID of Mei Lim
+            'password' => Hash::make('password'),
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -713,6 +717,7 @@ class DatabaseSeeder extends Seeder
             'mortuary_coverage_start' => now(),
             'mortuary_coverage_end' => now()->addYear(),
             'personality_id' => 7, // ID of another personality
+            'password' => Hash::make('password'),
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -725,6 +730,7 @@ class DatabaseSeeder extends Seeder
             'mortuary_coverage_start' => now(),
             'mortuary_coverage_end' => now()->addYear(),
             'personality_id' => 8, // ID of another personality
+            'password' => Hash::make('password'),
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -737,6 +743,7 @@ class DatabaseSeeder extends Seeder
             'mortuary_coverage_start' => now(),
             'mortuary_coverage_end' => now()->addYear(),
             'personality_id' => 9, // ID of another personality
+            'password' => Hash::make('password'),
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -749,6 +756,7 @@ class DatabaseSeeder extends Seeder
             'mortuary_coverage_start' => now(),
             'mortuary_coverage_end' => now()->addYear(),
             'personality_id' => 10, // ID of another personality
+            'password' => Hash::make('password'),
             'created_at' => now(),
             'updated_at' => now(),
         ]);

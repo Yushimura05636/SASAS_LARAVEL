@@ -18,6 +18,12 @@ class PersonalityRepository implements PersonalityRepositoryInterface
         return Personality::FindorFail($id);
     }
 
+    public function findByEmail(string $email)
+    {
+        return Personality::where('email_address', $email)->first();
+    }
+
+
     public function create(object $payload)
     {
         //$personality = new DBBaseLibraryFactory($modelType, $payload);

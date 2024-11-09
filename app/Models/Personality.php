@@ -8,10 +8,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Laravel\Sanctum\HasApiTokens;
 
 class Personality extends Model
 {
-    use HasFactory;
+    use HasFactory, HasApiTokens;
 
     protected $primarykey = 'id';
     protected $table = 'personality';
@@ -115,6 +116,6 @@ class Personality extends Model
 
     public function customer(): HasOne
     {
-        return $this->hasOne(Customer::class,'id', 'id');
+        return $this->hasOne(Customer::class,'personality_id', 'id');
     }
 }

@@ -9,7 +9,7 @@ class FeeRepository implements FeeRepositoryInterface
 {
     public function findMany()
     {
-        return Fees::paginate(10);
+        return Fees::get();
     }
 
     public function findOneById(int $id)

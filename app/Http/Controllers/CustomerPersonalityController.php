@@ -16,6 +16,7 @@ use App\Models\Customer_Requirements;
 use App\Models\Document_Permission_Map;
 use App\Models\Document_Status_Code;
 use App\Models\Loan_Application;
+use App\Models\Payment_Schedule;
 use App\Models\Personality;
 use App\Models\Personality_Status_Map;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -73,7 +74,7 @@ class CustomerPersonalityController extends Controller
 }
 
 
-    public function store(Request $request, CustomerRequirementController $customerRequirementController, CustomerController $customerController, PersonalityController $personalityController)
+    public function store(Request $request, PaymentScheduleController $paymentScheduleController, LoanApplicationFeeController $loanApplicationFeeController, CustomerRequirementController $customerRequirementController, CustomerController $customerController, PersonalityController $personalityController)
     {
         // Summons the storeRequest from both controllers
         $customerStoreRequest = new CustomerStoreRequest();
@@ -83,6 +84,7 @@ class CustomerPersonalityController extends Controller
         $customerData = $request->input('customer');
         $personalityData = $request->input('personality');
         $requirementDatas = $request->input('requirements');
+        $customerFees = $request->input('fees');
 
         //get the personality status code
         $personalityStatusId = Personality_Status_Map::where('description', 'Pending')->first()->id;
@@ -139,7 +141,7 @@ class CustomerPersonalityController extends Controller
                 $payload = [
                     'customer_id' => $customer_id,
                     'requirement_id' => $requireData['id'],
-                    'expiry_date' => $requireData['expiry_date'],
+                    'expiry_date' => $requireData['expiry_date'] ?? null,
                 ];
 
                 $payload = new Request($payload);
@@ -151,10 +153,41 @@ class CustomerPersonalityController extends Controller
                 //     'message' => $requireData['id'],
                 // ], Response::HTTP_BAD_REQUEST);
             }
+
+            //throw new \Exception('stop');
 //>>>>
 
             //create membership payment
+            foreach($customerFees as $fee)
+            {
+                if(!is_null($fee))
+                {
+                    $payload = [
+                        'customer_id' => $customer_id,
+                        'loan_released_id' => null,
+                        'datetime_due' => now(),
+                        'amount_due' => $fee['amount'],
+                        'amount_interest' => 0,
+                        'amount_paid' => 0,
+                        'payment_status_code' => 'UNPAID',
+                        'remarks' => null,
+                    ];
 
+                    $payload = new Request($payload);
+
+                    // $success = $loanApplicationFeeController->store($payload);
+
+                    //create a schedules for payments
+                    $success = $paymentScheduleController->store($payload);
+
+                    if(!$success || is_null($success))
+                    {
+                        throw new \Exception('Error payment schedule');
+                    }
+                }
+            }
+
+            // throw new \Exception('error');
 
 
             // Commit the transaction
@@ -258,6 +291,46 @@ class CustomerPersonalityController extends Controller
 
     }
 
+    public function indexActiveWithPayment()
+    {
+        // Get the personality status code for "Approved"
+        //$personalityId = Personality_Status_Map::where('description', 'like', '%Approved%')->first()->id;
+        $creditId = Credit_Status::where('description', 'like', '%Active%')->first()->id;
+        $customers = Customer::get();
+
+        $customerData = [];
+
+        // Loop through each customer
+        foreach ($customers as $customer) {
+            // Find payment dues
+            $paymentdues = Payment_Schedule::where('customer_id', $customer->id)->exists();
+
+            if(!is_null($paymentdues))
+            {
+
+                // Find the related personality with the "Approved" status
+                $customerPersonality = Personality::where('id', $customer->personality_id)
+                    ->where('credit_status_id', $creditId)
+                    ->first();
+
+                // If an approved personality is found, add both customer and personality to the result array
+                if ($customerPersonality) {
+                    $customerData[] = [
+                        'customer' => $customer,  // Include customer data
+                        'personality' => $customerPersonality,  // Include personality data
+                    ];
+                }
+            }
+
+        }
+
+        return [
+            'data' => $customerData,
+        ];
+
+    }
+
+
     public function indexApproveActivePending()
     {
         // Get the personality status code for "Approved"
@@ -320,6 +393,152 @@ class CustomerPersonalityController extends Controller
         // $personalityData['personality_status_code'] = $personalityStatusId;
 
                 // Check if personality_status_code is provided; otherwise, set it to "Pending"
+        if (isset($personalityData['personality_status_code'])) {
+            $personalityStatusId = $personalityData['personality_status_code'];
+        } else {
+            $personalityStatusId = Personality_Status_Map::where('description', 'Pending')->first()->id;
+        }
+
+        // Set the personality status code
+        $personalityData['personality_status_code'] = $personalityStatusId;
+
+        // Merge data for validation
+        $datas = array_merge($customerData, $personalityData);
+        $rules = array_merge($customerStoreRequest->rules(), $personalityStoreRequest->rules());
+
+        // Validate data
+        $validate = Validator::make($datas, $rules);
+
+        if ($validate->fails()) {
+            return response()->json([
+                'message' => 'Validation error!',
+                'data' => $datas,
+                'error' => $validate->errors(),
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        try {
+            // Start a database transaction
+            DB::beginTransaction();
+
+            //first update the customer
+            $customerResponse = $customerController->update(new Request($customerData), $reqId);
+
+            $id = $customerData['personality_id'];
+
+            $personalityResponse = $personalityController->update(new Request($personalityData), $id);
+
+            $customer_id = Customer::where('passbook_no', $customerData['passbook_no'])->first()->id;
+
+            // return response()->json([
+            //     'message' => $customer_id,
+            // ], Response::HTTP_BAD_REQUEST);
+
+            // Step 1: Get all requirement_ids from the request data
+            $requestedRequirementIds = array_column($requirementDatas, 'id');
+
+            // Step 2: Find and delete database records not in the request data
+            Customer_Requirements::where('customer_id', $customer_id)
+                ->whereNotIn('requirement_id', $requestedRequirementIds)
+                ->delete();
+
+            // Step 3: Update or create customer_requirements
+            for ($i = 0; $i < count($requirementDatas); $i++) {
+                $requireData = $requirementDatas[$i];
+
+                $payload = [
+                    'customer_id' => $customer_id,
+                    'requirement_id' => $requireData['id'],
+                    'expiry_date' => $requireData['expiry_date'],
+                ];
+
+                $payload = new Request($payload);
+
+                // Find the record by customer_id and requirement_id, if it exists
+                $customerRequirement = Customer_Requirements::where('customer_id', $customer_id)
+                                                            ->where('requirement_id', $requireData['id'])
+                                                            ->first();
+
+                if ($customerRequirement) {
+                    // Update the existing record
+                    // return response()->json([
+                    //     'message update' => $payload->all(),
+                    // ], Response::HTTP_INTERNAL_SERVER_ERROR);
+                    $customerRequirementController->update($payload, $customerRequirement->id);
+                } else {
+                    // return response()->json([
+                    //     'message create' => $payload->all(),
+                    // ], Response::HTTP_INTERNAL_SERVER_ERROR);
+                    // Create a new record if it doesn't exist
+                    $customerRequirementController->store($payload);
+                }
+
+                // return response()->json([
+                //     'message' => $customerRequirement,
+                // ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            }
+
+            // Commit the transaction
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Both Customer and Personality saved successfully',
+                'customer' => new CustomerResource($customerResponse), // Use resource class
+                'personality' => new PersonalityResource($personalityResponse), // Use resource class
+            ], Response::HTTP_OK);
+
+        } catch (ModelNotFoundException $e) {
+            // Rollback transaction on model not found
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Customer not found.',
+                'error' => $e->getMessage(),
+            ], Response::HTTP_NOT_FOUND);
+
+        } catch (\Exception $e) {
+            // Rollback transaction on any other exception
+            DB::rollBack();
+            return response()->json([
+                'message' => 'An error occurred while saving data.',
+                'error' => $e->getMessage(),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    public function updateApprove(Request $request, int $reqId, CustomerRequirementController $customerRequirementController, PersonalityController $personalityController, CustomerController $customerController)
+    {
+        // Summons the storeRequest from both controllers
+        $customerStoreRequest = new CustomerUpdateRequest();
+        $personalityStoreRequest = new PersonalityUpdateRequest();
+
+        // Access the customer and personality data
+        $customerData = $request->input('customer');
+        $personalityData = $request->input('personality');
+        $requirementDatas = $request->input('requirements');
+
+        //get the customer id using passbook no
+        $customerId = Customer::where('passbook_no', $customerData['passbook_no'])->first()->id;
+
+        //check if the customer has pending payments
+        $paymentPendings = Payment_Schedule::where('customer_id', $customerId)
+        ->where('payment_status_code', 'like', '%Unpaid%')
+        ->orWhere('payment_status_code', 'PARTIALLY PAID')
+        ->first();
+
+        //throw new \Exception($paymentPendings);
+
+        if($paymentPendings && !is_null($paymentPendings))
+        {
+            throw new \Exception('Approve denied, the customer still have pending payments');
+        }
+
+        // //get the personality status code
+        // $personalityStatusId = Personality_Status_Map::where('description', 'Pending')->first()->id;
+
+        // //set the personality status code
+        // $personalityData['personality_status_code'] = $personalityStatusId;
+
+        // Check if personality_status_code is provided; otherwise, set it to "Pending"
         if (isset($personalityData['personality_status_code'])) {
             $personalityStatusId = $personalityData['personality_status_code'];
         } else {

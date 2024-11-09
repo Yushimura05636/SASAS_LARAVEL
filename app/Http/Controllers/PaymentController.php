@@ -280,7 +280,10 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
                     ->select('la.loan_application_no', 'laf.amount', 'la.customer_id', 'laf.loan_application_id')
                     ->first();
 
-                    $pay['loan_application_no'] = $loanApplications->loan_application_no;
+                    if(!is_null($loanApplications))
+                    {
+                        $pay['loan_application_no'] = $loanApplications->loan_application_no;
+                    }
 
                 }
 
@@ -296,30 +299,6 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
                 //$originalDue = $payment[$i]['amount_due'] + $payment[$i]['amount_paid']; // or replace with stored original_amount_due if available
                 $balance = $pay['balance'] = $pay['amount_due'] - $pay['amount_paid'];
 
-
-
-
-                if($pay['loan_released_id'] && $pay['loan_released_id'] > 0)
-                {
-                    //get the loan application id
-                    $loanAppId = Loan_Release::where('id', $pay['loan_released_id'])->first()->loan_application_id;
-
-                    //get the loan_application_no
-                    $loanApplicationNo = Loan_Application::where('id', $loanAppId)->first()->loan_application_no;
-
-                    $pay['loan_application_no'] = $loanApplicationNo;
-                }
-                else
-                {
-                    $loanApplications = DB::table('loan_application_fees AS laf')
-                    ->join('loan_application AS la', 'laf.loan_application_id', '=', 'la.id')
-                    ->where('la.customer_id', $pay['customer_id'])
-                    ->select('la.loan_application_no', 'laf.amount', 'la.customer_id', 'laf.loan_application_id')
-                    ->first();
-
-                    $pay['loan_application_no'] = $loanApplications->loan_application_no;
-
-                }
                 // // Convert the array into an associative array keyed by 'id'
                 // $indexedSchedules = array_values($payment_schedule->original);
             }
@@ -336,14 +315,18 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
 
     $loan_application = Loan_Application::where('loan_application_no', $loan_application_no)->first();
 
-    //get first the loan app id
-    $loanReleaseId = Loan_Release::where('loan_application_id', $loan_application->id)->where('passbook_number', $customer->passbook_no)->get();
+    $loanReleaseId = null;
+    if(!is_null($loan_application))
+    {
+        //get first the loan app id
+        $loanReleaseId = Loan_Release::where('loan_application_id', $loan_application->id)->where('passbook_number', $customer->passbook_no)->get();
 
+    }
 
     //Empty schedule
     $schedules = '';
 
-    if(!$loanReleaseId->isEmpty()){
+    if(!$loanReleaseId == null && !$loanReleaseId->isEmpty()){
         $loanReleaseId = Loan_Release::where('loan_application_id', $loan_application->id)->where('passbook_number', $customer->passbook_no)
         ->first();
 
@@ -526,6 +509,43 @@ protected function createPaymentLine($request, $payment, $schedule, $amountPaid,
         return response()->json([
             'data' => $payment,
             'user' => $user,
+        ], Response::HTTP_OK);
+    }
+
+    public function paymentCustomerId(string $id)
+    {
+        $payment = Payment_Schedule::where('customer_id', $id)
+        ->where('payment_status_code', 'like', '%Unpaid%')
+        ->orWhere('payment_status_code', 'PARTIALLY PAID')
+        ->get();
+
+
+
+        foreach($payment as $pay)
+        {
+            if(!is_null($pay))
+            {
+                //get the total balance of all the payment schedules
+                $totals = Payment_Schedule::where('customer_id', $id)
+                ->where('id', $pay['id'])
+                ->selectRaw('(SUM(amount_due) - SUM(amount_paid)) AS balance, SUM(amount_paid) AS paid, SUM(amount_due) AS due')
+                ->first();
+
+                $pay['balance'] = $totals->balance;
+            }
+
+            //throw new \Exception($pay);
+        }
+
+        //throw new \Exception('stop');
+
+        if(is_null($payment))
+        {
+            throw new \Exception('There is no payments!');
+        }
+
+        return response()->json([
+            'data' => $payment,
         ], Response::HTTP_OK);
     }
 

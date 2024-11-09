@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Requirements extends Model
+class Requirements extends DBLibrary
 {
     /**
      * The primary key associated with the table.

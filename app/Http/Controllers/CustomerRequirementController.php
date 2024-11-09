@@ -40,21 +40,32 @@ class CustomerRequirementController extends Controller
     public function showAvailable(int $id)
     {
 
-        //get the not expired customer_requirements
-        $notExpiredRequirements = Customer_Requirements::where('customer_id', $id)->where('expiry_date', '>', Carbon::now())->get();
+        $notExpiredRequirements = Customer_Requirements::where('customer_id', $id)
+            ->where(function($query) {
+                $query->whereNull('expiry_date')
+                    ->orWhere('expiry_date', '>', Carbon::now());
+            })
+            ->get();
+
+        //return response()->json(['message' => $notExpiredRequirements], Response::HTTP_INTERNAL_SERVER_ERROR);
 
         $customer_requirements = [];
         $i = 0;
 
-        foreach($notExpiredRequirements as $requirement)
-        {
-            $customer_requirement = Requirements::where('id', $requirement['requirement_id'])->where('isActive', 1)->first();
-            $customer_requirements[$i] = $customer_requirement;
-            $customer_requirements[$i]['expiry_date'] = $requirement['expiry_date'];
-            $i++;
+        foreach($notExpiredRequirements as $requirement) {
+            $customer_requirement = Requirements::where('id', $requirement['requirement_id'])
+                ->where('isActive', 1)
+                ->first();
+
+            if ($customer_requirement) {
+                $customer_requirements[$i] = $customer_requirement;
+                $customer_requirements[$i]['expiry_date'] = $requirement['expiry_date'];
+                $i++;
+            }
         }
 
         return new JsonResource($customer_requirements);
+
     }
 
     public function store(Request $request)

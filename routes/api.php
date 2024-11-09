@@ -191,6 +191,9 @@ Route::middleware('auth:sanctum')->prefix('CUSTOMERS')->group(function () use ($
     Route::get('/CustomerAPPROVEAndActive', [CustomerPersonalityController::class, 'indexApproveActive'])->middleware("document_access:$CUSTOMERS, $VIEW");
     Route::get('/NoAUTH/CustomerAPPROVEAndActive', [CustomerPersonalityController::class, 'indexApproveActive']);
 
+    //only get the customer with active and has payment dues
+    Route::get('/NoAUTH/CustomerActiveWithPayments', [CustomerPersonalityController::class, 'indexActiveWithPayment']);
+
     //get the customer approve and active with loan application pending
     Route::get('/NoAUTH/CustomerAPPROVEAndActiveWithPending', [CustomerPersonalityController::class, 'indexApproveActivePending']);
     Route::get('/GroupAPPROVE/{id}', [CustomerPersonalityController::class, 'showGroupApprove'])->middleware("document_access:$CUSTOMERS, $VIEW");
@@ -199,7 +202,9 @@ Route::middleware('auth:sanctum')->prefix('CUSTOMERS')->group(function () use ($
     Route::get('/NoAUTH/GroupAPPROVE/{id}', [CustomerPersonalityController::class, 'showGroupApprove']);
     Route::get('/NoAUTH/GroupAPPROVEACTIVE/{id}', [CustomerPersonalityController::class, 'showGroupApproveActive']);
     Route::get('/{id}', [CustomerPersonalityController::class, 'show'])->middleware("document_access:$CUSTOMERS, $VIEW");
+
     Route::post('/', [CustomerPersonalityController::class, 'store'])->middleware("document_access:$CUSTOMERS, $CREATE");
+    Route::put('/UpdateApprove/{id}', [CustomerPersonalityController::class, 'updateApprove'])->middleware("document_access:$CUSTOMERS, $CREATE");
 
     // Empty update route with PATCH
     Route::patch('/update', function () {
@@ -388,6 +393,7 @@ Route::middleware('auth:sanctum')->prefix('PAYMENTS')->group(function () use ($P
     Route::get('/', [PaymentController::class, 'index'])->middleware("document_access:$PAYMENTS, $VIEW");
     Route::get('/NoAUTH', [PaymentController::class, 'index']);
     Route::get('/NoAUTH/{id}', [PaymentController::class, 'show']);
+    Route::get('/NoAUTH/CustomerId/{id}', [PaymentController::class, 'paymentCustomerId']);
     Route::get('/PaymentInLoanNO/{id}', [PaymentController::class, 'paymentLoanNo'])->middleware("document_access:$PAYMENTS, $VIEW");
     Route::get('/NoAUTH/PaymentInLoanNO/{id}', [PaymentController::class, 'paymentLoanNo']);
     Route::get('/{id}', [PaymentController::class, 'show'])->middleware("document_access:$PAYMENTS, $VIEW");
@@ -499,6 +505,7 @@ Route::middleware('auth:sanctum')->prefix('CUSTOMER_GROUPS')->group(function () 
 Route::middleware('auth:sanctum')->prefix('FEES')->group(function () use ($FEES, $VIEW, $CREATE, $UPDATE, $DELETE) {
     Route::get('/', [FeeController::class, 'index'])->middleware("document_access:$FEES, $VIEW");
     Route::get('/NoAUTH', [FeeController::class, 'index']);
+    Route::get('/NoAUTH/FeeActive/', [FeeController::class, 'indexActive']);
     Route::get('/NoAUTH/{id}', [FeeController::class, 'show']);
     Route::get('/{id}', [FeeController::class, 'show'])->middleware("document_access:$FEES, $VIEW");
     Route::post('/', [FeeController::class, 'store'])->middleware("document_access:$FEES, $CREATE");

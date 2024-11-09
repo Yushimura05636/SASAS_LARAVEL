@@ -19,6 +19,7 @@ use App\Models\Document_Map; #Done
 use App\Models\Document_Permission_Map; #Done
 use App\Models\Name_Type; #Done
 use App\Models\Customer_Group; #Done
+use App\Models\Requirements;
 use Illuminate\Http\Response;
 
 /*
@@ -139,6 +140,8 @@ class DBBaseLibraryFactory
                 return Customer_Group::createEntry($description);
             case 'document_status_code':
                 return Document_Status_code::createEntry($description);
+            case 'requirement':
+                return Requirements::createEntry($description);
             default:
                 throw new \InvalidArgumentException("Unknown model type: ", $modeltype);
         }
@@ -183,6 +186,8 @@ class DBBaseLibraryFactory
                 return Customer_Group::findOne($id);
             case 'document_status_code':
                 return Document_Status_code::findOne($id);
+            case 'requirement':
+                return Requirements::findOne($id);
             default:
                 throw new \InvalidArgumentException("Unknown model type: $modeltype");
         }
@@ -221,6 +226,8 @@ class DBBaseLibraryFactory
                 return Customer_Group::findMany();
             case 'document_status_code':
                 return Document_Status_code::findMany();
+            case 'requirement':
+                return Requirements::findMany();
             default:
                 throw new \InvalidArgumentException("Unknown model type: $modeltype");
         }
@@ -259,6 +266,8 @@ class DBBaseLibraryFactory
                 return Customer_Group::deleteEntry($id);
             case 'document_status_code':
                 return Document_Status_code::deleteEntry($id);
+            case 'requirement':
+                return Requirements::deleteEntry($id);
             default:
                 throw new \InvalidArgumentException("Unknown model type: $modelType");
         }
@@ -297,6 +306,8 @@ class DBBaseLibraryFactory
                 return Customer_Group::updateEntry($id, $description);
             case 'document_status_code':
                 return Document_Status_code::updateEntry($id, $description);
+            case 'requirement':
+                return Requirements::updateEntry($id, $description);
             default:
                 throw new \InvalidArgumentException("Unknown model type: $modelType");
         }

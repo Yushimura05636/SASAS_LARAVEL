@@ -17,7 +17,7 @@ return new class extends Migration
             $table->bigIncrements('id');
             $table->unsignedBigInteger('customer_id');
             $table->unsignedBigInteger('requirement_id');
-            $table->dateTime('expiry_date');
+            $table->dateTime('expiry_date')->nullable();
             $table->timestamps();
 
         });

@@ -15,7 +15,7 @@ return new class extends Migration
     {
         Schema::create('loan_application_fees', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->unsignedBigInteger('loan_application_id');
+            $table->unsignedBigInteger('loan_application_id')->nullable();
             $table->unsignedBigInteger('fee_id');
             $table->decimal('amount', 8, 2);
             $table->string('encoding_order')->nullable();

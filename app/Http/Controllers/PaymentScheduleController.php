@@ -138,13 +138,11 @@ class PaymentScheduleController extends Controller
                 ->select('la.loan_application_no', 'laf.amount', 'la.customer_id', 'laf.loan_application_id')
                 ->first();
 
-                $payment[$i]['loan_application_no'] = $loanApplications->loan_application_no;
-
+                if(!$loanApplications && !is_null($loanApplications))
+                {
+                    $payment[$i]['loan_application_no'] = $loanApplications->loan_application_no;
+                }
             }
-
-
-
-
         }
 
         return response()->json([

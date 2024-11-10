@@ -658,13 +658,18 @@ class LoanApplicationController extends Controller
             ];
 
             $loanReleasePayload = new Request($loanReleasePayload);
+
+            //create loan release data
             $loanRelease = $loanReleaseService->createLoanRelease($loanReleasePayload);
+
+            //get the numuber of payments
             $numberOfPayments = $paymentDuration->number_of_payments;
-            //$amountDue = ($loanAmount + $amountInterest) / $numberOfPayments;
-            $amountDue = bcdiv(bcadd($loanAmount, $amountInterest, 16), $numberOfPayments, 16);
-            $amountDue = number_format($amountDue, 13, '.', '');
-            $amountInterestPerPayment = bcdiv($amountInterest, $numberOfPayments, 16);
-            $amountInterestPerPayment = number_format($amountInterestPerPayment, 13, '.', '');
+
+            //calculate amount due
+            $amountDue = (($loanAmount + $amountInterest) / $numberOfPayments);
+
+            //get amount interest
+            $amountInterestPerPayment = $amountInterest / $numberOfPayments;
 
             $firstDueDate = $loanReleasePayload['datetime_first_due'];
 

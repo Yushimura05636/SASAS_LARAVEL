@@ -238,6 +238,7 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
     $payment = Payment_Schedule::where('id', $payment_schedule_id)
     ->where('payment_status_code', 'like', '%UNPAID%')
     ->orWhere('payment_status_code' ,'PARTIALLY PAID')
+    ->where('id', $payment_schedule_id)
     ->get();
 
 
@@ -347,11 +348,15 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
     }
 
     $schedules = Payment_Schedule::where('customer_id', $payment->customer_id)
-    ->where('id', $payment_schedule_id)
-    ->orWhere('loan_released_id', $loanReleaseId) //optional
-    ->where('payment_status_code', 'like', '%Unpaid%')
-    ->orWhere('payment_status_code', 'PARTIALLY PAID')
+    ->where(function($query) {
+        $query->where('payment_status_code', 'like', '%Unpaid%')
+              ->orWhere('payment_status_code', 'PARTIALLY PAID');
+    })
     ->get();
+
+    $lastUnpaidSchedule = null; // Track the last unpaid or partially paid schedule
+
+    $threshold = 0.01; // Define a small threshold for rounding errors
 
     foreach ($schedules as $index => $schedule) {
         // Skip any schedule marked as "FORWARDED"
@@ -363,69 +368,92 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
             break; // No more payment left to allocate
         }
 
-        $amountDue = $schedule->amount_due - $schedule->amount_paid; // Calculate remaining balance
+        // Calculate the remaining amount due on this schedule
+        $amountDue = $schedule->amount_due - $schedule->amount_paid;
 
-
+        // Full payment case
         if ($totalAmountPaid >= $amountDue) {
-
-            //throw new \Exception($amountDue);
-
-            // Full payment case
             $schedule->amount_paid += $amountDue;
             $schedule->payment_status_code = 'PAID';
             $schedule->save();
 
-            $totalAmountPaid -= $amountDue; // Deduct the paid amount from total
+            // Deduct the paid amount from total
+            $totalAmountPaid -= $amountDue;
 
-            // Create a payment line for full payment
+            // Create a payment line for the full payment
             $this->createPaymentLine($request, $payment, $schedule, $amountDue, 'APPROVED', $paymentLineService);
-
         } else {
             // Partial payment case
-            $remainingBalance = $amountDue - $totalAmountPaid; // Calculate remaining balance after partial payment
-
-
-            // Update the schedule's amount paid with the partial amount
             $schedule->amount_paid += $totalAmountPaid;
+            $remainingBalance = $amountDue - $totalAmountPaid; // Remaining balance after partial payment
 
-            // Check if the schedule still has a balance
-            if ($schedule->amount_due > 0) {
-                // If there's still an amount due, mark as partially paid
-                if ($index < count($schedules) - 1) {
-                    $schedule->payment_status_code = 'PARTIALLY PAID, FORWARDED';
-                } else {
-                    $schedule->payment_status_code = 'PARTIALLY PAID';
-                }
+            // If remaining balance is below the threshold, set it to zero
+            if ($remainingBalance < $threshold) {
+                $remainingBalance = 0;
+            }
+
+            // Update the payment status based on remaining balance
+            if ($remainingBalance > 0) {
+                $schedule->payment_status_code = $index < count($schedules) - 1
+                    ? 'PARTIALLY PAID, FORWARDED'
+                    : 'PARTIALLY PAID';
             } else {
-                // If the amount_due is now zero, mark as paid
                 $schedule->payment_status_code = 'PAID';
             }
 
-            // Save and refresh the schedule to ensure updated state
+            // Save the updated schedule
             $schedule->save();
-            $schedule->fresh();
 
-            // Forward the remaining balance to the next schedule only if this is not the last schedule
-            $nextSchedule = ($index < count($schedules) - 1)
-            ? Payment_Schedule::where('id', '>', $schedule->id)
-            ->orderBy('id')
-            ->first()
-            : null;
+            // Forward any remaining balance above the threshold to the next schedule if it's not the last one
+            if ($index < count($schedules) - 1 && $remainingBalance > 0) {
+                $nextSchedule = Payment_Schedule::where('id', '>', $schedule->id)
+                    ->orderBy('id')
+                    ->first();
 
-            if ($nextSchedule) {
-                $nextSchedule->amount_due += $remainingBalance; // Forward remaining balance to the next schedule
-                $nextSchedule->amount_interest += $remainingBalance;
-                $nextSchedule->save();
+                if ($nextSchedule) {
+                    $nextSchedule->amount_due += $remainingBalance;
+                    $nextSchedule->amount_interest += $remainingBalance;
+                    $nextSchedule->save();
+                }
             }
 
-            //return response()->json(['message' => $nextSchedule], Response::HTTP_INTERNAL_SERVER_ERROR);
             // Create a payment line for the partial payment
             $this->createPaymentLine($request, $payment, $schedule, $totalAmountPaid, 'Partial payment', $paymentLineService);
 
-            // Reset totalAmountPaid as all the payment has been allocated
+            // Reset totalAmountPaid as all payment has been allocated
             $totalAmountPaid = 0;
         }
     }
+
+    // After processing all schedules, apply any remaining balance to the last unpaid schedule
+    if ($totalAmountPaid > 0 && $lastUnpaidSchedule) {
+        if ($totalAmountPaid < $threshold) {
+            $totalAmountPaid = 0; // Round off if below the threshold
+        } else {
+            $lastUnpaidSchedule->amount_paid += $totalAmountPaid;
+            $lastUnpaidSchedule->payment_status_code = 'PAID';
+            $lastUnpaidSchedule->save();
+
+            // Create a final payment line for the remaining balance
+            $this->createPaymentLine($request, $payment, $lastUnpaidSchedule, $totalAmountPaid, 'Final Adjustment', $paymentLineService);
+        }
+        $totalAmountPaid = 0;
+    }
+
+
+    // After processing all schedules, apply any remaining balance to the last unpaid schedule
+    if ($totalAmountPaid > 0 && $lastUnpaidSchedule) {
+        $lastUnpaidSchedule->amount_paid += $totalAmountPaid;
+        $lastUnpaidSchedule->payment_status_code = 'PAID';
+        $lastUnpaidSchedule->save();
+
+        // Create a final payment line for the remaining balance
+        $this->createPaymentLine($request, $payment, $lastUnpaidSchedule, $totalAmountPaid, 'Final Adjustment', $paymentLineService);
+
+        // Reset totalAmountPaid to zero
+        $totalAmountPaid = 0;
+    }
+
 }
 
 protected function createPaymentLine($request, $payment, $schedule, $amountPaid, $remarks, PaymentLineServiceInterface $paymentLineService)
@@ -546,8 +574,10 @@ protected function createPaymentLine($request, $payment, $schedule, $amountPaid,
     public function paymentCustomerId(string $id)
     {
         $payment = Payment_Schedule::where('customer_id', $id)
-        ->where('payment_status_code', 'like', '%Unpaid%')
-        ->orWhere('payment_status_code', 'PARTIALLY PAID')
+        ->where(function($query) {
+            $query->where('payment_status_code', 'like', '%Unpaid%')
+                ->orWhere('payment_status_code', 'PARTIALLY PAID');
+        })
         ->get();
 
         foreach($payment as $pay)

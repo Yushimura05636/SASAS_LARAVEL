@@ -118,6 +118,8 @@ class PaymentScheduleController extends Controller
             // Adjust balance calculation to account for forwarded amounts
             //$originalDue = $payment[$i]['amount_due'] + $payment[$i]['amount_paid']; // or replace with stored original_amount_due if available
             $balance = $payment[$i]['balance'] = $payment[$i]['amount_due'] - $payment[$i]['amount_paid'];
+            // $balance = $payment[$i]['amount_due'] - $payment[$i]['amount_paid'];
+            // $balance = abs($balance) < 1e-10 ? 0 : $balance;
 
             if(!is_null($balance) && $balance <= 0)
             {
@@ -194,6 +196,5 @@ class PaymentScheduleController extends Controller
     public function destroy(int $id)
     {
         return $this->paymentScheduleService->deletePaymentSchedule($id);
-
     }
 }

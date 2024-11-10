@@ -19,9 +19,9 @@ return new class extends Migration
             $table->unsignedBigInteger('customer_id');
             $table->unsignedBigInteger('loan_released_id')->nullable();
             $table->dateTime('datetime_due');
-            $table->decimal('amount_due', 20, 13);
-            $table->decimal('amount_interest', 20, 13);
-            $table->decimal('amount_paid', 20, 13)->default(0);
+            $table->decimal('amount_due', 10, 2);
+            $table->decimal('amount_interest', 10, 2);
+            $table->decimal('amount_paid', 10, 2)->default(0);
             $table->string('payment_status_code');
             $table->text('remarks')->nullable();
 

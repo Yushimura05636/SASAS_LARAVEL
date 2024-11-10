@@ -116,9 +116,13 @@ class PaymentScheduleController extends Controller
             $payment[$i]['middle_name'] = " " . $customerPersonality->original['personality']['middle_name'];
 
             // Adjust balance calculation to account for forwarded amounts
-            $originalDue = $payment[$i]['amount_due'] + $payment[$i]['amount_paid']; // or replace with stored original_amount_due if available
-            $payment[$i]['balance'] = $originalDue - $payment[$i]['amount_paid'];
+            //$originalDue = $payment[$i]['amount_due'] + $payment[$i]['amount_paid']; // or replace with stored original_amount_due if available
+            $payment[$i]['balance'] = $payment[$i]['amount_due'] - $payment[$i]['amount_paid'];
 
+            // if($payment[$i]['payment_status_code'] == 'PARTIALLY PAID')
+            // {
+            //     throw new \Exception(($payment[$i]['amount_due'] - $payment[$i]['amount_paid']));
+            // }
 
             if($payment[$i]['loan_released_id'] && $payment[$i]['loan_released_id'] > 0)
             {

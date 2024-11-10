@@ -557,13 +557,14 @@ protected function createPaymentLine($request, $payment, $schedule, $amountPaid,
                 ->selectRaw('(SUM(amount_due) - SUM(amount_paid)) AS balance, SUM(amount_paid) AS paid, SUM(amount_due) AS due')
                 ->first();
 
-                $pay['balance'] = $totals->balance;
+                $pay['balance'] = $pay['amount_due'] - $pay['amount_paid'];
+
+                //throw new \Exception(($pay['amount_due'] - $pay['amount_paid']));
             }
 
             //throw new \Exception($pay);
         }
 
-        //throw new \Exception('stop');
 
         if(is_null($payment))
         {

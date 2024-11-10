@@ -14,7 +14,7 @@ class GraphDataController extends Controller
     {
         $total_amount_receivables = Payment_Schedule::where('payment_status_code', 'like', '%Unpaid%')
             ->orWhere('payment_status_code', 'PARTIALLY PAID')
-            ->selectRaw('SUM(amount_due) as amount_receivables')
+            ->selectRaw('(SUM(amount_due) - SUM(amount_paid)) as amount_receivables')
             ->first(); // Use first() to get a single record
 
         // Access the sum value

@@ -236,90 +236,84 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
     //$payment_schedule = $paymentScheduleController->index($customerPersonalityController);
 
     $payment = Payment_Schedule::where('id', $payment_schedule_id)
-        ->where('payment_status_code', 'like', '%UNPAID%')
-        ->orWhere('payment_status_code' ,'PARTIALLY PAID')
-        ->get();
+    ->where('payment_status_code', 'like', '%UNPAID%')
+    ->orWhere('payment_status_code' ,'PARTIALLY PAID')
+    ->get();
 
 
-        //throw new \Exception($payment);
-        $payment = PaymentScheduleResource::collection($payment);
+    //$payment = PaymentScheduleResource::collection($payment);
 
-        foreach($payment as $pay)
+
+    foreach($payment as $pay)
+    {
+        if(!is_null($pay))
         {
-            if(!is_null($pay))
+
+            $customerPersonality = $customerPersonalityController->show($pay['customer_id']);
+
+            $pay['family_name'] = " " . $customerPersonality->original['personality']['family_name'];
+            $pay['first_name'] = " " . $customerPersonality->original['personality']['first_name'];
+            $pay['middle_name'] = " " . $customerPersonality->original['personality']['middle_name'];
+
+
+            // Adjust balance calculation to account for forwarded amounts
+            //$originalDue = $payment[$i]['amount_due'] + $payment[$i]['amount_paid']; // or replace with stored original_amount_due if available
+            $balance = $pay['balance'] = $pay['amount_due'] - $pay['amount_paid'];
+
+            // return response()->json([
+            //     'data' => $balance,
+            // ], Response::HTTP_INTERNAL_SERVER_ERROR);
+
+
+            if($pay['loan_released_id'] && $pay['loan_released_id'] > 0)
             {
 
-                $customerPersonality = $customerPersonalityController->show($pay['customer_id']);
+                //get the loan application id
+                $loanAppId = Loan_Release::where('id', $pay['loan_released_id'])->first()->loan_application_id;
 
-                $pay['family_name'] = " " . $customerPersonality->original['personality']['family_name'];
-                $pay['first_name'] = " " . $customerPersonality->original['personality']['first_name'];
-                $pay['middle_name'] = " " . $customerPersonality->original['personality']['middle_name'];
+                //get the loan_application_no
+                $loanApplicationNo = Loan_Application::where('id', $loanAppId)->first()->loan_application_no;
 
-
-                //throw new \Exception('stop');
-                // Adjust balance calculation to account for forwarded amounts
-                //$originalDue = $payment[$i]['amount_due'] + $payment[$i]['amount_paid']; // or replace with stored original_amount_due if available
-                $balance = $pay['balance'] = $pay['amount_due'] - $pay['amount_paid'];
-
-                // return response()->json([
-                    //     'data' => $balance,
-                // ], Response::HTTP_INTERNAL_SERVER_ERROR);
-
-
-
-                if($pay['loan_released_id'] && $pay['loan_released_id'] > 0)
+                if($loanApplicationNo && !is_null($loanApplicationNo))
                 {
-                    //get the loan application id
-                    $loanAppId = Loan_Release::where('id', $pay['loan_released_id'])->first()->loan_application_id;
-
-                    //get the loan_application_no
-                    $loanApplicationNo = Loan_Application::where('id', $loanAppId)->first()->loan_application_no;
-
-                    if($loanApplicationNo && !is_null($loanApplicationNo))
-                    {
-                        $pay['loan_application_no'] = $loanApplicationNo;
-                    }
+                    $pay['loan_application_no'] = $loanApplicationNo;
                 }
-                else
-                {
-                    $loanApplications = DB::table('loan_application_fees AS laf')
-                    ->join('loan_application AS la', 'laf.loan_application_id', '=', 'la.id')
-                    ->where('la.customer_id', $pay['customer_id'])
-                    ->select('la.loan_application_no', 'laf.amount', 'la.customer_id', 'laf.loan_application_id')
-                    ->first();
-
-                    if(!is_null($loanApplications))
-                    {
-                        $pay['loan_application_no'] = $loanApplications->loan_application_no;
-                        $loan_application_no = $loanApplications->loan_application_no;
-                    }
-                }
-
-
-                //search the customer id
-                $customerPersonality = $customerPersonalityController->show($pay['customer_id']);
-
-                $pay['family_name'] = " " . $customerPersonality->original['personality']['family_name'];
-                $pay['first_name'] = " " . $customerPersonality->original['personality']['first_name'];
-                $pay['middle_name'] = " " . $customerPersonality->original['personality']['middle_name'];
-
-                // Adjust balance calculation to account for forwarded amounts
-                //$originalDue = $payment[$i]['amount_due'] + $payment[$i]['amount_paid']; // or replace with stored original_amount_due if available
-                $balance = $pay['balance'] = $pay['amount_due'] - $pay['amount_paid'];
-
-                // // Convert the array into an associative array keyed by 'id'
-                // $indexedSchedules = array_values($payment_schedule->original);
             }
-            $payment = $pay;
+            else
+            {
+                $loanApplications = DB::table('loan_application_fees AS laf')
+                ->join('loan_application AS la', 'laf.loan_application_id', '=', 'la.id')
+                ->where('la.customer_id', $pay['customer_id'])
+                ->select('la.loan_application_no', 'laf.amount', 'la.customer_id', 'laf.loan_application_id')
+                ->first();
+
+                if(!is_null($loanApplications))
+                {
+                    $pay['loan_application_no'] = $loanApplications->loan_application_no;
+                }
+
+            }
+
+
+            //search the customer id
+            $customerPersonality = $customerPersonalityController->show($pay['customer_id']);
+
+            $pay['family_name'] = " " . $customerPersonality->original['personality']['family_name'];
+            $pay['first_name'] = " " . $customerPersonality->original['personality']['first_name'];
+            $pay['middle_name'] = " " . $customerPersonality->original['personality']['middle_name'];
+
+            // Adjust balance calculation to account for forwarded amounts
+            //$originalDue = $payment[$i]['amount_due'] + $payment[$i]['amount_paid']; // or replace with stored original_amount_due if available
+            $balance = $pay['balance'] = $pay['amount_due'] - $pay['amount_paid'];
+
+            // // Convert the array into an associative array keyed by 'id'
+            // $indexedSchedules = array_values($payment_schedule->original);
         }
+        $payment = $pay;
+    }
 
-
-        //throw new \Exception('stop');
-        //$loan_application_no = $payment['loan_application_no'];
-
-    //return response()->json(['message' => $schedule, 'messabe data 2' => $altId, 'message data 3' => $altId2], Response::HTTP_INTERNAL_SERVER_ERROR);
-
-    //return response()->json(['message' => $loan_application_no], Response::HTTP_INTERNAL_SERVER_ERROR);
+        $loan_application_no = $payment['loan_application_no'];
+        //throw new \Exception($loan_application_no);
 
     $loan_application = Loan_Application::where('loan_application_no', $loan_application_no)->first();
 
@@ -346,7 +340,8 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
     }
 
     $schedules = Payment_Schedule::where('customer_id', $payment->customer_id)
-    ->where('loan_released_id', $loanReleaseId)
+    ->where('id', $payment_schedule_id)
+    ->orWhere('loan_released_id', $loanReleaseId) //optional
     ->where('payment_status_code', 'like', '%Unpaid%')
     ->orWhere('payment_status_code', 'PARTIALLY PAID')
     ->get();

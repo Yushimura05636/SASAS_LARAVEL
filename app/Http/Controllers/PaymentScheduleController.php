@@ -117,7 +117,12 @@ class PaymentScheduleController extends Controller
 
             // Adjust balance calculation to account for forwarded amounts
             //$originalDue = $payment[$i]['amount_due'] + $payment[$i]['amount_paid']; // or replace with stored original_amount_due if available
-            $payment[$i]['balance'] = $payment[$i]['amount_due'] - $payment[$i]['amount_paid'];
+            $balance = $payment[$i]['balance'] = $payment[$i]['amount_due'] - $payment[$i]['amount_paid'];
+
+            if(!is_null($balance) && $balance <= 0)
+            {
+                $payment[$i]['balance'] = 0;
+            }
 
             // if($payment[$i]['payment_status_code'] == 'PARTIALLY PAID')
             // {

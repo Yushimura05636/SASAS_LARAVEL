@@ -19,7 +19,7 @@ return new class extends Migration
             $table->dateTime('prepared_at');
             $table->string('document_status_code');
             $table->unsignedBigInteger('prepared_by_id');
-            $table->decimal('amount_paid', 20, 2);
+            $table->decimal('amount_paid', 20, 13);
             $table->text('notes')->nullable();
             $table->timestamps(); #This is the substitue of created_at field and updated_at
 

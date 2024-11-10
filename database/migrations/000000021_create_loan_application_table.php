@@ -20,10 +20,10 @@ return new class extends Migration
             $table->string('document_status_code');
             //$table->dateTime('datetime_last_updated'); this one also;
             $table->string('loan_application_no');
-            $table->decimal('amount_loan', 20, 2);
+            $table->decimal('amount_loan', 20, 13);
             $table->decimal('factor_rate', 5, 2);
-            $table->decimal('amount_interest', 20, 2);
-            $table->decimal('amount_paid', 20, 2);
+            $table->decimal('amount_interest', 20, 13);
+            $table->decimal('amount_paid', 20, 13);
             $table->dateTime('datetime_target_release')->nullable();
             $table->dateTime('datetime_fully_paid')->nullable();
             $table->dateTime('datetime_approved')->nullable();

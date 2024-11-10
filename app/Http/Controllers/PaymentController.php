@@ -14,6 +14,7 @@ use App\Models\Loan_Release;
 use App\Models\Payment;
 use App\Models\Payment_Line;
 use App\Models\Payment_Schedule;
+use App\Models\Personality;
 use App\Models\User_Account;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -510,6 +511,31 @@ protected function createPaymentLine($request, $payment, $schedule, $amountPaid,
             'data' => $payment,
             'user' => $user,
         ], Response::HTTP_OK);
+    }
+
+    public function paymentBarGraphData()
+    {
+        $payments = Payment::get();
+
+        foreach($payments as $pay)
+        {
+            if(!is_null($pay))
+            {
+
+                //get the user and personality
+                $personalityId = Customer::where('id', $pay['customer_id'])->first()->personality_id;
+                $personality = Personality::where('id', $personalityId)->first();
+
+                $pay['family_name'] = $personality['family_name'];
+                $pay['first_name'] = $personality['first_name'];
+                $pay['middle_name'] = $personality['middle_name'];
+            }
+        }
+
+        //throw new \Exception($payments);
+
+
+        return response()->json(['data' => $payments], Response::HTTP_OK);
     }
 
     public function paymentCustomerId(string $id)

@@ -115,7 +115,6 @@ class LoanApplicationController extends Controller
             $checkPendingLoans = function() use ($data) {
                 foreach ($data as $customerData) {
 
-
                     $document_status_code = Document_Status_Code::where('description', 'like', '%PENDING%')->first();
 
                     //get the pending loan
@@ -660,10 +659,16 @@ class LoanApplicationController extends Controller
 
             $loanReleasePayload = new Request($loanReleasePayload);
             $loanRelease = $loanReleaseService->createLoanRelease($loanReleasePayload);
-
             $numberOfPayments = $paymentDuration->number_of_payments;
-            $amountDue = ($loanAmount + $amountInterest) / $numberOfPayments;
+            //$amountDue = ($loanAmount + $amountInterest) / $numberOfPayments;
+            $amountDue = bcdiv(bcadd($loanAmount, $amountInterest, 16), $numberOfPayments, 16);
+            $amountDue = number_format($amountDue, 13, '.', '');
+            $amountInterestPerPayment = bcdiv($amountInterest, $numberOfPayments, 16);
+            $amountInterestPerPayment = number_format($amountInterestPerPayment, 13, '.', '');
+
             $firstDueDate = $loanReleasePayload['datetime_first_due'];
+
+            //throw new \Exception($amountDue);
 
             $paymentFrequency = $paymentFrequency->days_interval; // Weekly interval in days
 
@@ -687,7 +692,7 @@ class LoanApplicationController extends Controller
                     'loan_released_id' => $loanRelease->id,
                     'datetime_due' => $firstDueDate,
                     'amount_due' => $amountDue,
-                    'amount_interest' => $amountInterest / $numberOfPayments,
+                    'amount_interest' => $amountInterestPerPayment,
                     'amount_paid' => 0,
                     'payment_status_code' => 'UNPAID',
                     'remarks' => null,

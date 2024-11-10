@@ -13,6 +13,7 @@ use App\Http\Controllers\EmployeePersonalityController;
 use App\Http\Controllers\FactorRateController;
 use App\Http\Controllers\FeeController;
 use App\Http\Controllers\ForgotPasswordController;
+use App\Http\Controllers\GraphDataController;
 use App\Http\Controllers\HolidayController;
 use App\Http\Controllers\LoanApplicationCoMakerController;
 use App\Http\Controllers\LoanApplicationController;
@@ -407,6 +408,8 @@ Route::middleware('auth:sanctum')->prefix('PAYMENTS')->group(function () use ($P
     Route::put('/PaymentAPPROVE/{id}', [PaymentController::class, 'paymentApprove'])->middleware("document_access:$PAYMENTS, $UPDATE");
     Route::delete('/{id}', [PaymentController::class, 'destroy'])->middleware("document_access:$PAYMENTS, $DELETE");
 
+
+
     // Empty update route with PATCH
     Route::patch('/update', function () {
         return response()->json(['message' => 'Access granted']);
@@ -705,6 +708,8 @@ Route::prefix('REGISTER_LIBRARIES_NOT')->group(function () {
 });
 
 
+//bar graph payments data
+Route::get('GRAPHS/NoAUTH/Data/All', [GraphDataController::class, 'index']);
 
 
 //test

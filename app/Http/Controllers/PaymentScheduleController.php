@@ -116,9 +116,18 @@ class PaymentScheduleController extends Controller
             $payment[$i]['middle_name'] = " " . $customerPersonality->original['personality']['middle_name'];
 
             // Adjust balance calculation to account for forwarded amounts
-            $originalDue = $payment[$i]['amount_due'] + $payment[$i]['amount_paid']; // or replace with stored original_amount_due if available
-            $payment[$i]['balance'] = $originalDue - $payment[$i]['amount_paid'];
+            //$originalDue = $payment[$i]['amount_due'] + $payment[$i]['amount_paid']; // or replace with stored original_amount_due if available
+            $balance = $payment[$i]['balance'] = $payment[$i]['amount_due'] - $payment[$i]['amount_paid'];
 
+            if(!is_null($balance) && $balance <= 0)
+            {
+                $payment[$i]['balance'] = 0;
+            }
+
+            // if($payment[$i]['payment_status_code'] == 'PARTIALLY PAID')
+            // {
+            //     throw new \Exception(($payment[$i]['amount_due'] - $payment[$i]['amount_paid']));
+            // }
 
             if($payment[$i]['loan_released_id'] && $payment[$i]['loan_released_id'] > 0)
             {
@@ -138,13 +147,11 @@ class PaymentScheduleController extends Controller
                 ->select('la.loan_application_no', 'laf.amount', 'la.customer_id', 'laf.loan_application_id')
                 ->first();
 
-                $payment[$i]['loan_application_no'] = $loanApplications->loan_application_no;
-
+                if(!$loanApplications && !is_null($loanApplications))
+                {
+                    $payment[$i]['loan_application_no'] = $loanApplications->loan_application_no;
+                }
             }
-
-
-
-
         }
 
         return response()->json([

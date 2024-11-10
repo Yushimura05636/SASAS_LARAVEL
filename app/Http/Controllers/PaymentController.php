@@ -237,9 +237,11 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
 
     $payment = Payment_Schedule::where('id', $payment_schedule_id)
         ->where('payment_status_code', 'like', '%UNPAID%')
-        ->orWhere('payment_status_code', '=' ,'PARTIALLY PAID')
+        ->orWhere('payment_status_code' ,'PARTIALLY PAID')
         ->get();
 
+
+        //throw new \Exception($payment);
         $payment = PaymentScheduleResource::collection($payment);
 
         foreach($payment as $pay)
@@ -254,13 +256,15 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
                 $pay['middle_name'] = " " . $customerPersonality->original['personality']['middle_name'];
 
 
+                //throw new \Exception('stop');
                 // Adjust balance calculation to account for forwarded amounts
                 //$originalDue = $payment[$i]['amount_due'] + $payment[$i]['amount_paid']; // or replace with stored original_amount_due if available
                 $balance = $pay['balance'] = $pay['amount_due'] - $pay['amount_paid'];
 
                 // return response()->json([
-                //     'data' => $balance,
+                    //     'data' => $balance,
                 // ], Response::HTTP_INTERNAL_SERVER_ERROR);
+
 
 
                 if($pay['loan_released_id'] && $pay['loan_released_id'] > 0)
@@ -271,7 +275,10 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
                     //get the loan_application_no
                     $loanApplicationNo = Loan_Application::where('id', $loanAppId)->first()->loan_application_no;
 
-                    $pay['loan_application_no'] = $loanApplicationNo;
+                    if($loanApplicationNo && !is_null($loanApplicationNo))
+                    {
+                        $pay['loan_application_no'] = $loanApplicationNo;
+                    }
                 }
                 else
                 {
@@ -284,8 +291,8 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
                     if(!is_null($loanApplications))
                     {
                         $pay['loan_application_no'] = $loanApplications->loan_application_no;
+                        $loan_application_no = $loanApplications->loan_application_no;
                     }
-
                 }
 
 
@@ -306,7 +313,9 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
             $payment = $pay;
         }
 
-    $loan_application_no = $payment['loan_application_no'];
+
+        //throw new \Exception('stop');
+        //$loan_application_no = $payment['loan_application_no'];
 
 
 
@@ -358,6 +367,9 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
 
 
         if ($totalAmountPaid >= $amountDue) {
+
+            //throw new \Exception($amountDue);
+
             // Full payment case
             $schedule->amount_paid += $amountDue;
             $schedule->payment_status_code = 'PAID';

@@ -312,7 +312,15 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
         $payment = $pay;
     }
 
-        $loan_application_no = $payment['loan_application_no'];
+        if($payment && !is_null($payment))
+        {
+            $loan_application_no = $payment['loan_application_no'];
+        }
+        else
+        {
+            $loan_application_no = null;
+        }
+
         //throw new \Exception($loan_application_no);
 
     $loan_application = Loan_Application::where('loan_application_no', $loan_application_no)->first();

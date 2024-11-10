@@ -419,13 +419,6 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
             $totalAmountPaid = 0;
         }
     }
-
-
-    // // Return updated schedules data
-    // return response()->json([
-    //     'data' => $schedules,
-    // ], Response::HTTP_INTERNAL_SERVER_ERROR);
-
 }
 
 protected function createPaymentLine($request, $payment, $schedule, $amountPaid, $remarks, PaymentLineServiceInterface $paymentLineService)

@@ -119,8 +119,6 @@ class PaymentScheduleController extends Controller
             $originalDue = $payment[$i]['amount_due'] + $payment[$i]['amount_paid']; // or replace with stored original_amount_due if available
             $payment[$i]['balance'] = $originalDue - $payment[$i]['amount_paid'];
 
-            throw new \Exception($payment[$i]['balance']);
-
 
             if($payment[$i]['loan_released_id'] && $payment[$i]['loan_released_id'] > 0)
             {

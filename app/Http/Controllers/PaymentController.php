@@ -317,8 +317,6 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
         //throw new \Exception('stop');
         //$loan_application_no = $payment['loan_application_no'];
 
-
-
     //return response()->json(['message' => $schedule, 'messabe data 2' => $altId, 'message data 3' => $altId2], Response::HTTP_INTERNAL_SERVER_ERROR);
 
     //return response()->json(['message' => $loan_application_no], Response::HTTP_INTERNAL_SERVER_ERROR);

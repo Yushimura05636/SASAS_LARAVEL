@@ -330,7 +330,6 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
     {
         //get first the loan app id
         $loanReleaseId = Loan_Release::where('loan_application_id', $loan_application->id)->where('passbook_number', $customer->passbook_no)->get();
-
     }
 
     //Empty schedule

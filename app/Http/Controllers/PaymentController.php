@@ -383,7 +383,6 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
                     $schedule->payment_status_code = 'PARTIALLY PAID, FORWARDED';
                 } else {
                     $schedule->payment_status_code = 'PARTIALLY PAID';
-                    $schedule->balance = $remainingBalance;
                 }
             } else {
                 // If the amount_due is now zero, mark as paid

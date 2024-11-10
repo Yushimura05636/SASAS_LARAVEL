@@ -17,8 +17,8 @@ return new class extends Migration
             $table->bigIncrements('id');
             $table->unsignedBigInteger('payment_id');
             $table->unsignedBigInteger('payment_schedule_id');
-            $table->decimal('balance', 10, 2);
-            $table->decimal('amount_paid', 10, 2);
+            $table->decimal('balance', 20, 10);
+            $table->decimal('amount_paid', 20, 10);
             $table->text('remarks')->nullable();
             $table->timestamps();
 

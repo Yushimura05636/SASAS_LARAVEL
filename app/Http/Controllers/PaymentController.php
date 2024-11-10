@@ -543,8 +543,6 @@ protected function createPaymentLine($request, $payment, $schedule, $amountPaid,
         ->orWhere('payment_status_code', 'PARTIALLY PAID')
         ->get();
 
-
-
         foreach($payment as $pay)
         {
             if(!is_null($pay))

@@ -660,9 +660,11 @@ class LoanApplicationController extends Controller
 
             $loanReleasePayload = new Request($loanReleasePayload);
             $loanRelease = $loanReleaseService->createLoanRelease($loanReleasePayload);
-
             $numberOfPayments = $paymentDuration->number_of_payments;
-            $amountDue = ($loanAmount + $amountInterest) / $numberOfPayments;
+            //$amountDue = ($loanAmount + $amountInterest) / $numberOfPayments;
+            $amountDue = bcdiv(bcadd($loanAmount, $amountInterest, 20), $numberOfPayments, 20);
+            $amountInterestPerPayment = bcdiv($amountInterest, $numberOfPayments, 20);
+            //throw new \Exception($amountInterestPerPayment);
             $firstDueDate = $loanReleasePayload['datetime_first_due'];
 
             $paymentFrequency = $paymentFrequency->days_interval; // Weekly interval in days
@@ -687,7 +689,7 @@ class LoanApplicationController extends Controller
                     'loan_released_id' => $loanRelease->id,
                     'datetime_due' => $firstDueDate,
                     'amount_due' => $amountDue,
-                    'amount_interest' => $amountInterest / $numberOfPayments,
+                    'amount_interest' => $amountInterestPerPayment,
                     'amount_paid' => 0,
                     'payment_status_code' => 'UNPAID',
                     'remarks' => null,

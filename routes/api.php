@@ -688,6 +688,8 @@ Route::prefix('REGISTER_LIBRARIES')->group(function () {
     Route::get('/NoAUTH', [LoanCountController::class, 'index']);
     Route::post('/', [CustomerPersonalityController::class, 'storeForRegistration']);
 });
+    Route::get('REGISTER/NoAUTH/FeeActive/', [FeeController::class, 'indexActive']);
+
 
 
 //get customer under this group (EG: Banana, Grapes)
@@ -700,12 +702,12 @@ Route::middleware('auth:sanctum')->get('/USER_LOGGED', [UserController::class, '
 
 Route::get('/HOLIDAY-TEST', [HolidayController::class, 'index']);
 
-// REGISTER FOR CUSTOMER IN LANDING PAGE
-Route::prefix('REGISTER_LIBRARIES_NOT')->group(function () {
-    Route::get('/NoAUTH/{modeltype}', [DBLibraryController::class, 'index']);
-    Route::get('/NoAUTH', [LoanCountController::class, 'index']);
-    Route::post('/', [CustomerPersonalityController::class, 'storeForRegistration']);
-});
+// // REGISTER FOR CUSTOMER IN LANDING PAGE
+// Route::prefix('REGISTER_LIBRARIES_NOT')->group(function () {
+//     Route::get('/NoAUTH/{modeltype}', [DBLibraryController::class, 'index']);
+//     Route::get('/NoAUTH', [LoanCountController::class, 'index']);
+//     Route::post('/', [CustomerPersonalityController::class, 'storeForRegistration']);
+// });
 
 
 //bar graph payments data

@@ -4,6 +4,7 @@ namespace App\Repository;
 use App\Interface\Repository\CustomerRepositoryInterface;
 use App\Models\Customer;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Hash;
 
 class CustomerRepository implements CustomerRepositoryInterface
 {
@@ -14,7 +15,7 @@ class CustomerRepository implements CustomerRepositoryInterface
 
     public function findOneById($id)
     {
-        return Customer::findOrFail($id);
+        return Customer::find($id);
     }
 
     public function findOneByEmail(string $email)
@@ -32,6 +33,8 @@ class CustomerRepository implements CustomerRepositoryInterface
         $customer->mortuary_coverage_start = $payload->mortuary_coverage_start;
         $customer->mortuary_coverage_end = $payload->mortuary_coverage_end;
         $customer->personality_id = $payload->personality_id;
+        $customer->password = Hash::make($payload->password);
+
         $customer->save();
 
         return $customer->fresh();
@@ -47,6 +50,8 @@ class CustomerRepository implements CustomerRepositoryInterface
         $customer->mortuary_coverage_start = $payload->mortuary_coverage_start;
         $customer->mortuary_coverage_end = $payload->mortuary_coverage_end;
         $customer->personality_id = $payload->personality_id;
+        $customer->password = Hash::make($payload->password);
+
         $customer->save();
 
         return $customer->fresh();
@@ -67,5 +72,10 @@ class CustomerRepository implements CustomerRepositoryInterface
         ->with('personality')  // Include related personality data
         ->orderBy('personality_id')
         ->get();
+    }
+
+    public function findByPersonalityId($personalityId)
+    {
+        return Customer::where('personality_id', $personalityId)->first();
     }
 }

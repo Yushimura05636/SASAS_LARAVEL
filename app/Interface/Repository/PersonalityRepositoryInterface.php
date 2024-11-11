@@ -7,6 +7,8 @@ interface PersonalityRepositoryInterface
     public function findMany();
 
     public function findOneById(int $id);
+    
+    public function findByEmail(string $email);
 
     public function create(object $payload);
 

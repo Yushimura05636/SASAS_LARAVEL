@@ -53,7 +53,9 @@ class CustomerPersonalityStoreRequest extends FormRequest
             'loan_count' => ['required', 'integer'],
             'enable_mortuary' => ['required', 'integer'],
             'mortuary_coverage_start' => ['nullable', 'date'],
-            'motuary_coverage_end' => ['nullable', 'date']
+            'motuary_coverage_end' => ['nullable', 'date'],
+            'password' => ['required', 'string'],
+            
         ];
     }
 }

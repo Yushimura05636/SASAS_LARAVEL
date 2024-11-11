@@ -17,4 +17,7 @@ interface CustomerRepositoryInterface
     public function delete(int $id);
 
     public function findByGroupId($id);
+    
+    public function findByPersonalityId($personalityId);
+    
 }

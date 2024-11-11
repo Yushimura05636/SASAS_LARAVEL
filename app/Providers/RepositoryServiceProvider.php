@@ -28,6 +28,7 @@ use App\Interface\Repository\UserRepositoryInterface;
 use App\Interface\Repository\CustomerRequirementRepositoryInterface;
 use App\Interface\Repository\HolidayRepositoryInterface;
 use App\Interface\Repository\RequirementRepositoryInterface;
+use App\Interface\Service\AuthenticationClientServiceInterface;
 use App\Interface\Service\AuthenticationServiceInterface;
 use App\Interface\Service\CustomerGroupServiceInterface;
 use App\Interface\Service\CustomerRequirementServiceInterface;
@@ -79,6 +80,7 @@ use App\Repository\PersonalityRepository;
 use App\Repository\RequirementRepository;
 use App\Repository\SpouseRepository;
 use App\Repository\UserRepository;
+use App\Service\AuthenticationClientService;
 use App\Service\AuthenticationService;
 use App\Service\CustomerGroupService;
 use App\Service\CustomerRequirementService;
@@ -172,6 +174,7 @@ class RepositoryServiceProvider extends ServiceProvider
         $this->app->bind(CustomerServiceInterface::class, CustomerService::class);
         $this->app->bind(DBLibraryServiceInterface::class, DBLibraryService::class);
         $this->app->bind(AuthenticationServiceInterface::class, AuthenticationService::class);
+        $this->app->bind(AuthenticationClientServiceInterface::class, AuthenticationClientService::class);
         $this->app->bind(UserServiceInterface::class, UserService::class);
 
         $this->app->bind(CustomerGroupServiceInterface::class, CustomerGroupService::class);

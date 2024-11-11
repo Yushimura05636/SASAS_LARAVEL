@@ -808,7 +808,7 @@ class CustomerPersonalityController extends Controller
         }
     }
 
-    public function storeForRegistration(Request $request, CustomerRequirementController $customerRequirementController, CustomerController $customerController, PersonalityController $personalityController)
+    public function storeForRegistration(Request $request, PaymentScheduleController $paymentScheduleController, LoanApplicationFeeController $loanApplicationFeeController, CustomerRequirementController $customerRequirementController, CustomerController $customerController, PersonalityController $personalityController)
     {
         // Summons the storeRequest from both controllers
         $customerStoreRequest = new CustomerStoreRequest();
@@ -818,11 +818,12 @@ class CustomerPersonalityController extends Controller
         $customerData = $request->input('customer');
         $personalityData = $request->input('personality');
         $requirementDatas = $request->input('requirements');
+        $customerFees = $request->input('fees');
 
-        //get the personality status code
+         //get the personality status code
         $personalityStatusId = Personality_Status_Map::where('description', 'Pending')->first()->id;
 
-        //set the personality status code
+         //set the personality status code
         $personalityData['personality_status_code'] = $personalityStatusId;
 
         // Merge data for validation
@@ -858,7 +859,6 @@ class CustomerPersonalityController extends Controller
 
             // Then put the ID to personality_id in customer
             $customerData['personality_id'] = $id;
-            $customerData['group_id'] = null;
             $customerResponse = $customerController->store(new Request($customerData));
 
             $customer_id = Customer::where('passbook_no', $customerData['passbook_no'])->first()->id;
@@ -867,30 +867,37 @@ class CustomerPersonalityController extends Controller
             //     'message' => $customer_id,
             // ], Response::HTTP_BAD_REQUEST);
 
-//diria na part<<<<
-            // Create customer_requirements
-            // for ($i = 0; $i < count($requirementDatas); $i++) {
-            //     $requireData = $requirementDatas[$i];
-
-            //     $payload = [
-            //         'customer_id' => $customer_id,
-            //         'requirement_id' => $requireData['id'],
-            //         'expiry_date' => $requireData['expiry_date'],
-            //     ];
-
-            //     $payload = new Request($payload);
-
-            //     $customerRequirementController->store($payload);
-
-            //     // // Return the current requirement as part of the response for tracing
-            //     // return response()->json([
-            //     //     'message' => $requireData['id'],
-            //     // ], Response::HTTP_BAD_REQUEST);
-            // }
-//>>>>
-
             //create membership payment
+            foreach($customerFees as $fee)
+            {
+                if(!is_null($fee))
+                {
+                    $payload = [
+                        'customer_id' => $customer_id,
+                        'loan_released_id' => null,
+                        'datetime_due' => now(),
+                        'amount_due' => $fee['amount'],
+                        'amount_interest' => 0,
+                        'amount_paid' => 0,
+                        'payment_status_code' => 'UNPAID',
+                        'remarks' => null,
+                    ];
 
+                    $payload = new Request($payload);
+
+                    // $success = $loanApplicationFeeController->store($payload);
+
+                    //create a schedules for payments
+                    $success = $paymentScheduleController->store($payload);
+
+                    if(!$success || is_null($success))
+                    {
+                        throw new \Exception('Error payment schedule');
+                    }
+                }
+            }
+
+            // throw new \Exception('error');
 
 
             // Commit the transaction

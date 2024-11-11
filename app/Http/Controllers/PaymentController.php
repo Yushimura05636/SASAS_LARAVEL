@@ -10,6 +10,7 @@ use App\Interface\Service\PaymentScheduleServiceInterface;
 use App\Interface\Service\PaymentServiceInterface;
 use App\Models\Customer;
 use App\Models\Loan_Application;
+use App\Models\Loan_Count;
 use App\Models\Loan_Release;
 use App\Models\Payment;
 use App\Models\Payment_Line;
@@ -454,6 +455,27 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
         $totalAmountPaid = 0;
     }
 
+        $isAllPaid = Payment_Schedule::where('customer_id', $payment->customer_id)
+            ->whereNotIn('payment_status_code', ['PAID', 'PARTIALLY PAID, FORWARDED'])
+            ->doesntExist(); // If no records with unpaid and partially paid statuses exist, then all payments are paid
+
+            if (!is_null($isAllPaid) && $isAllPaid > 0) {
+                // Only increase the loan count if the payment schedule is not fully paid
+                $customer_loan_count = Customer::where('id', $payment->customer_id)->first();
+
+                if ($customer_loan_count && !is_null($customer_loan_count)) {
+                    // Step 1: Find the maximum loan_count in the database
+                    $maxLoanCount = Loan_Count::max('loan_count');
+
+                    // Step 2: Check if the current customer's loan_count is less than the maximum
+                    if ($customer_loan_count->loan_count < $maxLoanCount) {
+                        // Increment loan count for the customer
+                        $customer_loan_count->increment('loan_count', 1);
+                    }
+                }
+            }
+
+            //throw new \Exception($customer_loan_count);
 }
 
 protected function createPaymentLine($request, $payment, $schedule, $amountPaid, $remarks, PaymentLineServiceInterface $paymentLineService)

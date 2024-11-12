@@ -717,3 +717,7 @@ Route::get('GRAPHS/NoAUTH/Data/All', [GraphDataController::class, 'index']);
 //test
 Route::get('/NoAUTH/CustomerAPPROVE', [CustomerPersonalityController::class, 'indexApprove']);
 Route::get('/customerWithPending/NoAUTH/{id}', [LoanApplicationController::class, 'seeWithPending']);
+
+Route::middleware('auth:sanctum')->prefix('DASHBOARD')->group(function () {
+    Route::get('/NoAUTH/EMPLOYEE/DETAILS', [EmployeePersonalityController::class, 'showEmployeeDetails']);
+});

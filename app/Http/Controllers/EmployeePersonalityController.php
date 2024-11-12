@@ -14,7 +14,9 @@ use App\Http\Resources\PersonalityResource;
 use App\Interface\Service\CustomerServiceInterface;
 use App\Interface\Service\EmployeeServiceInterface;
 use App\Interface\Service\PersonalityServiceInterface;
+use App\Models\Name_Type;
 use App\Models\Personality;
+use App\Models\User_Account;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -185,6 +187,66 @@ public function look()
             $id = $employee->personality_id;
 
             $personality = $this->personalityService->findPersonalityById($id);
+
+            // Commit the transaction
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Both Employee and Personality retrieved successfully',
+                'employee' => $employee, // Use resource class
+                'personality' => $personality, // Use resource class
+            ], Response::HTTP_OK);
+
+        } catch (ModelNotFoundException $e) {
+            // Rollback transaction on model not found
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Employee not found.',
+                'error' => $e->getMessage(),
+            ], Response::HTTP_NOT_FOUND);
+
+        } catch (\Exception $e) {
+            // Rollback transaction on any other exception
+            DB::rollBack();
+            return response()->json([
+                'message' => 'An error occurred while saving data.',
+                'error' => $e->getMessage(),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    public function showEmployeeDetails()
+    {
+        try {
+            // Start a database transaction
+            DB::beginTransaction();
+
+            $user_id = auth()->user()->id;
+
+            $employee_id = User_Account::where('id', $user_id)->first();
+
+            if($employee_id && !is_null($employee_id))
+            {
+                $employee_id = $employee_id->id;
+            }
+
+            //get the ids of customer
+            $employee = $this->employeeService->findEmlpoyeeById($employee_id);
+
+            //get the customer personality id
+            $id = $employee->personality_id;
+
+            $personality = $this->personalityService->findPersonalityById($id);
+
+            $personality_name_type_id = $personality->name_type_code;
+
+            $name_type_description = Name_Type::where('id', $personality_name_type_id)->first();
+
+            if($name_type_description && !is_null($name_type_description))
+            {
+                //get the description of the name type
+                $employee['name_type'] = $name_type_description->description;
+            }
 
             // Commit the transaction
             DB::commit();

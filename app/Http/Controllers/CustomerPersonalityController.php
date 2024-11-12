@@ -735,20 +735,22 @@ class CustomerPersonalityController extends Controller
     public function showGroupWithData(int $id)
     {
         //get first the approve id
-        $personalityStatusId = Personality_Status_Map::where('description', 'Approved')->first()->id;
+        //$personalityStatusId = Personality_Status_Map::where('description', 'Approved')->first()->id;
 
         $customers = Customer::where('group_id', $id)
         ->with('personality')  // Include related personality data
         ->orderBy('personality_id')
         ->get();
 
-
         $customerDatas = [];
 
         foreach ($customers as $customer) {
-            if ($customer['personality']['personality_status_code'] == $personalityStatusId) {
+            if(!is_null($customer))
+            {
                 $customerDatas[] = $customer; // Using array shorthand
             }
+            // if ($customer['personality']['personality_status_code'] == $personalityStatusId) {
+            // }
         }
 
         // return response()->json([

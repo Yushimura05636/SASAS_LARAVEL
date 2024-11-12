@@ -204,7 +204,8 @@ Route::middleware('auth:sanctum')->prefix('CUSTOMERS')->group(function () use ($
     Route::get('/NoAUTH/CustomerAPPROVEAndActiveWithPending', [CustomerPersonalityController::class, 'indexApproveActivePending']);
     Route::get('/GroupAPPROVE/{id}', [CustomerPersonalityController::class, 'showGroupApprove'])->middleware("document_access:$CUSTOMERS, $VIEW");
     Route::get('/NoAUTH/{id}', [CustomerPersonalityController::class, 'show']);
-    Route::get('/NoAUTH/Data/{id}', [CustomerPersonalityController::class, 'showData']);
+    Route::get('/NoAUTH/Group/{id}', [CustomerPersonalityController::class, 'showGroupWithData']);
+    Route::get('/NoAUTH/Customer/{id}', [CustomerPersonalityController::class, 'showCustomerWithData']);
     Route::get('/NoAUTH/GroupAPPROVE/{id}', [CustomerPersonalityController::class, 'showGroupApprove']);
     Route::get('/NoAUTH/GroupAPPROVEACTIVE/{id}', [CustomerPersonalityController::class, 'showGroupApproveActive']);
     Route::get('/{id}', [CustomerPersonalityController::class, 'show'])->middleware("document_access:$CUSTOMERS, $VIEW");
@@ -469,6 +470,7 @@ Route::middleware('auth:sanctum')->prefix('PAYMENT_SCHEDULES')->group(function (
     Route::get('/all', [PaymentScheduleController::class, 'indexAll'])->middleware("document_access:$PAYMENT_SCHEDULES, $VIEW");
     Route::get('/NoAUTH', [PaymentScheduleController::class, 'index']);
     Route::get('/NoAUTH/{id}', [PaymentScheduleController::class, 'show']);
+    Route::get('/NoAUTH/Customer/{id}', [PaymentScheduleController::class, 'showCustomer']);
     Route::get('/{id}', [PaymentScheduleController::class, 'show'])->middleware("document_access:$PAYMENT_SCHEDULES, $VIEW");
     Route::post('/', [PaymentScheduleController::class, 'store'])->middleware("document_access:$PAYMENT_SCHEDULES, $CREATE");
     Route::put('/{id}', [PaymentScheduleController::class, 'update'])->middleware("document_access:$PAYMENT_SCHEDULES, $UPDATE");

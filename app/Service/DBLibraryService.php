@@ -36,12 +36,6 @@ class DBLibraryService implements DBLibraryServiceInterface
 
     public function createEntry(object $payload)
     {
-        // return response()->json([
-        //     'status' => 'error', // Or 'success' depending on your logic
-        //     'message' => ' here in createdEntryservice field', // Assuming you want to return modeltype
-        //     'data' => $payload->modeltype, // You can include additional data if needed
-        //     'errors' => [], // You can include any errors if applicable
-        // ], Response::HTTP_EXPECTATION_FAILED);
         $library = $this->dbLibraryRepository->create($payload);
         return new DBLibraryResource($library);
     }

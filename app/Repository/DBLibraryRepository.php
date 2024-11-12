@@ -36,6 +36,7 @@ class DBLibraryRepository implements DBLibraryRepositoryInterface
         //     'data' => $payload->modeltype, // You can include additional data if needed
         //     'errors' => [], // You can include any errors if applicable
         // ], Response::HTTP_EXPECTATION_FAILED);
+        //throw new \Exception($payload->collector_id);
         return new DBBaseLibraryFactory(null, $payload, 0, 'create');
     }
 

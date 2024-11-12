@@ -27,12 +27,19 @@ class Customer_Group extends DBLibrary
      */
     protected $fillable = [
         'description',
-        'customer_id',
+        'collector_id',
     ];
 
-    public static function createEntry(string $description, int $collector_id = null)
+    private $local_collector_id;
+    private $local_description;
+
+    public static function createEntry($description, $collector_id = null)
     {
-        return self::create(['description' => $description, 'collector_id' => $collector_id]);
+        return self::create([
+            'description' => $description,
+            'collector_id' => $collector_id,
+        ]);
+
     }
 
     public static function deleteEntry(int $id)

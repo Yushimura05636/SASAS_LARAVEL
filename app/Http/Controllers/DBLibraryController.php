@@ -30,14 +30,8 @@ class DBLibraryController extends Controller
         return $this->dblibraryservice->findEntries($modeltype);
     }
 
-    public function store(DBLibraryStoreRequest $request)
+    public function store(Request $request)
     {
-        // return response()->json([
-        //     'status' => 'error', // Or 'success' depending on your logic
-        //     'message' => ' here in store field', // Assuming you want to return modeltype
-        //     'data' => [], // You can include additional data if needed
-        //     'errors' => [], // You can include any errors if applicable
-        // ], Response::HTTP_EXPECTATION_FAILED);
         return $this->dblibraryservice->createEntry($request);
     }
 

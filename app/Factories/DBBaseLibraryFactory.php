@@ -20,7 +20,10 @@ use App\Models\Document_Permission_Map; #Done
 use App\Models\Name_Type; #Done
 use App\Models\Customer_Group; #Done
 use App\Models\Requirements;
+use App\Models\User_Account;
+use Exception;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\DB;
 
 /*
     KINI na section SA APP\\ dinhi pag pili ug unsa na model type ang gamit pang insert, delete, or create
@@ -41,8 +44,7 @@ class DBBaseLibraryFactory
     public $id;
     public $description;
     private $action;
-
-    private $collector_id;
+    public $collector_id;
 
     public $bool;
 
@@ -74,14 +76,13 @@ class DBBaseLibraryFactory
 
             $this->collector_id = $payload->collector_id;
         }
-
         $this->id = $id;
         $this->action = $action;
 
         switch($this->action)
         {
             case 'create':
-                $this->createEntry($this->modeltype, $this->description);
+                $this->createEntry($this->modeltype, $this->description, $this->collector_id);
                 break;
             case 'findOne':
                 $this->findOne($this->modeltype, $this->id);
@@ -90,7 +91,7 @@ class DBBaseLibraryFactory
                 $this->findMany($this->modeltype);
                 break;
             case 'update':
-                $this->updateEntry($this->modeltype, $this->id, $this->description);
+                $this->updateEntry($this->modeltype, $this->id, $this->description, $this->collector_id);
                 break;
             case 'delete':
                 $this->bool = $this->deleteEntry($this->modeltype, $this->id);
@@ -99,57 +100,89 @@ class DBBaseLibraryFactory
                 'Error';
         }
     }
-    public static function createEntry($modeltype, $description, $collector_id = null)
-    {
-        // return response()->json([
-        //     'status' => 'error', // Or 'success' depending on your logic
-        //     'message' => $modeltype, // Assuming you want to return modeltype
-        //     'data' => [], // You can include additional data if needed
-        //     'errors' => [], // You can include any errors if applicable
-        // ], Response::HTTP_EXPECTATION_FAILED);
+    public static function createEntry($modeltype, $description, $collector_id)
+{
+    DB::beginTransaction(); // Start the transaction
+    try {
 
         $fillable = [
-            'description' => $description,
+            'description',
+            'collector_id',
         ];
 
+        // Switch logic for creating entries based on model type
         switch ($modeltype) {
             case 'barangay':
-                return Barangay::createEntry($description);
+                Barangay::createEntry($description);
+                break;
             case 'branch':
-                return Branch::createEntry($description);
+                Branch::createEntry($description);
+                break;
             case 'city':
                 City::createEntry($description);
-                return new City();
+                break;
             case 'civil_status':
-                return Civil_Status::createEntry($description);
+                Civil_Status::createEntry($description);
+                break;
             case 'gender_map':
-                return Gender_Map::createEntry($description);
+                Gender_Map::createEntry($description);
+                break;
             case 'country':
-                return Country::createEntry($description);
+                Country::createEntry($description);
+                break;
             case 'province':
-                return Province::createEntry($description);
+                Province::createEntry($description);
+                break;
             case 'credit_status':
-                return Credit_Status::createEntry($description);
+                Credit_Status::createEntry($description);
+                break;
             case 'personality_status_map':
-                return Personality_Status_Map::createEntry($description);
+                Personality_Status_Map::createEntry($description);
+                break;
             case 'user_account_status':
-                return User_Account_Status::createEntry($description);
+                User_Account_Status::createEntry($description);
+                break;
             case 'document_map':
-                return Document_Map::createEntry($description);
+                Document_Map::createEntry($description);
+                break;
             case 'document_permission_map':
-                return Document_Permission_Map::createEntry($description);
+                Document_Permission_Map::createEntry($description);
+                break;
             case 'name_type':
-                return Name_Type::createEntry($description);
+                Name_Type::createEntry($description);
+                break;
             case 'customer_group':
-                return Customer_Group::createEntry($description, $collector_id);
+                // throw new \Exception($modeltype == 'customer_group');
+                Customer_Group::createEntry($description, $collector_id);
+                break;
             case 'document_status_code':
-                return Document_Status_code::createEntry($description);
+                Document_Status_code::createEntry($description);
+                break;
             case 'requirement':
-                return Requirements::createEntry($description);
+                Requirements::createEntry($description);
+                break;
             default:
-                throw new \InvalidArgumentException("Unknown model type: ", $modeltype);
+                throw new \InvalidArgumentException("Unknown model type: $modeltype");
         }
+
+        DB::commit(); // Commit the transaction if everything went well
+
+        return response()->json([
+            'status' => 'success',
+            'message' => "$modeltype entry created successfully",
+            'data' => [], // Optionally return data if needed
+        ]);
+
+    } catch (\Exception $e) {
+        DB::rollBack(); // Rollback the transaction if something goes wrong
+
+        return response()->json([
+            'status' => 'error',
+            'message' => "Failed to create $modeltype entry",
+            'errors' => $e->getMessage(),
+        ], 500); // Return an error response with status code 500
     }
+}
 
     public static function findOne(string $modeltype, int $id)
     {
@@ -187,7 +220,16 @@ class DBBaseLibraryFactory
             case 'name_type':
                 return Name_Type::findOne($id);
             case 'customer_group':
-                return Customer_Group::findOne($id);
+                $customer_group = Customer_Group::findOne($id)->first();
+
+                //get the collector name
+                $user_details = User_Account::where('id', $customer_group['collector_id']);
+
+                $customer_group['last_name'] = $user_details->last_name;
+                $customer_group['first_name'] = $user_details->first_name;
+                $customer_group['middle_name'] = $user_details->middle_name;
+
+                return $customer_group;
             case 'document_status_code':
                 return Document_Status_code::findOne($id);
             case 'requirement':
@@ -227,7 +269,25 @@ class DBBaseLibraryFactory
             case 'name_type':
                 return Name_Type::findMany();
             case 'customer_group':
-                return Customer_Group::findMany();
+                $customer_group = Customer_Group::findMany();
+
+                foreach($customer_group as $group)
+                {
+                    if(!is_null($group))
+                    {
+                        //get the collector name
+                        $user_details = User_Account::where('id', $group['collector_id'])->first();
+
+                        if(!is_null($user_details))
+                        {
+                            $group['last_name'] = $user_details['last_name'];
+                            $group['first_name'] = $user_details['first_name'];
+                            $group['middle_name'] = $user_details['middle_name'];
+                        }
+                    }
+                }
+
+                return $customer_group;
             case 'document_status_code':
                 return Document_Status_code::findMany();
             case 'requirement':
@@ -277,8 +337,9 @@ class DBBaseLibraryFactory
         }
     }
 
-    public static function updateEntry($modelType, $id, $description)
-    {
+public static function updateEntry($modelType, $id, $description, $collector_id)
+{
+    return DB::transaction(function () use ($modelType, $id, $description, $collector_id) {
         switch ($modelType) {
             case 'barangay':
                 return Barangay::updateEntry($id, $description);
@@ -307,7 +368,8 @@ class DBBaseLibraryFactory
             case 'name_type':
                 return Name_Type::updateEntry($id, $description);
             case 'customer_group':
-                return Customer_Group::updateEntry($id, $description);
+                //throw new \Exception('stop');
+                return Customer_Group::updateEntry($id, $description, $collector_id);
             case 'document_status_code':
                 return Document_Status_code::updateEntry($id, $description);
             case 'requirement':
@@ -315,5 +377,7 @@ class DBBaseLibraryFactory
             default:
                 throw new \InvalidArgumentException("Unknown model type: $modelType");
         }
-    }
+    });
+}
+
 }

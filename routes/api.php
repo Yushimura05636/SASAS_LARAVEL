@@ -733,5 +733,5 @@ Route::get('/NoAUTH/CustomerAPPROVE', [CustomerPersonalityController::class, 'in
 Route::get('/customerWithPending/NoAUTH/{id}', [LoanApplicationController::class, 'seeWithPending']);
 
 Route::middleware('auth:sanctum')->prefix('DASHBOARD')->group(function () {
-    Route::get('/NoAUTH/EMPLOYEE/DETAILS', [EmployeePersonalityController::class, 'showEmployeeDetails']);
+    Route::get('/NoAUTH/USER/DETAILS', [UserController::class, 'showUserDetails']);
 });

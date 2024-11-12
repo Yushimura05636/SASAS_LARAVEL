@@ -264,4 +264,13 @@ class UserController extends Controller
 
         return response()->json(['data' => $user_map], Response::HTTP_OK);
     }
+
+    public function showUserDetails()
+    {
+        $user_id = auth()->user()->id;
+
+        $user_details = User_Account::where('id', $user_id)->first();
+
+        return response()->json(['data' => $user], Response::HTTP_OK);
+    }
 }

@@ -25,6 +25,7 @@ use App\Http\Controllers\PaymentFrequencyController;
 use App\Http\Controllers\PaymentLineController;
 use App\Http\Controllers\PaymentScheduleController;
 use App\Http\Controllers\PersonalityController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\RequirementController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\UserController;
@@ -717,3 +718,7 @@ Route::get('GRAPHS/NoAUTH/Data/All', [GraphDataController::class, 'index']);
 //test
 Route::get('/NoAUTH/CustomerAPPROVE', [CustomerPersonalityController::class, 'indexApprove']);
 Route::get('/customerWithPending/NoAUTH/{id}', [LoanApplicationController::class, 'seeWithPending']);
+
+
+//REPORTS TEST
+Route::get('REPORTS', [ReportController::class, 'index']);

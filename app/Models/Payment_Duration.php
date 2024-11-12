@@ -28,8 +28,8 @@ class Payment_Duration extends Model
     /**
      * Get the factor rates that belong to the payment duration.
      */
-    public function factorRates()
+    public function factorRate()
     {
-        return $this->hasMany(Factor_Rate::class);
+        return $this->hasMany(Factor_Rate::class, 'id', 'payment_duration_id');
     }
 }

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Customer_Requirements extends Model
 {
@@ -25,4 +26,14 @@ class Customer_Requirements extends Model
         'requirement_id',
         'expiry_date'
     ];
+
+    public function requirement(): BelongsTo
+    {
+        return $this->belongsTo(Requirements::class, 'requirement_id', 'id');
+    }
+
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(Customer::class, 'customer_id', 'id');
+    }
 }

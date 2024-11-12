@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Requirements extends DBLibrary
 {
@@ -24,4 +25,9 @@ class Requirements extends DBLibrary
         'description',
         'isActive',
     ];
+
+    public function customerRequirement(): HasMany
+    {
+        return $this->hasMany(Customer_Requirements::class, 'id', 'requirement_id');
+    }
 }

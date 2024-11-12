@@ -36,6 +36,9 @@ class LoanApplicationResource extends JsonResource
             'last_modified_by_id' => $this->last_modified_by_id,
             'notes' => $this->notes,
             'factor_rate_value' => $this->factor_rate_value,
+            'family_name' => $this->family_name,
+            'first_name' => $this->first_name,
+            'middle_name' => $this->middle_name,
         ];
     }
 }

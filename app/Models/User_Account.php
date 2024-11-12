@@ -9,6 +9,8 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use ParagonIE\Sodium\Core\Curve25519\H;
 
 class User_Account extends Authenticatable
 {
@@ -74,5 +76,10 @@ class User_Account extends Authenticatable
     public function employee(): BelongsTo
     {
         return $this->belongsTo(Employee::class);
+    }
+
+    public function documentPermission(): HasMany
+    {
+        return $this->hasMany(Document_Permission::class, 'id', 'user_id');
     }
 }

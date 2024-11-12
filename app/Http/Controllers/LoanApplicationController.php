@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\LoanApplicationStoreRequest;
 use App\Http\Requests\LoanApplicationUpdateRequest;
+use App\Interface\Service\CustomerServiceInterface;
 use App\Interface\Service\FeeServiceInterface;
 use App\Interface\Service\LoanApplicationCoMakerServiceInterface;
 use App\Interface\Service\LoanApplicationFeeServiceInterface;
@@ -12,6 +13,7 @@ use App\Interface\Service\LoanReleaseServiceInterface;
 use App\Interface\Service\PaymentLineServiceInterface;
 use App\Interface\Service\PaymentScheduleServiceInterface;
 use App\Interface\Service\PaymentServiceInterface;
+use App\Interface\Service\PersonalityServiceInterface;
 use App\Models\Credit_Status;
 use App\Models\Customer;
 use App\Models\Customer_Group;
@@ -47,23 +49,51 @@ class LoanApplicationController extends Controller
      * Display a listing of the resource.
      */
 
-    public function index(LoanApplicationFeeServiceInterface $loanApplicationFeeService, LoanApplicationCoMakerServiceInterface $loanApplicationCoMakerService)
+    public function index(LoanApplicationFeeServiceInterface $loanApplicationFeeService, LoanApplicationCoMakerServiceInterface $loanApplicationCoMakerService, PersonalityServiceInterface $personalityService, CustomerServiceInterface $customerService)
     {
         $loanFees = $loanApplicationFeeService->findLoanFees();
         $loanCoMakers = $loanApplicationCoMakerService->findCoMakers();
         $loanApps = $this->loanApplicationService->findLoanApplication();
+        $personalities = $personalityService->findPersonality();
+        $customers = $customerService->findCustomers();
 
         $loanAppsMap = [];
-        // Create a map of loan applications using the loan application ID as the key
+
+        // Step 1: Create a map of personalities by their ID for quick lookup
+        $personalitiesMap = [];
+        foreach ($personalities as $personality) {
+            $personalitiesMap[$personality->id] = [
+                'first_name' => $personality->first_name,
+                'family_name' => $personality->family_name,
+                'middle_name' => $personality->middle_name,
+            ];
+        }
+
+        // Step 2: Create a map of customers by their ID and include the personality details
+        $LoanApplicationMap = [];
+        foreach ($customers as $customer) {
+            $personalityDetails = $personalitiesMap[$customer->personality_id] ?? [];
+            $LoanApplicationMap[$customer->id] = array_merge([
+                'customer_id' => $customer->id,
+                'first_name' => $customer->first_name,
+                'family_name' => $customer->family_name,
+                'middle_name' => $customer->middle_name,
+            ], $personalityDetails);
+        }
+
+        // Step 3: Create a map of loan applications, linking to customer and personality data
         foreach ($loanApps as $loanApp) {
+            $customerId = $loanApp->customer_id;
+
             $loanAppsMap[$loanApp->id] = [
                 'Loan_Application' => $loanApp,
                 'Fees' => [],  // Initialize an empty array to hold fees for each loan application
                 'CoMaker' => '',
+                'Customer' => $LoanApplicationMap[$customerId] ?? [],  // Add customer and personality details
             ];
         }
 
-        // Group loan fees under the corresponding loan application
+        // Step 4: Group loan fees under the corresponding loan application
         foreach ($loanFees as $loanFee) {
             $loanAppId = $loanFee->loan_application_id;
 
@@ -74,13 +104,12 @@ class LoanApplicationController extends Controller
             }
         }
 
-        foreach ($loanCoMakers as $loanCoMaker)
-        {
+        // Step 5: Group co-makers under the corresponding loan application
+        foreach ($loanCoMakers as $loanCoMaker) {
             $loanAppId = $loanCoMaker->loan_application_id;
 
-            //Check if the loan application exists in the map
-            if(isset($loanAppsMap[$loanAppId]))
-            {
+            // Check if the loan application exists in the map
+            if (isset($loanAppsMap[$loanAppId])) {
                 // Add the coMaker to the corresponding loan application
                 $loanAppsMap[$loanAppId]['CoMaker'] = $loanCoMaker;
             }

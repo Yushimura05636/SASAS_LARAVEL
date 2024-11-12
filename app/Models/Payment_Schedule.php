@@ -6,6 +6,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Payment_Schedule extends Model
 {
@@ -50,5 +51,10 @@ class Payment_Schedule extends Model
     public function loanRelease()
     {
         return $this->belongsTo(Loan_Release::class, 'loan_released_id', 'id');
+    }
+
+    public function paymentLine(): HasMany
+    {
+        return $this->hasMany(Payment_Line::class, 'id', 'payment_schedule_id');
     }
 }

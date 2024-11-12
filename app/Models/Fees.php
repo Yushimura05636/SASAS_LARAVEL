@@ -6,6 +6,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Fees extends Model
 {
@@ -24,4 +25,9 @@ class Fees extends Model
         'isactive',
         'notes',
     ];
+
+    public function fees(): HasMany
+    {
+        return $this->hasMany(Loan_Application_Fees::class, 'id', 'fee_id');
+    }
 }

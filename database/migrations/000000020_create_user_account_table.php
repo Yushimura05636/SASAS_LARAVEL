@@ -22,7 +22,9 @@ return new class extends Migration
             $table->string('password');
             $table->string('email')->unique();
             $table->unsignedBigInteger('phone_number')->unique();
-            $table->unsignedBigInteger('employee_id');
+            $table->unsignedBigInteger('employee_id')->nullable(); //not required if not employee
+            $table->unsignedBigInteger('customer_id')->nullable(); //not required if not customer
+
 
             $table->foreign('status_id')->references('id')->on('user_account_status')->onDelete('cascade');
             $table->foreign('employee_id')->references('id')->on('employee')->onDelete('cascade');

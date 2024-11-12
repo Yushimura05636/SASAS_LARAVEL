@@ -7,6 +7,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Loan_Application extends Model
 {
@@ -103,5 +104,20 @@ class Loan_Application extends Model
     public function lastModifiedBy(): BelongsTo
     {
         return $this->belongsTo(User_Account::class, 'last_modified_by_id', 'id');
+    }
+
+    public function loanRelease(): HasMany
+    {
+        return $this->hasMany(Loan_Release::class, 'id', 'loan_applicaiton_id');
+    }
+
+    public function loanApplicationCoMaker(): HasMany
+    {
+        return $this->hasMany(Loan_Application_Comaker::class, 'id', 'loan_application_id');
+    }
+
+    public function loanApplicationFees(): HasMany
+    {
+        return $this->hasMany(Loan_Application_Fees::class, 'id', 'loan_application_id');
     }
 }

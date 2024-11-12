@@ -111,7 +111,7 @@ class Personality extends Model
 
     public function employee(): HasOne
     {
-        return $this->hasOne(Employee::class,'id', 'id');
+        return $this->hasOne(Employee::class,'personality_id', 'id');
     }
 
     public function customer(): HasOne

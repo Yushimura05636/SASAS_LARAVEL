@@ -464,18 +464,34 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
                 $customer_loan_count = Customer::where('id', $payment->customer_id)->first();
 
                 if ($customer_loan_count && !is_null($customer_loan_count)) {
-                    // Step 1: Find the maximum loan_count in the database
-                    $maxLoanCount = Loan_Count::max('loan_count');
 
-                    // Step 2: Check if the current customer's loan_count is less than the maximum
-                    if ($customer_loan_count->loan_count < $maxLoanCount) {
-                        // Increment loan count for the customer
-                        $customer_loan_count->increment('loan_count', 1);
+                    // Step 1: Retrieve the loan release based on the passbook number
+                    $loan_release = Loan_Release::where('passbook_number', $customer_loan_count->passbook_no)->first();
+
+                    if ($loan_release && !is_null($loan_release)) {
+                        // Step 2: Retrieve the loan application associated with the loan release
+                        $loan_application = Loan_Application::where('id', $loan_release->loan_application_id)->first();
+
+                        if ($loan_application) {
+                            // Step 3: Find the maximum loan_count in the database
+                            $maxLoanCount = Loan_Count::max('loan_count');
+
+                            // Step 4: Check if the current customer's loan_count is less than the maximum
+                            if ($customer_loan_count->loan_count < $maxLoanCount) {
+                                // Increment loan count for the customer
+                                $customer_loan_count->increment('loan_count', 1);
+                            }
+
+                            // Step 5: Set datetime fully paid
+                            $loan_application->datetime_fully_paid = now();
+                            $loan_application->save();
+                        }
+                        //throw new \Exception($loan_application);
                     }
                 }
             }
 
-            //throw new \Exception($customer_loan_count);
+
 }
 
 protected function createPaymentLine($request, $payment, $schedule, $amountPaid, $remarks, PaymentLineServiceInterface $paymentLineService)

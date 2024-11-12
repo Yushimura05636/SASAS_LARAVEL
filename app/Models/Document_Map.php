@@ -7,6 +7,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Document_Map extends DBLibrary
 {
@@ -28,4 +29,9 @@ class Document_Map extends DBLibrary
     protected $fillable = [
         'description',
     ];
+
+    public function documentPermission(): HasMany
+    {
+        return $this->hasMany(Document_Permission::class, 'id', 'document_map_code');
+    }
 }

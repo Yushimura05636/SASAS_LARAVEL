@@ -123,16 +123,9 @@ class DatabaseSeeder extends Seeder
         ];
 
         $customer_group = [
-            'Apple',
-            'Banana',
-            'Orange',
-            'Mango',
-            'Pineapple',
-            'Grapes',
-            'Strawberry',
-            'Blueberry',
-            'Watermelon',
-            'Kiwi'
+            ["collector_id" => 1, "name" => "Apple", "members" => 5],
+            ["collector_id" => 2, "name" => "Banan", "members" => 8],
+            ["collector_id" => 3, "name" => "Orange", "members" => 12],
         ];
 
         $documentMap = [
@@ -166,7 +159,7 @@ class DatabaseSeeder extends Seeder
         }
 
         foreach ($customer_group as $name) {
-            Customer_Group::createEntry($name); // No duplicates, direct array iteration
+            Customer_Group::createEntry($name['name'], $name['collector_id']); // No duplicates, direct array iteration
         }
 
         foreach ($personality_status_map as $name) {

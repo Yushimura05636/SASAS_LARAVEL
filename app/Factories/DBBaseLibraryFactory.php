@@ -42,6 +42,8 @@ class DBBaseLibraryFactory
     public $description;
     private $action;
 
+    private $collector_id;
+
     public $bool;
 
     private $paginate;
@@ -69,6 +71,8 @@ class DBBaseLibraryFactory
             $this->description = $payload->description;
             //else the $modeltype will use the object $payload->modeltype
             $this->modeltype = $payload->modeltype;
+
+            $this->collector_id = $payload->collector_id;
         }
 
         $this->id = $id;
@@ -95,7 +99,7 @@ class DBBaseLibraryFactory
                 'Error';
         }
     }
-    public static function createEntry($modeltype, $description)
+    public static function createEntry($modeltype, $description, $collector_id = null)
     {
         // return response()->json([
         //     'status' => 'error', // Or 'success' depending on your logic
@@ -137,7 +141,7 @@ class DBBaseLibraryFactory
             case 'name_type':
                 return Name_Type::createEntry($description);
             case 'customer_group':
-                return Customer_Group::createEntry($description);
+                return Customer_Group::createEntry($description, $collector_id);
             case 'document_status_code':
                 return Document_Status_code::createEntry($description);
             case 'requirement':

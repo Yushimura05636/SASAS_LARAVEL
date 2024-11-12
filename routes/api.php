@@ -684,6 +684,18 @@ Route::middleware('auth:sanctum')->prefix('HOLIDAYS')->group(function () use ($H
 
 }
 
+Route::middleware('auth:sanctum')->prefix('COLLECTORS')->group(function () {
+
+    //show only the user with collector permission
+    //collector permission consists of
+    //customer_group
+    //payments
+    //payment_schedules
+    //payment_line
+    //customer
+    Route::get('/NoAUTH', [UserController::class, 'getOnlyCollectorPermissions']);
+});
+
 // REGISTER FOR CUSTOMER IN LANDING PAGE
 Route::prefix('REGISTER_LIBRARIES')->group(function () {
     Route::get('/NoAUTH/{modeltype}', [DBLibraryController::class, 'index']);

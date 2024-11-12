@@ -16,6 +16,10 @@ return new class extends Migration
         Schema::create('customer_group', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('description');
+            $table->unsignedBigInteger('collector_id')->nullable();
+
+            //freign
+            $table->foreign('collector_id')->references('id')->on('user_account')->onDelete('cascade');
 
             #constraints
             $table->unique('description');

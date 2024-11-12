@@ -6,8 +6,10 @@ use App\Http\Requests\CustomerStoreRequest;
 use App\Http\Requests\CustomerUpdateRequest;
 use App\Http\Requests\PersonalityStoreRequest;
 use App\Http\Requests\PersonalityUpdateRequest;
+use App\Http\Requests\UserStoreRequest;
 use App\Http\Resources\CustomerResource;
 use App\Http\Resources\PersonalityResource;
+use App\Http\Resources\UserResource;
 use App\Interface\Service\CustomerServiceInterface;
 use App\Interface\Service\PersonalityServiceInterface;
 use App\Models\Credit_Status;
@@ -19,6 +21,7 @@ use App\Models\Loan_Application;
 use App\Models\Payment_Schedule;
 use App\Models\Personality;
 use App\Models\Personality_Status_Map;
+use App\Models\User_Account;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -808,31 +811,36 @@ class CustomerPersonalityController extends Controller
         }
     }
 
-    public function storeForRegistration(Request $request, PaymentScheduleController $paymentScheduleController, LoanApplicationFeeController $loanApplicationFeeController, CustomerRequirementController $customerRequirementController, CustomerController $customerController, PersonalityController $personalityController)
-    {
+    public function storeForRegistration(
+        Request $request,
+        PaymentScheduleController $paymentScheduleController,
+        CustomerController $customerController,
+        PersonalityController $personalityController,
+        UserController $userAccount
+    ) {
         // Summons the storeRequest from both controllers
         $customerStoreRequest = new CustomerStoreRequest();
         $personalityStoreRequest = new PersonalityStoreRequest();
-
+        $userStoreRequest = new UserStoreRequest(); // Already existing validation class for users
+    
         // Access the customer and personality data
         $customerData = $request->input('customer');
         $personalityData = $request->input('personality');
-        $requirementDatas = $request->input('requirements');
         $customerFees = $request->input('fees');
-
-         //get the personality status code
+    
+        // Get the personality status code
         $personalityStatusId = Personality_Status_Map::where('description', 'Pending')->first()->id;
-
-         //set the personality status code
         $personalityData['personality_status_code'] = $personalityStatusId;
-
+    
+        // Ensure datetime_registered is set, default to current date if not provided
+        $personalityData['datetime_registered'] = $personalityData['datetime_registered'] ?? now()->toDateTimeString();
+    
         // Merge data for validation
         $datas = array_merge($customerData, $personalityData);
         $rules = array_merge($customerStoreRequest->rules(), $personalityStoreRequest->rules());
-
+    
         // Validate data
         $validate = Validator::make($datas, $rules);
-
         if ($validate->fails()) {
             return response()->json([
                 'message' => 'Validation error!',
@@ -840,38 +848,37 @@ class CustomerPersonalityController extends Controller
                 'error' => $validate->errors(),
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
-
+    
         try {
             // Start a database transaction
             DB::beginTransaction();
-
+    
             // First, store the personality
-            $personalityResponse = $personalityController->store(new Request($personalityData));
-
+            $requestForPersonality = new Request();
+            $requestForPersonality->merge($personalityData);
+            $personalityResponse = $personalityController->store($requestForPersonality);
+    
             // Attempt to find the personality by first name, family name, and middle name
             $personality = Personality::where('first_name', $personalityData['first_name'])
                 ->where('family_name', $personalityData['family_name'])
                 ->where('middle_name', $personalityData['middle_name'])
-                ->firstOrFail(); // This will throw an exception if not found
-
+                ->firstOrFail();
+    
             // Get the ID of the found personality
             $id = $personality->id;
-
+    
             // Then put the ID to personality_id in customer
             $customerData['personality_id'] = $id;
-            $customerResponse = $customerController->store(new Request($customerData));
-
+    
+            $requestForCustomer = new Request();
+            $requestForCustomer->merge($customerData);
+            $customerResponse = $customerController->store($requestForCustomer);
+    
             $customer_id = Customer::where('passbook_no', $customerData['passbook_no'])->first()->id;
-
-            // return response()->json([
-            //     'message' => $customer_id,
-            // ], Response::HTTP_BAD_REQUEST);
-
-            //create membership payment
-            foreach($customerFees as $fee)
-            {
-                if(!is_null($fee))
-                {
+    
+            // Create membership payment
+            foreach ($customerFees as $fee) {
+                if (!is_null($fee)) {
                     $payload = [
                         'customer_id' => $customer_id,
                         'loan_released_id' => null,
@@ -882,43 +889,53 @@ class CustomerPersonalityController extends Controller
                         'payment_status_code' => 'UNPAID',
                         'remarks' => null,
                     ];
-
-                    $payload = new Request($payload);
-
-                    // $success = $loanApplicationFeeController->store($payload);
-
-                    //create a schedules for payments
-                    $success = $paymentScheduleController->store($payload);
-
-                    if(!$success || is_null($success))
-                    {
-                        throw new \Exception('Error payment schedule');
+    
+                    $requestForPayment = new Request($payload);
+                    $success = $paymentScheduleController->store($requestForPayment);
+    
+                    if (!$success || is_null($success)) {
+                        throw new \Exception('Error creating payment schedule');
                     }
                 }
             }
-
-            // throw new \Exception('error');
-
-
+    
+            // Prepare User_Account payload
+            $userPayload = (object)[
+                'customer_id' => $customer_id,
+                'email' => $personalityData['email_address'],
+                'last_name' => $personalityData['family_name'],
+                'first_name' => $personalityData['first_name'],
+                'middle_name' => $personalityData['middle_name'],
+                'phone_number' => $personalityData['cellphone_no'],
+                'password' => $request->input('password'), // Ensure password is provided in the request
+                'status_id' => $personalityStatusId,
+            ];
+    
+            // Create a new UserStoreRequest and merge the payload data
+            $userRequest = new UserStoreRequest();
+            $userRequest->merge((array)$userPayload); // Merge the data into the request object
+    
+            // Call the store method for User_Account
+            $userAccountResponse = $userAccount->store($userRequest); // Now passing UserStoreRequest
+    
             // Commit the transaction
             DB::commit();
-
+    
             return response()->json([
-                'message' => 'Both Customer and Personality saved successfully',
+                'message' => 'Customer, Personality, and User Account saved successfully',
                 'customer' => new CustomerResource($customerResponse), // Use resource class
                 'personality' => new PersonalityResource($personalityResponse), // Use resource class
+                'user_account' => new UserResource($userAccountResponse),
             ], Response::HTTP_OK);
-
+    
         } catch (ModelNotFoundException $e) {
-            // Rollback transaction on model not found
             DB::rollBack();
             return response()->json([
                 'message' => 'Personality not found.',
                 'error' => $e->getMessage(),
             ], Response::HTTP_NOT_FOUND);
-
+    
         } catch (\Exception $e) {
-            // Rollback transaction on any other exception
             DB::rollBack();
             return response()->json([
                 'message' => 'An error occurred while saving data.',
@@ -926,4 +943,7 @@ class CustomerPersonalityController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
+    
+    
+    
 }

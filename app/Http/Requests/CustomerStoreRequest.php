@@ -28,7 +28,6 @@ class CustomerStoreRequest extends FormRequest
             'enable_mortuary' =>            ['nullable', 'integer'],
             'mortuary_coverage_start' =>    ['nullable', 'date'],
             'motuary_coverage_end' =>       ['nullable', 'date'],
-            'password' =>                   ['required', 'string'],
             'personality_id' =>             ['nullable', 'integer'],
             
         ];

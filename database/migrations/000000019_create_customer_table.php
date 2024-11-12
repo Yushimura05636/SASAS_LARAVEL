@@ -22,8 +22,7 @@ return new class extends Migration
             $table->dateTime('mortuary_coverage_start')->nullable();
             $table->dateTime('mortuary_coverage_end')->nullable();
             $table->unsignedBigInteger('personality_id'); #foreign key
-            $table->string('password');
-
+            
             #constraints
             $table->foreign('group_id')->references('id')->on('customer_group')->onDelete('cascade');
             $table->foreign('personality_id')->references('id')->on('personality')->onDelete('cascade');

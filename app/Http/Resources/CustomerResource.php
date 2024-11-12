@@ -23,7 +23,6 @@ class CustomerResource extends JsonResource
             'mortuary_coverage_start' => $this->mortuary_coverage_start,
             'mortuary_coverage_end' => $this->mortuary_coverage_end,
             'personality_id' => $this->personality_id,
-            'password' => $this->password,
             'personality' => [
                 'first_name' => $this->personality->first_name, 
                 'middle_name' => $this->personality->middle_name,   // Access personality first_name

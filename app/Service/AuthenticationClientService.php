@@ -5,8 +5,10 @@ namespace App\Service;
 use App\Http\Resources\AuthResource;
 use App\Http\Resources\CustomerResource;
 use App\Http\Resources\CustomerResourceCollection;
+use App\Http\Resources\UserResource;
 use App\Interface\Repository\CustomerRepositoryInterface;
 use App\Interface\Repository\PersonalityRepositoryInterface;
+use App\Interface\Repository\UserRepositoryInterface;
 use App\Interface\Service\AuthenticationClientServiceInterface;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Hash;
@@ -14,62 +16,47 @@ use Illuminate\Support\Facades\Log;
 
 class AuthenticationClientService implements AuthenticationClientServiceInterface
 {
-    private $customerRepository;
-    private $personalityRepository;
+    private $userRepository;
 
-    public function __construct(CustomerRepositoryInterface $customerRepository, PersonalityRepositoryInterface $personalityRepository)
+    public function __construct(UserRepositoryInterface $userRepository)
     {
-        $this->customerRepository = $customerRepository;
-        $this->personalityRepository = $personalityRepository;
+        $this->userRepository = $userRepository;
     }
 
-public function authenticate(object $payload)
-{ 
-    // Get the personality record based on email
-    $personality = $this->personalityRepository->findByEmail($payload->email);
+    public function authenticate(object $payload)
+{
+    $user = $this->userRepository->findByEmail($payload->email);
 
-    // return response()->json([
-    //     'personality' => $personality
-    // ]);
-
-
-    if (!$personality) {
+    if (!$user) {
         return response()->json([
-            'error' => 'No customer account found with this email'
+            'error' => 'No account found'
         ], Response::HTTP_UNAUTHORIZED);
     }
 
-    // Get the customer record based on personality_id
-    $customer = $this->customerRepository->findByPersonalityId($personality->id);
-    
-    if (!$customer) {
+    // Check if the user has a customer_id
+    if (is_null($user->customer_id)) {
         return response()->json([
-            'error' => 'No associated customer found'
+            'error' => 'Account has no associated customer ID'
         ], Response::HTTP_UNAUTHORIZED);
     }
 
-    // Check the password in the customer table
-    if (!Hash::check($payload->password, $customer->password)) {
+    if (!Hash::check($payload->password, $user->password)) {
         return response()->json([
             'error' => 'Invalid Credentials'
         ], Response::HTTP_UNAUTHORIZED);
     }
 
-
-    // Generate token if needed
-    // $token = $customer->createToken('auth-token')->plainTextToken;
+    // You can create a token here if needed
+    //$token = $user->createToken('auth-token')->plainTextToken;
 
     $data = (object) [
-        // 'token' => $token,
-        'user' => new CustomerResource($customer)
+        //'token' => $token,
+        'user' => new UserResource($user)
     ];
-
-    // return response()->json([
-    //     'customer' => $customer
-    // ]);
 
     return new AuthResource($data);
 }
+
 
 
     public function unauthenticate(object $payload)

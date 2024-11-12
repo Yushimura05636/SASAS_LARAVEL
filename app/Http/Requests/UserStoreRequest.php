@@ -22,12 +22,13 @@ class UserStoreRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'employee_id' => ['required', 'integer'],
-            'last_name' => ['required', 'string'],
-            'middle_name' => ['required', 'string'],
-            'first_name' => ['required', 'string'],
-            'password' => ['required', 'string'],
-            'status_id' => ['required', 'integer'],
+            'employee_id' =>    ['nullable', 'integer'],
+            'customer_id' =>    ['nullable', 'integer'],
+            'last_name' =>      ['required', 'string'],
+            'middle_name' =>    ['required', 'string'],
+            'first_name' =>     ['required', 'string'],
+            'password' =>       ['required', 'string'],
+            'status_id' =>      ['required', 'integer'],
         ];
     }
 }

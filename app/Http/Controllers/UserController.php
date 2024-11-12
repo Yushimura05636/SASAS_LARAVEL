@@ -41,7 +41,21 @@ class UserController extends Controller
      */
     public function store(UserStoreRequest $request)
     {
-        return $this->userService->createUser($request);
+         // Prepare the payload with the request data
+        $userPayload = (object)[
+            'employee_id' => $request->input('employee_id'),
+            'customer_id' => $request->input('customer_id'),
+            'email' => $request->input('email'),
+            'last_name' => $request->input('last_name'),
+            'first_name' => $request->input('first_name'),
+            'middle_name' => $request->input('middle_name'),
+            'phone_number' => $request->input('phone_number'),
+            'password' => $request->input('password'),
+            'status_id' => $request->input('status_id'),
+        ];
+
+        // Pass the formatted payload to the service
+        return $this->userService->createUser($userPayload);
 
     }
 

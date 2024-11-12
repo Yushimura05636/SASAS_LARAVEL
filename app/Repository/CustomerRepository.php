@@ -33,8 +33,6 @@ class CustomerRepository implements CustomerRepositoryInterface
         $customer->mortuary_coverage_start = $payload->mortuary_coverage_start;
         $customer->mortuary_coverage_end = $payload->mortuary_coverage_end;
         $customer->personality_id = $payload->personality_id;
-        $customer->password = Hash::make($payload->password);
-
         $customer->save();
 
         return $customer->fresh();
@@ -50,8 +48,6 @@ class CustomerRepository implements CustomerRepositoryInterface
         $customer->mortuary_coverage_start = $payload->mortuary_coverage_start;
         $customer->mortuary_coverage_end = $payload->mortuary_coverage_end;
         $customer->personality_id = $payload->personality_id;
-        $customer->password = Hash::make($payload->password);
-
         $customer->save();
 
         return $customer->fresh();

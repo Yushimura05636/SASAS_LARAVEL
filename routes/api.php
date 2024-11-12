@@ -130,10 +130,12 @@ Route::middleware('auth:sanctum')->prefix('USERS')->group(function () use ($USER
     Route::delete('/{id}', [UserController::class, 'destroy'])->middleware("document_access:$USER_ACCOUNTS, $DELETE");
 });
 
+
 Route::post('/loginClient', [AuthController::class, 'clientLogin']);
 //2FA
 Route::post('/client/SendVerification', [CustomerController::class, 'sendCode']);
 Route::post('/client/VerifyVerification/{code}', [CustomerController::class, 'verifyCode']);
+
 
 // Authentication routes
 Route::post('/login', [AuthController::class, 'login']);
@@ -682,6 +684,8 @@ Route::middleware('auth:sanctum')->prefix('HOLIDAYS')->group(function () use ($H
 });
 
 }
+
+
 
 // REGISTER FOR CUSTOMER IN LANDING PAGE
 Route::prefix('REGISTER_LIBRARIES')->group(function () {

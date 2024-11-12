@@ -18,9 +18,6 @@ return new class extends Migration
             $table->string('description');
             $table->unsignedBigInteger('collector_id')->nullable();
 
-            //freign
-            $table->foreign('collector_id')->references('id')->on('user_account')->onDelete('cascade');
-
             #constraints
             $table->unique('description');
             $table->timestamps();

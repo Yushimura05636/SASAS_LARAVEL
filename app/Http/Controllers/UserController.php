@@ -6,7 +6,12 @@ use App\Http\Requests\UserStoreRequest;
 use App\Http\Requests\UserUpdateRequest;
 use App\Interface\Service\UserServiceInterface;
 use App\Mail\TwoFactorCodeMail;
+use App\Models\Customer;
 use App\Models\Document_Map;
+use App\Models\Document_Status_Code;
+use App\Models\Loan_Application;
+use App\Models\Payment;
+use App\Models\Payment_Schedule;
 use App\Models\User_Account;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -42,7 +47,21 @@ class UserController extends Controller
      */
     public function store(UserStoreRequest $request)
     {
-        return $this->userService->createUser($request);
+         // Prepare the payload with the request data
+        $userPayload = (object)[
+            'employee_id' => $request->input('employee_id'),
+            'customer_id' => $request->input('customer_id'),
+            'email' => $request->input('email'),
+            'last_name' => $request->input('last_name'),
+            'first_name' => $request->input('first_name'),
+            'middle_name' => $request->input('middle_name'),
+            'phone_number' => $request->input('phone_number'),
+            'password' => $request->input('password'),
+            'status_id' => $request->input('status_id'),
+        ];
+
+        // Pass the formatted payload to the service
+        return $this->userService->createUser($userPayload);
 
     }
 
@@ -271,6 +290,101 @@ class UserController extends Controller
 
         $user_details = User_Account::where('id', $user_id)->first();
 
-        return response()->json(['data' => $user], Response::HTTP_OK);
+        $role = null;
+        if(is_null($user_details->customer_id))
+        {
+            $role = 'EMPLOYEE';   
+        }
+        else
+        {
+            $role = 'CUSTOMER';
+        }
+
+        return response()->json(['data' => $user_details, 'role' => $role], Response::HTTP_OK);
     }
+
+    public function showUserLoanDetails()
+{
+    $user_id = auth()->user()->id;
+
+    $user_details = User_Account::where('id', $user_id)->first();
+
+    // Check if the user is an employee or a customer
+    if (is_null($user_details->customer_id)) {
+        return response()->json(['data' => $user_details, 'role' => 'EMPLOYEE'], Response::HTTP_OK);
+    }
+
+    // Customer role setup
+    $role = 'CUSTOMER';
+    $outstanding_balance = Payment_Schedule::where('customer_id', $user_details->customer_id)
+        ->whereNotIn('payment_status_code', ['PAID', 'PARTIALLY PAID', 'FORWARDED'])
+        ->sum('amount_due') ?? 0;
+
+    $total_balances = Payment_Schedule::where('customer_id', $user_details->customer_id)
+        ->whereIn('payment_status_code', ['PAID', 'PARTIALLY PAID', 'UNPAID'])
+        ->sum('amount_due') ?? 0;
+
+    $total_payments = Payment_Schedule::where('customer_id', $user_details->customer_id)
+        ->whereIn('payment_status_code', ['PAID', 'PARTIALLY PAID'])
+        ->sum('amount_paid') ?? 0;
+
+    $payment_history = Payment::where('customer_id', $user_details->customer_id)->get();
+    $loan_history = Loan_Application::where('customer_id', $user_details->customer_id)->get();
+
+    // Get the status codes for Approved and Pending loan applications
+    $approveIds = Document_Status_Code::where('description', 'like', '%Approved%')->pluck('id')->toArray();
+    $pendingIds = Document_Status_Code::where('description', 'like', '%Pending%')->pluck('id')->toArray();
+
+    $number_of_loans = Loan_Application::where('customer_id', $user_details->customer_id)
+        ->whereIn('document_status_code', array_merge($approveIds, $pendingIds))
+        ->count();
+
+    // Get the current customer by customer_id from user_details
+    $currentCustomer = Customer::where('id', $user_details->customer_id)->first();
+
+    // Initialize the flag to check reloan possibility
+    $can_reloan = true;
+
+    // Ensure customer exists before proceeding
+    if ($currentCustomer) {
+        // Get the group_id of the current customer
+        $customerGroupId = $currentCustomer->group_id;
+
+        // Get all other customers in the same group
+        $groupCustomers = Customer::where('group_id', $customerGroupId)
+            ->with('personality')  // Include related personality data
+            ->orderBy('personality_id')
+            ->get();
+
+        // Loop through each customer in the group
+        foreach ($groupCustomers as $customer) {
+            if ($customer) {
+                // Check if there are any unpaid or partially paid payment schedules
+                $canReloan = Payment_Schedule::where('customer_id', $customer->id)
+                    ->whereNotIn('payment_status_code', ['PAID', 'PARTIALLY PAID', 'FORWARDED'])
+                    ->whereIn('payment_status_code', ['UNPAID', 'PARTIALLY PAID'])
+                    ->exists(); // returns true if any records found
+
+                // If there are payment issues, set can_reloan to false
+                if ($canReloan) {
+                    $can_reloan = false;
+                    break;  // No need to check further once we know the group can't reloan
+                }
+            }
+        }
+    }
+
+    // Prepare the data for the response
+    return response()->json([
+        'data' => $user_details,
+        'role' => $role,
+        'outstanding_balance' => $outstanding_balance,
+        'total_balances' => $total_balances,
+        'total_payments' => $total_payments,
+        'payment_history' => $payment_history,
+        'loan_history' => $loan_history,
+        'number_of_loans' => $number_of_loans,
+        'can_reloan' => $can_reloan  // Add the reloan status to the response
+    ], Response::HTTP_OK);
+}
 }

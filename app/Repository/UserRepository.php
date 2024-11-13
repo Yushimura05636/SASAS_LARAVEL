@@ -29,13 +29,15 @@ class UserRepository implements UserRepositoryInterface
     public function create(object $payload)
     {
         $user = new User_Account();
-        $user->employee_id = $payload->employee_id;
-        $user->email = $payload->email;
-        $user->last_name = $payload->last_name;
-        $user->first_name = $payload->first_name;
-        $user->middle_name = $payload->middle_name;
-        $user->password = Hash::make($payload->password);
-        $user->status_id = $payload->status_id;
+        $user->employee_id =    $payload->employee_id;
+        $user->customer_id =    $payload->customer_id;
+        $user->email =          $payload->email;
+        $user->last_name =      $payload->last_name;
+        $user->first_name =     $payload->first_name;
+        $user->middle_name =    $payload->middle_name;
+        $user->phone_number =   $payload->phone_number;
+        $user->password =       $payload->password;
+        $user->status_id =      $payload->status_id;
         $user->save();
 
         return $user->fresh();

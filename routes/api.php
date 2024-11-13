@@ -25,6 +25,7 @@ use App\Http\Controllers\PaymentFrequencyController;
 use App\Http\Controllers\PaymentLineController;
 use App\Http\Controllers\PaymentScheduleController;
 use App\Http\Controllers\PersonalityController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\RequirementController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\UserController;
@@ -129,10 +130,12 @@ Route::middleware('auth:sanctum')->prefix('USERS')->group(function () use ($USER
     Route::delete('/{id}', [UserController::class, 'destroy'])->middleware("document_access:$USER_ACCOUNTS, $DELETE");
 });
 
+
 Route::post('/loginClient', [AuthController::class, 'clientLogin']);
 //2FA
 Route::post('/client/SendVerification', [CustomerController::class, 'sendCode']);
 Route::post('/client/VerifyVerification/{code}', [CustomerController::class, 'verifyCode']);
+
 
 // Authentication routes
 Route::post('/login', [AuthController::class, 'login']);
@@ -732,6 +735,12 @@ Route::get('GRAPHS/NoAUTH/Data/All', [GraphDataController::class, 'index']);
 Route::get('/NoAUTH/CustomerAPPROVE', [CustomerPersonalityController::class, 'indexApprove']);
 Route::get('/customerWithPending/NoAUTH/{id}', [LoanApplicationController::class, 'seeWithPending']);
 
+
+//REPORTS TEST
+Route::get('REPORTS', [ReportController::class, 'index']);
+
 Route::middleware('auth:sanctum')->prefix('DASHBOARD')->group(function () {
     Route::get('/NoAUTH/USER/DETAILS', [UserController::class, 'showUserDetails']);
+    Route::get('/NoAUTH/USER/LOAN/DETAILS', [UserController::class, 'showUserLoanDetails']);
+    
 });

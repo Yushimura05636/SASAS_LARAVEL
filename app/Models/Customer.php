@@ -33,7 +33,6 @@ class Customer extends Model
         'motuary_coverage_start',
         'mortuary_coverage_end',
         'personality_id',
-        'password',
     ];
 
     /**

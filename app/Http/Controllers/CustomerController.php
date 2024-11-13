@@ -51,10 +51,10 @@ class CustomerController extends Controller
     public function sendCode(Request $request)
     {
         //return response()->json(['message', $request->all()], Response::HTTP_INTERNAL_SERVER_ERROR);
-        $request->validate(['email_address' => 'required']);
+        $request->validate(['email' => 'required']);
         $request->validate(['method' => 'required']);
 
-        if($request->method == 'email_address')
+        if($request->method == 'email')
         {
             $emailVerification = new EmailVerificationController($request);
             return $emailVerification->sendEmailClientVerification();
@@ -79,13 +79,13 @@ class CustomerController extends Controller
 
     public function verifyCode(Request $request)
     {
-        $request->validate(['email_address' => 'required']);
+        $request->validate(['email' => 'required']);
         // return response()->json([
         //     'message' => 'hello',
         // ], Response::HTTP_INTERNAL_SERVER_ERROR);
         // $request->validate(['code' => 'required', 'email' => 'required']);
 
-        if($request->method == 'email_address')
+        if($request->method == 'email')
         {
             $request->validate(['code' => 'required']);
             $verifyEmail = new EmailVerificationController($request);

@@ -214,6 +214,12 @@ class UserController extends Controller
             return response()->json(['success' => false, 'message' => 'Password update failed'], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
 
+        $role = 'CUSTOMER';
+        if(is_null($user->customer_id))
+        {
+            $role = 'EMPLOYEE';
+        }
+
         // Commit transaction and return success response
         DB::commit();
 
@@ -222,7 +228,7 @@ class UserController extends Controller
         ->where('email', $request->email)
         ->delete();
 
-        return response()->json(['success' => true, 'message' => 'Password updated successfully'], Response::HTTP_OK);
+        return response()->json(['success' => true, 'message' => 'Password updated successfully', 'role' => $role], Response::HTTP_OK);
 
     } catch (\Exception $e) {
         // Rollback in case of any exception
@@ -319,7 +325,7 @@ class UserController extends Controller
     // Customer role setup
     $role = 'CUSTOMER';
     
-    $outstanding_balance = Payment_Schedule::where('customer_id', 9)
+    $outstanding_balance = Payment_Schedule::where('customer_id', $user_details->customer_id)
     ->whereNotIn('payment_status_code', ['PAID', 'PARTIALLY PAID, FORWARDED'])
     ->selectRaw('IFNULL(SUM(amount_due) - SUM(amount_paid), 0) as outstanding_balance')
     ->value('outstanding_balance');

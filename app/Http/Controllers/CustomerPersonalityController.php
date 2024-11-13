@@ -767,6 +767,8 @@ class CustomerPersonalityController extends Controller
         {
             if(!is_null($customer))
             {
+
+                //the right approach here is it should only read the suspended and active
                 $canReloan = Payment_Schedule::where('customer_id', $customer->id)
                 ->whereNotIn('payment_status_code', ['PAID', 'PARTIALLY PAID, FORWARDED'])
                 ->where('payment_status_code', ['UNPAID', 'PARTIALLY PAID'])

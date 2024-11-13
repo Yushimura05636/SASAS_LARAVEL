@@ -12,6 +12,8 @@ use App\Models\Document_Status_Code;
 use App\Models\Loan_Application;
 use App\Models\Payment;
 use App\Models\Payment_Schedule;
+use App\Models\Personality;
+use App\Models\Personality_Status_Map;
 use App\Models\User_Account;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -345,8 +347,24 @@ class UserController extends Controller
     // Initialize the flag to check reloan possibility
     $can_reloan = true;
 
+    $personality_status_code = Personality_Status_Map::where('description', 'like', '%Approved%')
+    ->first();
+
+    if ($personality_status_code) {
+        $isApproved = Personality::where('id', $currentCustomer->personality_id)
+            ->where('personality_status_code', $personality_status_code->id) // or relevant field
+            ->exists();
+
+        if(!$isApproved) {
+            $can_reloan = false;
+        }
+    } else {
+        // Handle case where no approved status is found (if needed)
+        $can_reloan = false;
+    }
+
     // Ensure customer exists before proceeding
-    if ($currentCustomer) {
+    if ($currentCustomer && $can_reloan == true) {
         // Get the group_id of the current customer
         $customerGroupId = $currentCustomer->group_id;
 

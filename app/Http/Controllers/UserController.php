@@ -318,9 +318,11 @@ class UserController extends Controller
 
     // Customer role setup
     $role = 'CUSTOMER';
-    $outstanding_balance = Payment_Schedule::where('customer_id', $user_details->customer_id)
-        ->whereNotIn('payment_status_code', ['PAID', 'PARTIALLY PAID', 'FORWARDED'])
-        ->sum('amount_due') ?? 0;
+    
+    $outstanding_balance = Payment_Schedule::where('customer_id', 9)
+    ->whereNotIn('payment_status_code', ['PAID', 'PARTIALLY PAID, FORWARDED'])
+    ->selectRaw('IFNULL(SUM(amount_due) - SUM(amount_paid), 0) as outstanding_balance')
+    ->value('outstanding_balance');
 
     $total_balances = Payment_Schedule::where('customer_id', $user_details->customer_id)
         ->whereIn('payment_status_code', ['PAID', 'PARTIALLY PAID', 'UNPAID'])

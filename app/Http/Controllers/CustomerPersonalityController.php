@@ -298,7 +298,7 @@ class CustomerPersonalityController extends Controller
     {
         // Get the personality status code for "Approved"
         //$personalityId = Personality_Status_Map::where('description', 'like', '%Approved%')->first()->id;
-        $creditId = Credit_Status::where('description', 'like', '%Active%')->first()->id;
+        // $creditId = Credit_Status::where('description', 'like', '%Active%')->first()->id;
         $customers = Customer::get();
 
         $customerData = [];
@@ -306,15 +306,18 @@ class CustomerPersonalityController extends Controller
         // Loop through each customer
         foreach ($customers as $customer) {
             // Find payment dues
-            $paymentdues = Payment_Schedule::where('customer_id', $customer->id)->exists();
+            $paymentdues = Payment_Schedule::where('customer_id', $customer->id)
+            ->whereIn('payment_status_code', ['UNPAID', 'PARTIALLY PAID'])
+            ->exists() ?? 0;
 
-            if(!is_null($paymentdues))
+            //return response()->json(['message' => $paymentdues], Response::HTTP_INTERNAL_SERVER_ERROR);
+
+            if(!is_null($paymentdues) && $paymentdues != false)
             {
 
                 // Find the related personality with the "Approved" status
                 $customerPersonality = Personality::where('id', $customer->personality_id)
-                    ->where('credit_status_id', $creditId)
-                    ->first();
+                ->first();
 
                 // If an approved personality is found, add both customer and personality to the result array
                 if ($customerPersonality) {
@@ -751,21 +754,26 @@ class CustomerPersonalityController extends Controller
 
     }
 
-    public function showGroupWithData(int $id)
+    public function showGroupWithDataOnlyActive(int $id)
     {
         //get first the approve id
-        //$personalityStatusId = Personality_Status_Map::where('description', 'Approved')->first()->id;
+        $personalityStatusId = Personality_Status_Map::where('description', 'Approved')->first()->id;
         
+        $personalityCreditStatusId = Credit_Status::where('description', 'like', '%Active%')->first()->id;
+
         //check if the group can reloan
-        
         $customers = Customer::where('group_id', $id)
-        ->with('personality')  // Include related personality data
+        ->with(['personality' => function($query) use ($personalityStatusId, $personalityCreditStatusId) {
+            $query->where('personality_status_code', $personalityStatusId)  // Filter for active status
+                ->where('credit_status_id', $personalityCreditStatusId);
+        }])
         ->orderBy('personality_id')
         ->get();
 
+        
         foreach($customers as $customer)
         {
-            if(!is_null($customer))
+            if(!is_null($customer) && !is_null($customer->personality))
             {
 
                 //the right approach here is it should only read the suspended and active
@@ -805,7 +813,50 @@ class CustomerPersonalityController extends Controller
         foreach ($customers as $customer) {
             if(!is_null($customer))
             {
-                $customerDatas[] = $customer; // Using array shorthand
+                if(!is_null($customer->personality))
+                {
+                    $customerDatas[] = $customer;
+                } // Using array shorthand
+            }
+            // if ($customer['personality']['personality_status_code'] == $personalityStatusId) {
+            // }
+        }
+
+        // return response()->json([
+        //     'message group' => $customerDatas,
+        // ], Response::HTTP_INTERNAL_SERVER_ERROR);
+
+        if(!count($customerDatas) > 0)
+        {
+            return response()->json([
+                'message' => 'there is no customer in this group'
+            ], Response::HTTP_NOT_FOUND);
+        }
+
+        return response()->json([
+            'data' => $customerDatas,
+        ]);
+    }
+
+    public function showGroupWithData(int $id)
+    {
+        //get first the approve id
+        //$personalityStatusId = Personality_Status_Map::where('description', 'Approved')->first()->id;
+        
+        //$personalityCreditStatusId = Credit_Status::where('description', 'like', '%Active%')->first()->id;
+
+        //check if the group can reloan
+        $customers = Customer::where('group_id', $id)
+        ->with('personality')
+        ->orderBy('personality_id')
+        ->get();
+
+        $customerDatas = [];
+
+        foreach ($customers as $customer) {
+            if(!is_null($customer))
+            {
+                $customerDatas[] = $customer;
             }
             // if ($customer['personality']['personality_status_code'] == $personalityStatusId) {
             // }

@@ -207,7 +207,8 @@ Route::middleware('auth:sanctum')->prefix('CUSTOMERS')->group(function () use ($
     Route::get('/NoAUTH/CustomerAPPROVEAndActiveWithPending', [CustomerPersonalityController::class, 'indexApproveActivePending']);
     Route::get('/GroupAPPROVE/{id}', [CustomerPersonalityController::class, 'showGroupApprove'])->middleware("document_access:$CUSTOMERS, $VIEW");
     Route::get('/NoAUTH/{id}', [CustomerPersonalityController::class, 'show']);
-    Route::get('/NoAUTH/Group/{id}', [CustomerPersonalityController::class, 'showGroupWithData']);
+    Route::get('/NoAUTH/Group/{id}', [CustomerPersonalityController::class, 'showGroupWithDataOnlyActive']);
+    Route::get('/NoAUTH/Group/Data/{id}', [CustomerPersonalityController::class, 'showGroupWithData']);
     Route::get('/NoAUTH/Customer/{id}', [CustomerPersonalityController::class, 'showCustomerWithData']);
     Route::get('/NoAUTH/GroupAPPROVE/{id}', [CustomerPersonalityController::class, 'showGroupApprove']);
     Route::get('/NoAUTH/GroupAPPROVEACTIVE/{id}', [CustomerPersonalityController::class, 'showGroupApproveActive']);

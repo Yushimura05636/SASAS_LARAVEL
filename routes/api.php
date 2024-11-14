@@ -52,7 +52,7 @@ $USER_ACCOUNTS = AuthPermission::USER_ACCOUNTS();
 $CUSTOMERS = AuthPermission::CUSTOMERS();
 $CUSTOMER_GROUPS = AuthPermission::CUSTOMER_GROUPS();
 $EMPLOYEES = AuthPermission::EMPLOYEES();
-$FACTORRATES = AuthPermission::FACTOR_RATES();
+$FACTOR_RATES = AuthPermission::FACTOR_RATES();
 $PAYMENT_DURATIONS = AuthPermission::PAYMENT_DURATIONS();
 $PAYMENT_FREQUENCIES = AuthPermission::PAYMENT_FREQUENCIES();
 $DOCUMENT_PERMISSIONS = AuthPermission::DOCUMENT_PERMISSIONS();
@@ -338,24 +338,24 @@ Route::middleware('auth:sanctum')->prefix('LOAN_COUNTS')->group(function () use 
 });
 
 // Factor Rate routes
-Route::middleware('auth:sanctum')->prefix('FACTOR_RATES')->group(function () use ($FACTORRATES, $VIEW, $CREATE, $UPDATE, $DELETE) {
-    Route::get('/', [FactorRateController::class, 'index'])->middleware("document_access:$FACTORRATES, $VIEW");
+Route::middleware('auth:sanctum')->prefix('FACTOR_RATES')->group(function () use ($FACTOR_RATES, $VIEW, $CREATE, $UPDATE, $DELETE) {
+    Route::get('/', [FactorRateController::class, 'index'])->middleware("document_access:$FACTOR_RATES, $VIEW");
     Route::get('/NoAUTH', [FactorRateController::class, 'index']);
     Route::get('/NoAUTH/{id}', [FactorRateController::class, 'show']);
-    Route::get('/{id}', [FactorRateController::class, 'show'])->middleware("document_access:$FACTORRATES, $VIEW");
-    Route::post('/', [FactorRateController::class, 'store'])->middleware("document_access:$FACTORRATES, $CREATE");
-    Route::put('/{id}', [FactorRateController::class, 'update'])->middleware("document_access:$FACTORRATES, $UPDATE");
-    Route::delete('/{id}', [FactorRateController::class, 'destroy'])->middleware("document_access:$FACTORRATES, $DELETE");
+    Route::get('/{id}', [FactorRateController::class, 'show'])->middleware("document_access:$FACTOR_RATES, $VIEW");
+    Route::post('/', [FactorRateController::class, 'store'])->middleware("document_access:$FACTOR_RATES, $CREATE");
+    Route::put('/{id}', [FactorRateController::class, 'update'])->middleware("document_access:$FACTOR_RATES, $UPDATE");
+    Route::delete('/{id}', [FactorRateController::class, 'destroy'])->middleware("document_access:$FACTOR_RATES, $DELETE");
 
     // Empty update route with PATCH
     Route::patch('/update', function () {
         return response()->json(['message' => 'Access granted']);
-    })->middleware("document_access:$FACTORRATES, $UPDATE");
+    })->middleware("document_access:$FACTOR_RATES, $UPDATE");
 
     // Empty create route with PATCH
     Route::patch('/create', function () {
         return response()->json(['message' => 'Access granted']);
-    })->middleware("document_access:$FACTORRATES, $CREATE");
+    })->middleware("document_access:$FACTOR_RATES, $CREATE");
 });
 
 // Payment Duration routes
@@ -686,6 +686,291 @@ Route::middleware('auth:sanctum')->prefix('HOLIDAYS')->group(function () use ($H
     Route::delete('/{id}', [HolidayController::class, 'destroy'])->middleware("document_access:$HOLIDAYS, $DELETE");
 });
 
+//
+//permissions
+
+//criteria
+//create
+//update
+//approve
+//reject
+
+//users
+Route::middleware('auth:sanctum')->prefix('USER_ACCOUNTS_AUTH')->group(function () use ($USER_ACCOUNTS, $VIEW, $CREATE, $UPDATE, $DELETE) {
+    
+    Route::patch('/update', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$USER_ACCOUNTS, $UPDATE");
+    
+    Route::patch('/create', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$USER_ACCOUNTS, $CREATE");
+});
+
+
+//customers
+Route::middleware('auth:sanctum')->prefix('CUSTOMERS_AUTH')->group(function () use ($CUSTOMERS, $VIEW, $CREATE, $UPDATE, $DELETE) {
+    Route::patch('/update', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$CUSTOMERS, $UPDATE");
+    
+    Route::patch('/create', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$CUSTOMERS, $CREATE");
+});
+
+
+//customers groups
+Route::middleware('auth:sanctum')->prefix('CUSTOMER_AUTH')->group(function () use ($CUSTOMER_GROUPS, $VIEW, $CREATE, $UPDATE, $DELETE) {
+    Route::patch('/update', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$CUSTOMER_GROUPS, $UPDATE");
+    
+    Route::patch('/create', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$CUSTOMER_GROUPS, $CREATE");
+});
+
+
+//customers requirements
+Route::middleware('auth:sanctum')->prefix('CUSTOMER_REQUIREMENTS_AUTH')->group(function () use ($CUSTOMER_REQUIREMENTS, $VIEW, $CREATE, $UPDATE, $DELETE) {
+    
+    Route::patch('/update', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$CUSTOMER_REQUIREMENTS, $UPDATE");
+    
+    Route::patch('/create', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$CUSTOMER_REQUIREMENTS, $CREATE");
+});
+
+
+//requirements
+Route::middleware('auth:sanctum')->prefix('REQUIREMENTS_AUTH')->group(function () use ($REQUIREMENTS, $VIEW, $CREATE, $UPDATE, $DELETE) {
+    Route::patch('/update', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$REQUIREMENTS, $UPDATE");
+    
+    Route::patch('/create', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$REQUIREMENTS, $CREATE");
+});
+
+
+//employees
+Route::middleware('auth:sanctum')->prefix('EMPLOYEES_AUTH')->group(function () use ($EMPLOYEES, $VIEW, $CREATE, $UPDATE, $DELETE) {
+    Route::patch('/update', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$EMPLOYEES, $UPDATE");
+    
+    Route::patch('/create', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$EMPLOYEES, $CREATE");
+});
+
+
+//libraries
+Route::middleware('auth:sanctum')->prefix('LIBRARIES_AUTH')->group(function () use ($LIBRARIES, $VIEW, $CREATE, $UPDATE, $DELETE) {
+    Route::patch('/update', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$LIBRARIES, $UPDATE");
+    
+    Route::patch('/create', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$LIBRARIES, $CREATE");
+});
+
+
+//factor rates
+Route::middleware('auth:sanctum')->prefix('FACTOR_RATES_AUTH')->group(function () use ($FACTOR_RATES, $VIEW, $CREATE, $UPDATE, $DELETE) {
+    Route::patch('/update', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$FACTOR_RATES, $UPDATE");
+    
+    Route::patch('/create', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$FACTOR_RATES, $CREATE");
+});
+
+
+//payment duration
+Route::middleware('auth:sanctum')->prefix('PAYMENT_DURATIONS_AUTH')->group(function () use ($PAYMENT_DURATIONS, $VIEW, $CREATE, $UPDATE, $DELETE) {
+    Route::patch('/update', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$PAYMENT_DURATIONS, $UPDATE");
+    
+    Route::patch('/create', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$PAYMENT_DURATIONS, $CREATE");
+});
+
+
+//payment frequencies
+Route::middleware('auth:sanctum')->prefix('PAYMENT_FREQUENCIES_AUTH')->group(function () use ($PAYMENT_FREQUENCIES, $VIEW, $CREATE, $UPDATE, $DELETE) {
+    Route::patch('/update', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$PAYMENT_FREQUENCIES, $UPDATE");
+    
+    Route::patch('/create', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$PAYMENT_FREQUENCIES, $CREATE");
+});
+
+
+//personalities
+Route::middleware('auth:sanctum')->prefix('PERSONALITIES_AUTH')->group(function () use ($PERSONALITIES, $VIEW, $CREATE, $UPDATE, $DELETE) {
+    Route::patch('/update', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$PERSONALITIES, $UPDATE");
+    
+    Route::patch('/create', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$PERSONALITIES, $CREATE");
+});
+
+//document maps
+Route::middleware('auth:sanctum')->prefix('DOCUMENT_MAPS_AUTH')->group(function () use ($DOCUMENT_MAPS, $VIEW, $CREATE, $UPDATE, $DELETE) {
+    Route::patch('/update', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$DOCUMENT_MAPS, $UPDATE");
+    
+    Route::patch('/create', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$DOCUMENT_MAPS, $CREATE");
+});
+
+//document map permission
+Route::middleware('auth:sanctum')->prefix('DOCUMENT_MAP_PERMISSIONS_AUTH')->group(function () use ($DOCUMENT_MAP_PERMISSIONS, $VIEW, $CREATE, $UPDATE, $DELETE) {
+    Route::patch('/update', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$DOCUMENT_MAP_PERMISSIONS, $UPDATE");
+    
+    Route::patch('/create', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$DOCUMENT_MAP_PERMISSIONS, $CREATE");
+});
+
+
+//document permission
+Route::middleware('auth:sanctum')->prefix('DOCUMENT_MAP_PERMISSIONS_AUTH')->group(function () use ($DOCUMENT_PERMISSIONS, $VIEW, $CREATE, $UPDATE, $DELETE) {
+    Route::patch('/update', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$DOCUMENT_PERMISSIONS, $UPDATE");
+    
+    Route::patch('/create', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$DOCUMENT_PERMISSIONS, $CREATE");
+});
+
+
+//document permission
+Route::middleware('auth:sanctum')->prefix('LOAN_COUNTS_AUTH')->group(function () use ($LOAN_COUNTS, $VIEW, $CREATE, $UPDATE, $DELETE) {
+    Route::patch('/update', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$LOAN_COUNTS, $UPDATE");
+    
+    Route::patch('/create', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$LOAN_COUNTS, $CREATE");
+});
+
+
+//fees
+Route::middleware('auth:sanctum')->prefix('FEES_AUTH')->group(function () use ($FEES, $VIEW, $CREATE, $UPDATE, $DELETE) {
+    Route::patch('/update', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$FEES, $UPDATE");
+    
+    Route::patch('/create', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$FEES, $CREATE");
+});
+
+
+//loan applications
+Route::middleware('auth:sanctum')->prefix('LOAN_APPLICATIONS_AUTH')->group(function () use ($LOAN_APPLICATIONS, $VIEW, $CREATE, $UPDATE, $DELETE) {
+    Route::patch('/update', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$LOAN_APPLICATIONS, $UPDATE");
+    
+    Route::patch('/create', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$LOAN_APPLICATIONS, $CREATE");
+});
+
+
+//loan application co makers
+Route::middleware('auth:sanctum')->prefix('LOAN_APPLICATION_COMAKERS_AUTH')->group(function () use ($LOAN_APPLICATION_COMAKERS, $VIEW, $CREATE, $UPDATE, $DELETE) {
+    Route::patch('/update', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$LOAN_APPLICATION_COMAKERS, $UPDATE");
+    
+    Route::patch('/create', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$LOAN_APPLICATION_COMAKERS, $CREATE");
+});
+
+
+//loan releases
+Route::middleware('auth:sanctum')->prefix('LOAN_RELEASES_AUTH')->group(function () use ($LOAN_RELEASES, $VIEW, $CREATE, $UPDATE, $DELETE) {
+    Route::patch('/update', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$LOAN_RELEASES, $UPDATE");
+    
+    Route::patch('/create', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$LOAN_RELEASES, $CREATE");
+});
+
+
+//payments
+Route::middleware('auth:sanctum')->prefix('LOAN_RELEASES_AUTH')->group(function () use ($PAYMENTS, $VIEW, $CREATE, $UPDATE, $DELETE) {
+    Route::patch('/update', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$PAYMENTS, $UPDATE");
+    
+    Route::patch('/create', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$PAYMENTS, $CREATE");
+});
+
+
+//payment schedules
+Route::middleware('auth:sanctum')->prefix('PAYMENT_SCHEDULES_AUTH')->group(function () use ($PAYMENT_SCHEDULES, $VIEW, $CREATE, $UPDATE, $DELETE) {
+    Route::patch('/update', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$PAYMENT_SCHEDULES, $UPDATE");
+    
+    Route::patch('/create', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$PAYMENT_SCHEDULES, $CREATE");
+});
+
+
+//payment lines
+Route::middleware('auth:sanctum')->prefix('PAYMENT_SCHEDULES_AUTH')->group(function () use ($PAYMENT_LINES, $VIEW, $CREATE, $UPDATE, $DELETE) {
+    Route::patch('/update', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$PAYMENT_LINES, $UPDATE");
+    
+    Route::patch('/create', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$PAYMENT_LINES, $CREATE");
+});
+
+
+
+//payment lines
+Route::middleware('auth:sanctum')->prefix('PAYMENT_SCHEDULES_AUTH')->group(function () use ($PAYMENT_LINES, $VIEW, $CREATE, $UPDATE, $DELETE) {
+    Route::patch('/update', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$PAYMENT_LINES, $UPDATE");
+    
+    Route::patch('/create', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$PAYMENT_LINES, $CREATE");
+});
+
 }
 
 Route::middleware('auth:sanctum')->prefix('COLLECTORS')->group(function () {
@@ -745,3 +1030,6 @@ Route::middleware('auth:sanctum')->prefix('DASHBOARD')->group(function () {
     Route::get('/NoAUTH/USER/LOAN/DETAILS', [UserController::class, 'showUserLoanDetails']);
     
 });
+
+
+

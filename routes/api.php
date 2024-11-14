@@ -924,7 +924,7 @@ Route::middleware('auth:sanctum')->prefix('LOAN_RELEASES_AUTH')->group(function 
 
 
 //payments
-Route::middleware('auth:sanctum')->prefix('LOAN_RELEASES_AUTH')->group(function () use ($PAYMENTS, $VIEW, $CREATE, $UPDATE, $DELETE) {
+Route::middleware('auth:sanctum')->prefix('PAYMENTS_AUTH')->group(function () use ($PAYMENTS, $VIEW, $CREATE, $UPDATE, $DELETE) {
     Route::patch('/update', function () {
         return response()->json(['message' => 'Access granted']);
     })->middleware("document_access:$PAYMENTS, $UPDATE");

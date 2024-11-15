@@ -29,20 +29,27 @@ class AuthenticationClientService implements AuthenticationClientServiceInterfac
 
     if (!$user) {
         return response()->json([
-            'error' => 'No account found'
+            'message' => 'No account found'
+        ], Response::HTTP_UNAUTHORIZED);
+    }
+
+    if (!is_null($user->employee_id))
+    {
+        return response()->json([
+            'message' => 'No account found'
         ], Response::HTTP_UNAUTHORIZED);
     }
 
     // Check if the user has a customer_id
     if (is_null($user->customer_id)) {
         return response()->json([
-            'error' => 'Account has no associated customer ID'
+            'message' => 'Account has no associated customer ID'
         ], Response::HTTP_UNAUTHORIZED);
     }
 
     if (!Hash::check($payload->password, $user->password)) {
         return response()->json([
-            'error' => 'Invalid Credentials'
+            'message' => 'Invalid Credentials'
         ], Response::HTTP_UNAUTHORIZED);
     }
 

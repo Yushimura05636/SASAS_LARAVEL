@@ -91,8 +91,8 @@ class AuthPermission extends Model
         self::$UPDATE = self::getPermissionId('UPDATE', Document_Permission_Map::class);
         self::$VIEW = self::getPermissionId('VIEW', Document_Permission_Map::class);
 
-        self::$APPROVE = self::getPermissionId('APPROVE', Document_Status_Code::class);
-        self::$REJECT = self::getPermissionId('REJECT', Document_Status_Code::class);
+        self::$APPROVE = self::getPermissionId('APPROVE', Document_Permission_Map::class);
+        self::$REJECT = self::getPermissionId('REJECT', Document_Permission_Map::class);
 
         //all is true
         return true;

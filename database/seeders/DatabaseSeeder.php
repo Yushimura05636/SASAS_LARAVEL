@@ -100,7 +100,7 @@ class DatabaseSeeder extends Seeder
         $genderNames = ['Male', 'Female'];
         $creditStatusNames = ['Active', 'Inactive', 'Suspended', 'Blacklisted'];
         $userAccountStatusNames = ['Active', 'Inactive'];
-        $documentPermissionNames = ['CREATE', 'UPDATE', 'DELETE', 'VIEW'];
+        $documentPermissionNames = ['CREATE', 'UPDATE', 'DELETE', 'VIEW', 'REJECT', 'APPROVED'];
         $nameTypes = ['Employee', 'Customer'];
         $document_status_code = ['Pending', 'Approved', 'Reject', 'Active', 'Inactive'];
         $personality_status_map = ['Pending', 'Approved','Reject','Active','Inactive'];

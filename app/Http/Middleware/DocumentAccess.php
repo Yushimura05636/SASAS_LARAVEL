@@ -52,8 +52,7 @@ class DocumentAccess
         $permission = Document_Permission_Map::where('id', $requiredPermissionValue)->first();
         $document = Document_Map::where('id', $requiredDocId)->first();
 
-        //return response()->json([$requiredPermissionValue, $requiredDocId, $permission, $document]);
-
+        
         //if the document permission exist in database
         if($permission && $document)
         {
@@ -67,21 +66,23 @@ class DocumentAccess
                     ], Response::HTTP_FORBIDDEN);
                 }
             }
-
+            
             // Query the Document_Permission table to check user's permissions for the document
             $userPermission = Document_Permission::where('user_id', $userId)
             ->where('document_map_code', $requiredDocId)
             ->where('document_permission', $requiredPermissionValue) // Ensure user's permission meets required level
             ->first();
-
+            
+            //return response()->json([$requiredPermissionValue, $requiredDocId, $permission, $document], Response::HTTP_INTERNAL_SERVER_ERROR);
             // return response()->json(['message' => $userPermission]);
-
-
+            
+            
             // If no matching permission is found, deny access
             if (!$userPermission) {
                 return response()->json(['message' => 'Access Denied'], Response::HTTP_FORBIDDEN);
             }
-
+            
+            
             // Proceed if user has the necessary permission
             return $next($request);
         }
@@ -89,5 +90,6 @@ class DocumentAccess
         {
             return response()->json(['message' => 'Missing permission or document'], Response::HTTP_FORBIDDEN);
         }
+        //throw new \Exception($permission);
     }
 }

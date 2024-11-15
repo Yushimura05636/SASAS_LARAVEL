@@ -22,6 +22,7 @@ class PaymentResource extends JsonResource
             'middle_name' => $this->middle_name,
             'prepared_at' => $this->prepared_at,
             'document_status_code' => $this->document_status_code,
+            'document_status_description' => $this->document_status_description,
             'prepared_by_id' => $this->prepared_by_id,
             'amount_paid' => $this->amount_paid,
             'notes' => $this->notes,

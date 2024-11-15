@@ -23,17 +23,23 @@ class AuthenticationService implements AuthenticationServiceInterface
     {
         $user = $this->userRepository->findByEmail($payload->email);
 
+        
         //return response()->json(['message' => $user], Response::HTTP_INTERNAL_SERVER_ERROR);
-
+        
         if (!$user) {
             return response()->json([
-                'error' => 'No account found'
+                'message' => 'No account found'
             ], Response::HTTP_UNAUTHORIZED);
+        }
+        
+        if(!is_null($user->customer_id))
+        {
+            return response()->json(['message' => 'No account found'], Response::HTTP_FORBIDDEN);
         }
 
         if (!Hash::check($payload->password, $user->password)) {
             return response()->json([
-                'error' => 'Invalid Credentials'
+                'message' => 'Invalid Credentials'
             ], Response::HTTP_UNAUTHORIZED);
         }
 

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Document_Status_Code;
 use App\Models\Payment;
 use Carbon\Carbon;
 
@@ -10,7 +11,11 @@ class ReportController extends Controller
     public function index()
     {
         // Fetch only approved payments with customer and personality information
-        $approvedPayments = Payment::where('document_status_code', 'APPROVED')
+
+        //get the approve id of payments
+        $document_status = Document_Status_Code::where('description', 'like', '%Approve%')->first();
+
+        $approvedPayments = Payment::where('document_status_code', $document_status->id)
         ->with('customer.personality:id,first_name,middle_name,family_name') // Eager load customer with personality data
         ->get(['id', 'customer_id', 'prepared_at', 'amount_paid']);
 

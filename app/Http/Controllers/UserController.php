@@ -339,6 +339,20 @@ class UserController extends Controller
         ->sum('amount_paid') ?? 0;
 
     $payment_history = Payment::where('customer_id', $user_details->customer_id)->get();
+
+    if(!is_null($payment_history))
+    {
+        foreach($payment_history as $payment)
+        {
+            if(!is_null($payment))
+            {
+                //set the status of the payment
+                $document_status = Document_Status_Code::where('id', $payment['document_status_code'])->first();
+                $payment['document_status_description'] = strtoupper($document_status->description);
+            }
+        }
+    }
+
     $loan_history = Loan_Application::where('customer_id', $user_details->customer_id)->get();
 
     // Get the status codes for Approved and Pending loan applications

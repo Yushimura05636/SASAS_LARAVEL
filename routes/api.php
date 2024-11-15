@@ -194,7 +194,7 @@ Route::middleware('auth:sanctum')->prefix('EMPLOYEES')->group(function () use ($
 });
 
 // Customers routes
-Route::middleware('auth:sanctum')->prefix('CUSTOMERS')->group(function () use ($CUSTOMERS, $VIEW, $CREATE, $UPDATE, $DELETE) {
+Route::middleware('auth:sanctum')->prefix('CUSTOMERS')->group(function () use ($CUSTOMERS, $VIEW, $CREATE, $UPDATE, $DELETE, $APPROVE, $REJECT) {
     Route::get('/', [CustomerPersonalityController::class, 'index'])->middleware("document_access:$CUSTOMERS, $VIEW");
     Route::get('/NoAUTH', [CustomerPersonalityController::class, 'index']);
     Route::get('/CustomerAPPROVEAndActive', [CustomerPersonalityController::class, 'indexApproveActive'])->middleware("document_access:$CUSTOMERS, $VIEW");
@@ -215,7 +215,8 @@ Route::middleware('auth:sanctum')->prefix('CUSTOMERS')->group(function () use ($
     Route::get('/{id}', [CustomerPersonalityController::class, 'show'])->middleware("document_access:$CUSTOMERS, $VIEW");
 
     Route::post('/', [CustomerPersonalityController::class, 'store'])->middleware("document_access:$CUSTOMERS, $CREATE");
-    Route::put('/UpdateApprove/{id}', [CustomerPersonalityController::class, 'updateApprove'])->middleware("document_access:$CUSTOMERS, $CREATE");
+    Route::put('/UpdateApprove/{id}', [CustomerPersonalityController::class, 'updateApprove'])->middleware("document_access:$CUSTOMERS, $APPROVE");
+    Route::put('/UpdateReject/{id}', [CustomerPersonalityController::class, 'updateReject'])->middleware("document_access:$CUSTOMERS, $REJECT");
 
     // Empty update route with PATCH
     Route::patch('/update', function () {
@@ -400,7 +401,7 @@ Route::middleware('auth:sanctum')->prefix('PAYMENT_DURATIONS')->group(function (
 });
 
 // Payment routes
-Route::middleware('auth:sanctum')->prefix('PAYMENTS')->group(function () use ($PAYMENTS, $VIEW, $CREATE, $UPDATE, $DELETE) {
+Route::middleware('auth:sanctum')->prefix('PAYMENTS')->group(function () use ($PAYMENTS, $VIEW, $CREATE, $UPDATE, $DELETE, $APPROVE, $REJECT) {
     Route::get('/', [PaymentController::class, 'index'])->middleware("document_access:$PAYMENTS, $VIEW");
     Route::get('/NoAUTH', [PaymentController::class, 'index']);
     Route::get('/NoAUTH/{id}', [PaymentController::class, 'show']);
@@ -410,7 +411,8 @@ Route::middleware('auth:sanctum')->prefix('PAYMENTS')->group(function () use ($P
     Route::get('/{id}', [PaymentController::class, 'show'])->middleware("document_access:$PAYMENTS, $VIEW");
     Route::post('/', [PaymentController::class, 'store'])->middleware("document_access:$PAYMENTS, $CREATE");
     Route::put('/{id}', [PaymentController::class, 'update'])->middleware("document_access:$PAYMENTS, $UPDATE");
-    Route::put('/PaymentAPPROVE/{id}', [PaymentController::class, 'paymentApprove'])->middleware("document_access:$PAYMENTS, $UPDATE");
+    Route::put('/PaymentAPPROVE/{id}', [PaymentController::class, 'paymentApprove'])->middleware("document_access:$PAYMENTS, $APPROVE");
+    Route::put('/PaymentREJECT/{id}', [PaymentController::class, 'paymentReject'])->middleware("document_access:$PAYMENTS, $REJECT");
     Route::delete('/{id}', [PaymentController::class, 'destroy'])->middleware("document_access:$PAYMENTS, $DELETE");
 
 
@@ -710,6 +712,10 @@ Route::middleware('auth:sanctum')->prefix('USER_ACCOUNTS_AUTH')->group(function 
 
 //customers
 Route::middleware('auth:sanctum')->prefix('CUSTOMERS_AUTH')->group(function () use ($CUSTOMERS, $VIEW, $CREATE, $UPDATE, $DELETE) {
+    Route::patch('/view', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$CUSTOMERS, $VIEW");
+    
     Route::patch('/update', function () {
         return response()->json(['message' => 'Access granted']);
     })->middleware("document_access:$CUSTOMERS, $UPDATE");
@@ -889,6 +895,10 @@ Route::middleware('auth:sanctum')->prefix('FEES_AUTH')->group(function () use ($
 
 //loan applications
 Route::middleware('auth:sanctum')->prefix('LOAN_APPLICATIONS_AUTH')->group(function () use ($LOAN_APPLICATIONS, $VIEW, $CREATE, $UPDATE, $DELETE) {
+    Route::patch('/view', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$LOAN_APPLICATIONS, $VIEW");
+    
     Route::patch('/update', function () {
         return response()->json(['message' => 'Access granted']);
     })->middleware("document_access:$LOAN_APPLICATIONS, $UPDATE");
@@ -925,6 +935,10 @@ Route::middleware('auth:sanctum')->prefix('LOAN_RELEASES_AUTH')->group(function 
 
 //payments
 Route::middleware('auth:sanctum')->prefix('PAYMENTS_AUTH')->group(function () use ($PAYMENTS, $VIEW, $CREATE, $UPDATE, $DELETE) {
+    Route::patch('/view', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$PAYMENTS, $VIEW");
+
     Route::patch('/update', function () {
         return response()->json(['message' => 'Access granted']);
     })->middleware("document_access:$PAYMENTS, $UPDATE");

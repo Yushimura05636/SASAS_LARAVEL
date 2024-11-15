@@ -9,6 +9,7 @@ use App\Interface\Service\PaymentLineServiceInterface;
 use App\Interface\Service\PaymentScheduleServiceInterface;
 use App\Interface\Service\PaymentServiceInterface;
 use App\Models\Customer;
+use App\Models\Document_Status_Code;
 use App\Models\Loan_Application;
 use App\Models\Loan_Count;
 use App\Models\Loan_Release;
@@ -39,12 +40,13 @@ class PaymentController extends Controller
     {
         $payment = $this->paymentService->findPayment();
 
-
+        
         foreach($payment as $pay)
         {
             if(!is_null($pay))
             {
-
+                
+                $document_status = Document_Status_Code::where('id', "{$pay['document_status_code']}")->first();
                 //payment line
                 $payment_line = Payment_Line::where('payment_id', $pay['id'])->first();
 
@@ -57,6 +59,7 @@ class PaymentController extends Controller
                 $pay['first_name'] = " " . $customerPersonality->original['personality']['first_name'];
                 $pay['middle_name'] = " " . $customerPersonality->original['personality']['middle_name'];
                 $pay['loan_application_no'] = $payment_schedule->loan_application_no;
+                $pay['document_status_description'] = strtoupper($document_status->description);
             }
         }
         //return response()->json(['message' => $payment], Response::HTTP_INTERNAL_SERVER_ERROR);
@@ -85,11 +88,14 @@ class PaymentController extends Controller
             foreach ($request['payment'] as $key => $item) {
                 if (isset($item)) {
 
+                    $document_status = Document_Status_Code::where('description', 'like', '%Pending%')->first();
+
                     // Create the payment record
                     $paymentData = [
                         'customer_id' => $request->customer_id,
                         'prepared_at' => now(),
-                        'document_status_code' => 'PENDING',
+                        'document_status_code' => $document_status->id,
+                        'document_status_description' => strtoupper($document_status->description),
                         'prepared_by_id' => auth()->user()->id,
                         'amount_paid' => $item['amount_paid'],
                         'notes' => ''
@@ -168,11 +174,23 @@ class PaymentController extends Controller
                 throw new \Exception('Cannot approve payment. There are pending payments before this one.');
             }
 
+            $document_status = Document_Status_Code::where('description', 'like', '%Reject%')->first();
+
+            if($payment['document_stauts_code'] == $document_status->id)
+            {
+                throw new \Exception('Payment is already been rejected!');
+            }
+
+            //throw new \Exception('stop');
+
+            $document_status = Document_Status_Code::where('description', 'like', '%Approve%')->first();
+
             // Create the payment record
             $paymentData = [
                 'customer_id' => $payment['customer_id'],
                 'prepared_at' => now(),
-                'document_status_code' => 'APPROVED',
+                'document_status_code' => $document_status->id,
+                'document_status_description' => strtoupper($document_status->description),
                 'prepared_by_id' => auth()->user()->id,
                 'amount_paid' => $payment['amount_paid'],
                 'notes' => $payment['notes'],
@@ -193,6 +211,41 @@ class PaymentController extends Controller
             DB::commit();
 
             return response()->json(['message' => 'Payment created successfully'], 200);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function paymentReject(Request $request, int $id, PaymentServiceInterface $paymentService, PaymentLineServiceInterface $paymentLineService, PaymentScheduleServiceInterface $paymentScheduleService, PaymentScheduleController $paymentScheduleController, CustomerPersonalityController $customerPersonalityController)
+    {
+        // Start DB Transaction
+        DB::beginTransaction();
+
+        try {
+
+            $payment = $request->input('jsonObject.state.payment');
+            $payment_status_description = $request->input('jsonObject.payment_status_description');
+            
+            //get the reject payment code
+            $document_status_code = Document_Status_Code::where('description', 'like', "%{$payment_status_description}%")->first()->id;
+
+            $customer_payment = Payment::where('id', $payment['id'])->first();
+            $customer_payment->document_status_code = $document_status_code;
+            $customer_payment->save();
+            $customer_payment->fresh();
+            
+            $customer_payment_line = Payment_Line::where('payment_id', $payment['id'])->first();
+            $customer_payment_line->remarks = 'REJECT';
+            $customer_payment_line->save();
+            $customer_payment_line->fresh();
+
+            //return response()->json(['message' => $customer_payment_line], Response::HTTP_INTERNAL_SERVER_ERROR);
+            
+            DB::commit();
+
+            return response()->json(['message' => 'Payment has been rejected!'], 200);
 
         } catch (\Exception $e) {
             DB::rollBack();

@@ -511,6 +511,83 @@ class CustomerPersonalityController extends Controller
         }
     }
 
+    public function updateReject(Request $request, int $reqId, CustomerRequirementController $customerRequirementController, PersonalityController $personalityController, CustomerController $customerController)
+    {
+        // Summons the storeRequest from both controllers
+        $customerStoreRequest = new CustomerUpdateRequest();
+        $personalityStoreRequest = new PersonalityUpdateRequest();
+
+        // Access the customer and personality data
+        $customerData = $request->input('customer');
+        $personalityData = $request->input('personality');
+        $requirementDatas = $request->input('requirements');
+
+        //get the customer id using passbook no
+        $customer = Customer::where('passbook_no', $customerData['passbook_no'])->first();
+
+        //check if the customer has pending payments
+        $paymentPendings = Payment_Schedule::where('customer_id', $customer->id)
+        ->where('payment_status_code', 'like', '%Unpaid%')
+        ->orWhere('payment_status_code', 'PARTIALLY PAID')
+        ->first();
+
+        //throw new \Exception($paymentPendings);
+
+        if($paymentPendings && !is_null($paymentPendings))
+        {
+            throw new \Exception('Reject denied, the customer still have pending payments');
+        }
+
+        try {
+            // Start a database transaction
+            DB::beginTransaction();
+
+            //get the reject code for personality
+            $personality_status_code = Personality_Status_Map::where('description', 'like', "%{$customerData['personality_status_description']}%")->first()->id;
+
+            //get the inactive credit status code for personality
+            $credit_status_code = Credit_Status::where('description', 'like', "%{$customerData['credit_status_description']}%")->first()->id;
+
+            
+            //personality
+            $personality = Personality::where('id', $customerData['personality_id'])->first();
+
+            if($personality_status_code == $personality->personality_status_code)
+            {
+                return response()->json(['message' => 'The customer is already rejected!'], Response::HTTP_INTERNAL_SERVER_ERROR);
+            }
+
+            //reject the customer status
+            $personality->personality_status_code = $personality_status_code;
+            $personality->credit_status_id = $credit_status_code;
+            $personality->save();
+            $personality->fresh();
+
+            
+            // Commit the transaction
+            DB::commit();
+            
+            return response()->json(['message' => 'The customer is rejected!'], Response::HTTP_OK);
+            
+
+        } catch (ModelNotFoundException $e) {
+            // Rollback transaction on model not found
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Customer not found.',
+                'error' => $e->getMessage(),
+            ], Response::HTTP_NOT_FOUND);
+
+        } catch (\Exception $e) {
+            // Rollback transaction on any other exception
+            DB::rollBack();
+            return response()->json([
+                'message' => 'An error occurred while saving data.',
+                'error' => $e->getMessage(),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
     public function updateApprove(Request $request, int $reqId, CustomerRequirementController $customerRequirementController, PersonalityController $personalityController, CustomerController $customerController)
     {
         // Summons the storeRequest from both controllers

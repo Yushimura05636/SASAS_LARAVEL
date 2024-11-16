@@ -62,22 +62,6 @@ class LoanApplicationController extends Controller
         $personalities = $personalityService->findPersonality();
         $customers = $customerService->findCustomers();
     
-        // Step 1: Collect all user IDs from loan applications
-        $userIds = $loanApps->flatMap(function ($loanApp) {
-            return [
-                $loanApp->approved_by_id,
-                $loanApp->rejected_by_id,
-                $loanApp->prepared_by_id,
-                $loanApp->released_by_id,
-                $loanApp->last_modified_by_id,
-            ];
-        })->filter()->unique();
-    
-        // Step 2: Fetch user accounts and map by ID
-        $userAccounts = User_Account::whereIn('id', $userIds)
-            ->get()
-            ->keyBy('id');
-    
         // Step 3: Map personalities by their ID for quick lookup
         $personalitiesMap = $personalities->keyBy('id')->map(function ($personality) {
             return [
@@ -100,14 +84,21 @@ class LoanApplicationController extends Controller
     
         // Step 5: Assign user full names to loanApp attributes
         foreach ($loanApps as $loanApp) {
-            $loanApp->approved_by_user = $userAccounts[$loanApp->approved_by_id]->full_name ?? null;
-            $loanApp->rejected_by_user = $userAccounts[$loanApp->rejected_by_id]->full_name ?? null;
-            $loanApp->prepared_by_user = $userAccounts[$loanApp->prepared_by_id]->full_name ?? null;
-            $loanApp->released_by_user = $userAccounts[$loanApp->released_by_id]->full_name ?? null;
-            $loanApp->last_modified_by_user = $userAccounts[$loanApp->last_modified_by_id]->full_name ?? null;
+
+            $approved_by_user = User_Account::where('id', $loanApp['approved_by_id'])->first();
+            $rejected_by_user = User_Account::where('id', $loanApp['rejected_by_user'])->first();
+            $prepared_by_user = User_Account::where('id', $loanApp['prepared_by_user'])->first();
+            $released_by_user = User_Account::where('id', $loanApp['released_by_user'])->first();
+            $last_modified_by_user = User_Account::where('id', $loanApp['last_modified_by_user'])->first();
+
+            $loanApp->approved_by_user = $approved_by_user->last_name . ' ' . $approved_by_user->first_name . ' ' . $approved_by_user->middle_name;
+            $loanApp->rejected_by_user = $rejected_by_user->last_name . ' ' . $rejected_by_user->first_name . ' ' . $rejected_by_user->middle_name;
+            $loanApp->prepared_by_user = $prepared_by_user->last_name . ' ' . $prepared_by_user->first_name . ' ' . $prepared_by_user->middle_name;
+            $loanApp->released_by_user = $released_by_user->last_name . ' ' . $released_by_user->first_name . ' ' . $released_by_user->middle_name;
+            $loanApp->last_modified_by_user = $last_modified_by_user->last_name . ' ' . $last_modified_by_user->first_name . ' ' . $last_modified_by_user->middle_name;
         }
 
-        return response()->json(['message' => $loanApps, $userAccounts], Response::HTTP_INTERNAL_SERVER_ERROR);
+        return response()->json(['message' => $loanApps], Response::HTTP_INTERNAL_SERVER_ERROR);
     
         // Step 6: Create a map of loan applications, linking to customer and personality data
         $loanAppsMap = [];

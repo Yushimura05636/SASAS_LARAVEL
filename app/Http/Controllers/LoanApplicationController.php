@@ -688,6 +688,11 @@ class LoanApplicationController extends Controller
             }
         }
 
+        // Define helper functions within store
+        if (count($data) < 4) {
+            throw new \Exception('The amount of customers should be at least 4');
+        };
+
         $payableFee = null;
         foreach($customer_data as $id => $data)
         {

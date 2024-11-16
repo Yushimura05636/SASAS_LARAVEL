@@ -83,19 +83,51 @@ class LoanApplicationController extends Controller
         });
     
         // Step 5: Assign user full names to loanApp attributes
+        // Collect all user IDs from the loan applications
+        $userIds = $loanApps->flatMap(function ($loanApp) {
+            return [
+                $loanApp['approved_by_id'],
+                $loanApp['rejected_by_user'],
+                $loanApp['prepared_by_user'],
+                $loanApp['released_by_user'],
+                $loanApp['last_modified_by_user'],
+            ];
+        })->filter()->unique();
+
+        // Fetch all user accounts in a single query and map them by ID
+        $userAccounts = User_Account::whereIn('id', $userIds)->get()->keyBy('id');
+
+        // Loop through loanApps and assign user names
         foreach ($loanApps as $loanApp) {
+            $loanApp->approved_by_user = isset($userAccounts[$loanApp['approved_by_id']])
+                ? ($userAccounts[$loanApp['approved_by_id']]->last_name . ' ' . 
+                $userAccounts[$loanApp['approved_by_id']]->first_name . ' ' . 
+                $userAccounts[$loanApp['approved_by_id']]->middle_name)
+                : null;
 
-            $approved_by_user = User_Account::where('id', $loanApp['approved_by_id'])->first();
-            $rejected_by_user = User_Account::where('id', $loanApp['rejected_by_user'])->first();
-            $prepared_by_user = User_Account::where('id', $loanApp['prepared_by_user'])->first();
-            $released_by_user = User_Account::where('id', $loanApp['released_by_user'])->first();
-            $last_modified_by_user = User_Account::where('id', $loanApp['last_modified_by_user'])->first();
+            $loanApp->rejected_by_user = isset($userAccounts[$loanApp['rejected_by_user']])
+                ? ($userAccounts[$loanApp['rejected_by_user']]->last_name . ' ' . 
+                $userAccounts[$loanApp['rejected_by_user']]->first_name . ' ' . 
+                $userAccounts[$loanApp['rejected_by_user']]->middle_name)
+                : null;
 
-            $loanApp->approved_by_user = ($approved_by_user->last_name . ' ' . $approved_by_user->first_name . ' ' . $approved_by_user->middle_name) ?? null;
-            $loanApp->rejected_by_user = ($rejected_by_user->last_name . ' ' . $rejected_by_user->first_name . ' ' . $rejected_by_user->middle_name) ?? null;
-            $loanApp->prepared_by_user = ($prepared_by_user->last_name . ' ' . $prepared_by_user->first_name . ' ' . $prepared_by_user->middle_name) ?? null;
-            $loanApp->released_by_user = ($released_by_user->last_name . ' ' . $released_by_user->first_name . ' ' . $released_by_user->middle_name) ?? null;
-            $loanApp->last_modified_by_user = ($last_modified_by_user->last_name . ' ' . $last_modified_by_user->first_name . ' ' . $last_modified_by_user->middle_name) ?? null;
+            $loanApp->prepared_by_user = isset($userAccounts[$loanApp['prepared_by_user']])
+                ? ($userAccounts[$loanApp['prepared_by_user']]->last_name . ' ' . 
+                $userAccounts[$loanApp['prepared_by_user']]->first_name . ' ' . 
+                $userAccounts[$loanApp['prepared_by_user']]->middle_name)
+                : null;
+
+            $loanApp->released_by_user = isset($userAccounts[$loanApp['released_by_user']])
+                ? ($userAccounts[$loanApp['released_by_user']]->last_name . ' ' . 
+                $userAccounts[$loanApp['released_by_user']]->first_name . ' ' . 
+                $userAccounts[$loanApp['released_by_user']]->middle_name)
+                : null;
+
+            $loanApp->last_modified_by_user = isset($userAccounts[$loanApp['last_modified_by_user']])
+                ? ($userAccounts[$loanApp['last_modified_by_user']]->last_name . ' ' . 
+                $userAccounts[$loanApp['last_modified_by_user']]->first_name . ' ' . 
+                $userAccounts[$loanApp['last_modified_by_user']]->middle_name)
+                : null;
         }
 
         return response()->json(['message' => $loanApps], Response::HTTP_INTERNAL_SERVER_ERROR);

@@ -846,18 +846,29 @@ if (empty($loanApplicationNos)) {
             // Get payment details from request
             $payment = $request->input('payment');
 
+            if(!isset($payment) && !is_null($payment))
+            {
+                throw new \Exception('Record is empty! Please double check you records!');
+            }
+
             $document_status = Document_Status_Code::where('description', 'like', '%Reject%')->first();
 
-            if($payment['document_status_code'] == $document_status->id)
+            if(isset($document_status) && !is_null($document_status))
             {
-                return response()->json(['message' => 'Payment is already been rejected!'], Response::HTTP_INTERNAL_SERVER_ERROR);
+                if($payment['document_status_code'] == $document_status->id)
+                {
+                    return response()->json(['message' => 'Payment is already been rejected!'], Response::HTTP_INTERNAL_SERVER_ERROR);
+                }
             }
 
             $document_status = Document_Status_Code::where('description', 'like', '%Approve%')->first();
 
-            if($payment['document_status_code'] == $document_status->id)
+            if(isset($document_status) && !is_null($document_status))
             {
-                return response()->json(['message' => 'Payment is already been approved!'], Response::HTTP_INTERNAL_SERVER_ERROR);
+                if($payment['document_status_code'] == $document_status->id)
+                {
+                    return response()->json(['message' => 'Payment is already been approved!'], Response::HTTP_INTERNAL_SERVER_ERROR);
+                }
             }
             
             // Find the payment record and update it
@@ -866,7 +877,6 @@ if (empty($loanApplicationNos)) {
             $customer_payment->notes = $payment['notes'] ?? '';
             $customer_payment->save();
             $customer_payment->fresh();
-
     
             // Update the payment line
             $customer_payment_line = Payment_Line::where('payment_id', $payment['id'])->first();

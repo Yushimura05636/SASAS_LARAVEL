@@ -1050,6 +1050,9 @@ Route::get('/customerWithPending/NoAUTH/{id}', [LoanApplicationController::class
 
 //REPORTS TEST
 Route::get('REPORTS', [ReportController::class, 'index']);
+Route::get('FEE_ONLY', [ReportController::class, 'feeReports']);
+Route::get('BALANCES', [ReportController::class, 'Balances']);
+Route::get('DISBURSEMENT', [ReportController::class, 'getLoanDisbursementSummary']);
 
 Route::middleware('auth:sanctum')->prefix('DASHBOARD')->group(function () {
     Route::get('/NoAUTH/USER/DETAILS', [UserController::class, 'showUserDetails']);

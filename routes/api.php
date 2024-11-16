@@ -402,7 +402,7 @@ Route::middleware('auth:sanctum')->prefix('PAYMENT_DURATIONS')->group(function (
 
 // Payment routes
 Route::middleware('auth:sanctum')->prefix('PAYMENTS')->group(function () use ($PAYMENTS, $VIEW, $CREATE, $UPDATE, $DELETE, $APPROVE, $REJECT) {
-    Route::get('/', [PaymentController::class, 'index']);
+    Route::get('/', [PaymentController::class, 'index'])->middleware("document_access:$PAYMENTS, $VIEW");
     Route::get('/NoAUTH', [PaymentController::class, 'index']);
     Route::get('/NoAUTH/{id}', [PaymentController::class, 'show']);
     Route::get('/NoAUTH/CustomerId/{id}', [PaymentController::class, 'paymentCustomerId']);

@@ -30,6 +30,7 @@ use App\Models\Payment_Duration;
 use App\Models\Payment_Frequency;
 use App\Models\Payment_Schedule;
 use App\Models\Personality_Status_Map;
+use App\Models\User_Account;
 use App\Service\LoanApplicationFeeService;
 use Carbon\Carbon;
 use Exception;
@@ -49,42 +50,68 @@ class LoanApplicationController extends Controller
      * Display a listing of the resource.
      */
 
-    public function index(LoanApplicationFeeServiceInterface $loanApplicationFeeService, LoanApplicationCoMakerServiceInterface $loanApplicationCoMakerService, PersonalityServiceInterface $personalityService, CustomerServiceInterface $customerService)
-    {
+     public function index(
+        LoanApplicationFeeServiceInterface $loanApplicationFeeService,
+        LoanApplicationCoMakerServiceInterface $loanApplicationCoMakerService,
+        PersonalityServiceInterface $personalityService,
+        CustomerServiceInterface $customerService
+    ) {
         $loanFees = $loanApplicationFeeService->findLoanFees();
         $loanCoMakers = $loanApplicationCoMakerService->findCoMakers();
         $loanApps = $this->loanApplicationService->findLoanApplication();
         $personalities = $personalityService->findPersonality();
         $customers = $customerService->findCustomers();
-
-        $loanAppsMap = [];
-
-        // Step 1: Create a map of personalities by their ID for quick lookup
-        $personalitiesMap = [];
-        foreach ($personalities as $personality) {
-            $personalitiesMap[$personality->id] = [
+    
+        // Step 1: Collect all user IDs from loan applications
+        $userIds = $loanApps->flatMap(function ($loanApp) {
+            return [
+                $loanApp->approved_by_id,
+                $loanApp->rejected_by_id,
+                $loanApp->prepared_by_id,
+                $loanApp->released_by_id,
+                $loanApp->last_modified_by_id,
+            ];
+        })->filter()->unique();
+    
+        // Step 2: Fetch user accounts and map by ID
+        $userAccounts = User_Account::whereIn('id', $userIds)
+            ->get()
+            ->keyBy('id');
+    
+        // Step 3: Map personalities by their ID for quick lookup
+        $personalitiesMap = $personalities->keyBy('id')->map(function ($personality) {
+            return [
                 'first_name' => $personality->first_name,
                 'family_name' => $personality->family_name,
                 'middle_name' => $personality->middle_name,
             ];
-        }
-
-        // Step 2: Create a map of customers by their ID and include the personality details
-        $LoanApplicationMap = [];
-        foreach ($customers as $customer) {
+        });
+    
+        // Step 4: Map customers by their ID and include the personality details
+        $LoanApplicationMap = $customers->keyBy('id')->map(function ($customer) use ($personalitiesMap) {
             $personalityDetails = $personalitiesMap[$customer->personality_id] ?? [];
-            $LoanApplicationMap[$customer->id] = array_merge([
+            return array_merge([
                 'customer_id' => $customer->id,
                 'first_name' => $customer->first_name,
                 'family_name' => $customer->family_name,
                 'middle_name' => $customer->middle_name,
             ], $personalityDetails);
+        });
+    
+        // Step 5: Assign user full names to loanApp attributes
+        foreach ($loanApps as $loanApp) {
+            $loanApp->approved_by_user = $userAccounts[$loanApp->approved_by_id]->full_name ?? null;
+            $loanApp->rejected_by_user = $userAccounts[$loanApp->rejected_by_id]->full_name ?? null;
+            $loanApp->prepared_by_user = $userAccounts[$loanApp->prepared_by_id]->full_name ?? null;
+            $loanApp->released_by_user = $userAccounts[$loanApp->released_by_id]->full_name ?? null;
+            $loanApp->last_modified_by_user = $userAccounts[$loanApp->last_modified_by_id]->full_name ?? null;
         }
-
-        // Step 3: Create a map of loan applications, linking to customer and personality data
+    
+        // Step 6: Create a map of loan applications, linking to customer and personality data
+        $loanAppsMap = [];
         foreach ($loanApps as $loanApp) {
             $customerId = $loanApp->customer_id;
-
+    
             $loanAppsMap[$loanApp->id] = [
                 'Loan_Application' => $loanApp,
                 'Fees' => [],  // Initialize an empty array to hold fees for each loan application
@@ -92,37 +119,32 @@ class LoanApplicationController extends Controller
                 'Customer' => $LoanApplicationMap[$customerId] ?? [],  // Add customer and personality details
             ];
         }
-
-        // Step 4: Group loan fees under the corresponding loan application
+    
+        // Step 7: Group loan fees under the corresponding loan application
         foreach ($loanFees as $loanFee) {
             $loanAppId = $loanFee->loan_application_id;
-
-            // Check if the loan application exists in the map
+    
             if (isset($loanAppsMap[$loanAppId])) {
-                // Add the fee to the corresponding loan application
                 $loanAppsMap[$loanAppId]['Fees'][] = $loanFee;
             }
         }
-
-        // Step 5: Group co-makers under the corresponding loan application
+    
+        // Step 8: Group co-makers under the corresponding loan application
         foreach ($loanCoMakers as $loanCoMaker) {
             $loanAppId = $loanCoMaker->loan_application_id;
-
-            // Check if the loan application exists in the map
+    
             if (isset($loanAppsMap[$loanAppId])) {
-                // Add the coMaker to the corresponding loan application
                 $loanAppsMap[$loanAppId]['CoMaker'] = $loanCoMaker;
             }
         }
-
+    
         // Convert the map to an array
         $loanAppsWithLoanFees = array_values($loanAppsMap);
-
+    
         return [
-            'data' => $loanAppsWithLoanFees
+            'data' => $loanAppsWithLoanFees,
         ];
-
-    }
+    }    
 
     public function store(Request $request, PaymentScheduleServiceInterface $paymentScheduleService, LoanApplicationFeeController $loanApplicationFeeController, LoanApplicationCoMakerController $loanApplicationCoMakerController)
     {

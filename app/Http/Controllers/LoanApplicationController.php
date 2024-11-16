@@ -764,7 +764,7 @@ public function reject(Request $request, CustomerPersonalityController $customer
     try {
 
         $userId = auth()->user()->id;
-        
+
         $customerId = $request['customer_id'];
 
         $loanId = $request['id'];
@@ -840,16 +840,6 @@ public function reject(Request $request, CustomerPersonalityController $customer
                 $loanApplication->datetime_rejected = now();
                 $loanApplication->save();
                 $loanApplication->fresh();
-
-                $passbookNo = Customer::where('id', $customerId)->first()->passbook_no;
-
-                $loan_release = Loan_Release::where('loan_application_id', $loanApplication->id)
-                ->where('passbook_number', $passbookNo)
-                ->first();
-
-                $loan_release->notes = 'REJECT';
-                $loan_release->save();
-                $loan_release->fresh();
             }
         }
 

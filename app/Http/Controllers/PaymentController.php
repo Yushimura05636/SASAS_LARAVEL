@@ -188,6 +188,34 @@ class PaymentController extends Controller
                 return response()->json(['message' => 'Payment is already been approved!'], Response::HTTP_INTERNAL_SERVER_ERROR);
             }
 
+            $data_payment_line = Payment_Line::where('payment_id', $payment['id'])
+            ->first();
+
+            $data_payment_schedule = Payment_Schedule::where('id', $data_payment_line->payment_schedule_id)
+            ->first();
+
+            if($data_payment_schedule->payment_status_code == 'PAID')
+            {
+                return response()->json(['message' => 'Payment is already been paid!'], Response::HTTP_INTERNAL_SERVER_ERROR);
+            }
+
+            // Calculate total amount paid and total amount due for the customer
+            $total_amount_paid = Payment_Schedule::where('customer_id', $payment['customer_id'])
+            ->whereNotIn('payment_status_code', ['PAID', 'PARTIALLY PAID, FORWARDED'])
+            ->sum('amount_paid');
+
+            $total_amount_due = Payment_Schedule::where('customer_id', $payment['customer_id'])
+                ->whereNotIn('payment_status_code', ['PAID', 'PARTIALLY PAID, FORWARDED'])
+                ->sum('amount_due');
+
+            // Calculate the total remaining balance
+            $total_balance = $total_amount_due - $total_amount_paid;
+
+            // Check if the payment amount exceeds the total remaining balance
+            if ($payment['amount_paid'] > $total_balance) {
+                return response()->json(['message' => 'The amount is more than the total balance'], Response::HTTP_INTERNAL_SERVER_ERROR);
+            }
+
             // Create the payment record
             $paymentData = [
                 'customer_id' => $payment['customer_id'],
@@ -307,9 +335,10 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
     //$payment_schedule = $paymentScheduleController->index($customerPersonalityController);
 
     $payment = Payment_Schedule::where('id', $payment_schedule_id)
-    ->where('payment_status_code', 'like', '%UNPAID%')
-    ->orWhere('payment_status_code' ,'PARTIALLY PAID')
-    ->where('id', $payment_schedule_id)
+    ->where(function ($query) {
+        $query->where('payment_status_code', 'like', '%UNPAID%')
+              ->orWhere('payment_status_code', 'PARTIALLY PAID');
+    })
     ->get();
 
 
@@ -336,7 +365,7 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
             //     'data' => $balance,
             // ], Response::HTTP_INTERNAL_SERVER_ERROR);
 
-
+            
             if($pay['loan_released_id'] && $pay['loan_released_id'] > 0)
             {
 
@@ -344,9 +373,9 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
                 $loanAppId = Loan_Release::where('id', $pay['loan_released_id'])->first()->loan_application_id;
 
                 //get the loan_application_no
-                $loanApplicationNo = Loan_Application::where('id', $loanAppId)->first()->loan_application_no;
+                $loanApplicationNo = Loan_Application::where('id', $loanAppId)->first();
 
-                if($loanApplicationNo && !is_null($loanApplicationNo))
+                if(!is_null($loanApplicationNo))
                 {
                     $pay['loan_application_no'] = $loanApplicationNo;
                 }
@@ -383,18 +412,18 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
         }
         $payment = $pay;
     }
-
-        if($payment && !is_null($payment))
-        {
+    
+    if(!is_null($payment))
+    {
+        if (isset($payment['loan_application_no']) && !is_null($payment['loan_application_no'])) {
             $loan_application_no = $payment['loan_application_no'];
         }
-        else
-        {
-            $loan_application_no = null;
-        }
-
-        //throw new \Exception($loan_application_no);
-
+    }
+    else
+    {
+        $loan_application_no = null;
+    }
+        
     $loan_application = Loan_Application::where('loan_application_no', $loan_application_no)->first();
 
     $loanReleaseId = null;
@@ -417,11 +446,14 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
     {
         $loanReleaseId = null;
     }
-
-    $schedules = Payment_Schedule::where('customer_id', $payment->customer_id)
+    
+    $payment = $request->input('state.payment');
+    
+    
+    $schedules = Payment_Schedule::where('customer_id', $payment['customer_id'])
     ->where(function($query) {
         $query->where('payment_status_code', 'like', '%Unpaid%')
-              ->orWhere('payment_status_code', 'PARTIALLY PAID');
+        ->orWhere('payment_status_code', 'PARTIALLY PAID');
     })
     ->get();
 
@@ -525,13 +557,13 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
         $totalAmountPaid = 0;
     }
 
-        $isAllPaid = Payment_Schedule::where('customer_id', $payment->customer_id)
+        $isAllPaid = Payment_Schedule::where('customer_id', $payment['customer_id'])
             ->whereNotIn('payment_status_code', ['PAID', 'PARTIALLY PAID, FORWARDED'])
             ->doesntExist(); // If no records with unpaid and partially paid statuses exist, then all payments are paid
 
             if (!is_null($isAllPaid) && $isAllPaid > 0) {
                 // Only increase the loan count if the payment schedule is not fully paid
-                $customer_loan_count = Customer::where('id', $payment->customer_id)->first();
+                $customer_loan_count = Customer::where('id', $payment['customer_id'])->first();
 
                 if ($customer_loan_count && !is_null($customer_loan_count)) {
 
@@ -561,14 +593,16 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
                 }
             }
 
+            
 
 }
 
 protected function createPaymentLine($request, $payment, $schedule, $amountPaid, $remarks, PaymentLineServiceInterface $paymentLineService)
 {
 
+    
     //get the total balance of all the payment schedules
-    $totals = Payment_Schedule::where('customer_id', $payment->customer_id)
+    $totals = Payment_Schedule::where('customer_id', $payment['customer_id'])
         ->selectRaw('(SUM(amount_due) - SUM(amount_paid)) AS balance, SUM(amount_paid) AS paid, SUM(amount_due) AS due')
         ->first();
 
@@ -581,7 +615,6 @@ protected function createPaymentLine($request, $payment, $schedule, $amountPaid,
         'amount_paid' => $amountPaid,
         'remarks' => $remarks,
     ];
-
 
     // //convert object
     // $paymentLineData = new Request($paymentLineData);
@@ -609,7 +642,9 @@ protected function createPaymentLine($request, $payment, $schedule, $amountPaid,
     ];
 
     // Use updateOrCreate
-    Payment_Line::updateOrCreate($conditions, $paymentLineData);
+    $paymnet_line = Payment_Line::updateOrCreate($conditions, $paymentLineData);
+
+    //throw new \Exception($paymnet_line);
 
 }
 
@@ -645,6 +680,17 @@ protected function createPaymentLine($request, $payment, $schedule, $amountPaid,
         }
 
         $user = User_Account::where('id', $payment->prepared_by_id)->first();
+
+        $customer = Customer::where('id', $payment->customer_id)->first();
+        $personality = Personality::where('id', $customer->personality_id)->first();
+
+        $data_payment = Payment::where('id', $payment->id)->first();
+        $document_status = Document_Status_Code::where('id', $data_payment->document_status_code)->first();
+
+        $payment['first_name'] = $personality->first_name;
+        $payment['family_name'] = $personality->family_name;
+        $payment['middle_name'] = $personality->middle_name;
+        $payment['document_status_description'] = $document_status->description;
 
         //return response()->json(['message success' => $payment->loan_application_no]);
 
@@ -781,8 +827,53 @@ if (empty($loanApplicationNos)) {
     public function update(PaymentUpdateRequest $request, int $id)
     {
         return $this->paymentService->updatePayment($request, $id);
-
     }
+
+    public function paymentUpdate(
+        Request $request, 
+        int $id, 
+        PaymentServiceInterface $paymentService, 
+        PaymentLineServiceInterface $paymentLineService, 
+        PaymentScheduleServiceInterface $paymentScheduleService, 
+        PaymentScheduleController $paymentScheduleController, 
+        CustomerPersonalityController $customerPersonalityController
+    )
+    {
+        // Start DB Transaction
+        DB::beginTransaction();
+    
+        try {
+            // Get payment details from request
+            $payment = $request->input('payment');
+            
+            // Find the payment record and update it
+            $customer_payment = Payment::where('id', $payment['id'])->first();
+            $customer_payment->amount_paid = $payment['amount_paid'] ?? 0;
+            $customer_payment->notes = $payment['notes'] ?? '';
+            $customer_payment->save();
+            $customer_payment->fresh();
+
+    
+            // Update the payment line
+            $customer_payment_line = Payment_Line::where('payment_id', $payment['id'])->first();
+            $customer_payment_line->amount_paid = $payment['amount_paid'] ?? 0;
+            $customer_payment_line->save();
+            $customer_payment_line->fresh();
+    
+            // Commit the transaction
+            DB::commit();
+    
+            // Return a success message
+            return response()->json(['message' => 'Payment has been successfully updated!'], 200);
+    
+        } catch (\Exception $e) {
+            // Rollback the transaction on error
+            DB::rollBack();
+    
+            // Return a detailed error message
+            return response()->json(['error' => 'Failed to update payment: ' . $e->getMessage()], 500);
+        }
+    }    
 
     /**
      * Remove the specified resource from storage.

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Mail\TwoFactorCodeMail;
+use App\Mail\VerificationCodeMail;
 use App\Models\Customer;
 use App\Models\Personality;
 use App\Models\User_Account;
@@ -68,7 +69,7 @@ class EmailVerificationController extends Controller
 
         Cache::put('verify_'.$email, $code, 600); // Store for 10 minutes
 
-        Mail::to($this->request->email)->send(new TwoFactorCodeMail($code));
+        Mail::to($this->request->email)->send(new VerificationCodeMail($code));
 
         return response()->json(['success' => true, 'message' => '2FA code sent']);
     }

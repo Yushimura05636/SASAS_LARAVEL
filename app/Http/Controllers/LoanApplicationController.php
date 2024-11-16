@@ -91,11 +91,11 @@ class LoanApplicationController extends Controller
             $released_by_user = User_Account::where('id', $loanApp['released_by_user'])->first();
             $last_modified_by_user = User_Account::where('id', $loanApp['last_modified_by_user'])->first();
 
-            $loanApp->approved_by_user = $approved_by_user->last_name . ' ' . $approved_by_user->first_name . ' ' . $approved_by_user->middle_name;
-            $loanApp->rejected_by_user = $rejected_by_user->last_name . ' ' . $rejected_by_user->first_name . ' ' . $rejected_by_user->middle_name;
-            $loanApp->prepared_by_user = $prepared_by_user->last_name . ' ' . $prepared_by_user->first_name . ' ' . $prepared_by_user->middle_name;
-            $loanApp->released_by_user = $released_by_user->last_name . ' ' . $released_by_user->first_name . ' ' . $released_by_user->middle_name;
-            $loanApp->last_modified_by_user = $last_modified_by_user->last_name . ' ' . $last_modified_by_user->first_name . ' ' . $last_modified_by_user->middle_name;
+            $loanApp->approved_by_user = ($approved_by_user->last_name . ' ' . $approved_by_user->first_name . ' ' . $approved_by_user->middle_name) ?? null;
+            $loanApp->rejected_by_user = ($rejected_by_user->last_name . ' ' . $rejected_by_user->first_name . ' ' . $rejected_by_user->middle_name) ?? null;
+            $loanApp->prepared_by_user = ($prepared_by_user->last_name . ' ' . $prepared_by_user->first_name . ' ' . $prepared_by_user->middle_name) ?? null;
+            $loanApp->released_by_user = ($released_by_user->last_name . ' ' . $released_by_user->first_name . ' ' . $released_by_user->middle_name) ?? null;
+            $loanApp->last_modified_by_user = ($last_modified_by_user->last_name . ' ' . $last_modified_by_user->first_name . ' ' . $last_modified_by_user->middle_name) ?? null;
         }
 
         return response()->json(['message' => $loanApps], Response::HTTP_INTERNAL_SERVER_ERROR);

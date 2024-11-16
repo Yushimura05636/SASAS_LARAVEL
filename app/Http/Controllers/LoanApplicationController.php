@@ -756,6 +756,116 @@ class LoanApplicationController extends Controller
     }
 }
 
+public function reject(Request $request, CustomerPersonalityController $customerPersonalityController, int $id, LoanApplicationServiceInterface $loanApplicationService, LoanReleaseServiceInterface $loanReleaseService, PaymentScheduleServiceInterface $paymentScheduleService)
+{
+    // Start the transaction
+    DB::beginTransaction();
+
+    try {
+
+        $userId = auth()->user()->id;
+        
+        $customerId = $request['customer_id'];
+
+        $loanId = $request['id'];
+
+        $AllCustomerData = $request->input('allCustomerData');
+
+        //check if the group mates has its own dues
+        $customer_data = $customerPersonalityController->index();
+
+        $customer_group_id = null;
+
+        foreach($AllCustomerData as $data)
+        {
+            if(!is_null($data))
+            {
+                $customer_group_id = $data['group_id'];
+                break;
+            }
+        }
+
+        $payableFee = null;
+        foreach($customer_data as $id => $data)
+        {
+            if(!is_null($data))
+            {
+                foreach($data as $dat)
+                {
+                    if(!is_null($dat))
+                    {
+
+                        if($dat['customer']['group_id'] == $customer_group_id)
+                        {
+                            $payableFee = Payment_Schedule::where('customer_id', $dat['customer']['id'])
+                            ->where('payment_status_code', 'like', '%UNPAID%')
+                            ->orWhere('payment_status_code', 'like', '%PARTIALLY PAID%')
+                            ->whereNotIn('payment_status_code', ['PAID', 'PARTIALLY PAID, FORWARDED'])
+                            ->selectRaw('SUM(amount_due) - SUM(amount_paid) as fee_balance')
+                            ->first();
+
+                            if ($payableFee && $payableFee->fee_balance > 0) {
+                                throw new \Exception('Cannot approve: outstanding fees need to be paid');
+                            }
+
+                            if(!($dat['personality']['personality_status_code'] == Personality_Status_Map::where('description', 'like', '%APPROVED%')->first()->id)
+                            && !($dat['personality']['credit_status_id'] == Credit_Status::where('description', 'like', '%ACTIVE%')->first()->id))
+                            {
+                                throw new \Exception('A member in the group is not APPROVED nor ACTIVE');
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        //return response()->json(['message' => 'done no error'], Response::HTTP_INTERNAL_SERVER_ERROR);
+        foreach($AllCustomerData as $data)
+        {
+            if(!is_null($data))
+            {
+                //return response()->json(['message' => $data], Response::HTTP_INTERNAL_SERVER_ERROR);
+                $loanApplicationNo = $data['loan_application_no'];
+                $customerId = $data['customer_id'];
+
+                //search loang application id
+                $loanId = Loan_Application::where('loan_application_no', $loanApplicationNo)->first()->id;
+                $loanApproveId = Document_Status_Code::where('description', 'Reject')->first()->id;
+
+                $loanApplication = Loan_Application::findOrFail($loanId);
+
+                $loanApplication->document_status_code = $loanApproveId;
+                $loanApplication->rejected_by_id = $userId;
+                $loanApplication->last_modified_by_id = $userId;
+                $loanApplication->datetime_rejected = now();
+                $loanApplication->save();
+                $loanApplication->fresh();
+
+                $passbookNo = Customer::where('id', $customerId)->first()->passbook_no;
+
+                $loan_release = Loan_Release::where('loan_application_id', $loanApplication->id)
+                ->where('passbook_number', $passbookNo)
+                ->first();
+
+                $loan_release->notes = 'REJECT';
+                $loan_release->save();
+                $loan_release->fresh();
+            }
+        }
+
+        //return response()->json(['message' => $debug, 'message date' => $dateDebug], Response::HTTP_INTERNAL_SERVER_ERROR);
+
+        DB::commit();
+
+        return response()->json(['message' => 'Loan release and payment schedule created successfully.'], Response::HTTP_OK);
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+
+        return response()->json(['message' => 'An error occurred: ' . $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
+    }
+}
+
 
 public function createPayment(Request $request, PaymentServiceInterface $paymentService, PaymentLineServiceInterface $paymentLineService, PaymentScheduleServiceInterface $paymentScheduleService)
 {

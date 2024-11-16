@@ -27,9 +27,11 @@ return new class extends Migration
             $table->dateTime('datetime_target_release')->nullable();
             $table->dateTime('datetime_fully_paid')->nullable();
             $table->dateTime('datetime_approved')->nullable();
+            $table->dateTime('datetime_rejected')->nullable();
             $table->unsignedBigInteger('payment_frequency_id');
             $table->unsignedBigInteger('payment_duration_id');
             $table->unsignedBigInteger('approved_by_id')->nullable();
+            $table->unsignedBigInteger('rejected_by_id')->nullable();
             $table->unsignedBigInteger('prepared_by_id')->nullable();
             $table->unsignedBigInteger('released_by_id')->nullable();
             $table->unsignedBigInteger('last_modified_by_id')->nullable();

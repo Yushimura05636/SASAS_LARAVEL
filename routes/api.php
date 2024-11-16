@@ -564,6 +564,8 @@ Route::middleware('auth:sanctum')->prefix('LOAN_APPLICATIONS')->group(function (
     //example code for approve
     Route::patch('/approve/{id}', [LoanApplicationController::class, 'approve']);
 
+    Route::patch('/reject/{id}', [LoanApplicationController::class, 'reject']);
+
     // Empty create route with PATCH
     Route::patch('/create', function () {
         return response()->json(['message' => 'Access granted']);

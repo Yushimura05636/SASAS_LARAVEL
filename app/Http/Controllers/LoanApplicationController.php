@@ -107,7 +107,7 @@ class LoanApplicationController extends Controller
             $loanApp->last_modified_by_user = $userAccounts[$loanApp->last_modified_by_id]->full_name ?? null;
         }
 
-        throw new Exception($loanApps);
+        return response()->json(['message' => $loanApps], Response::HTTP_INTERNAL_SERVER_ERROR);
     
         // Step 6: Create a map of loan applications, linking to customer and personality data
         $loanAppsMap = [];

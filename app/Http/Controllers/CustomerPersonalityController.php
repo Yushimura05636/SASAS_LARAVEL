@@ -767,35 +767,42 @@ class CustomerPersonalityController extends Controller
         
         $customerDatas = [];
 
-        foreach ($customers as $customer) {
+        foreach ($customers as $customer) 
+        {
             if (isset($customer['personality']['personality_status_code']) && 
-                $customer['personality']['personality_status_code'] == $personalityStatusId) {
+                $customer['personality']['personality_status_code'] == $personalityStatusId) 
+                {
         
                     // Check if document_status_reject exists
-                    if (isset($document_status_reject) && !is_null($document_status_reject)) {
+                    if (isset($document_status_reject) && !is_null($document_status_reject)) 
+                    {
                         
                         // Ensure loan_application is a non-empty iterable (like a collection or array)
-                        if (isset($customer['loanApplication']) && !is_null($customer['loanApplication'])) {
+                        if (isset($customer['loanApplication']) && !is_null($customer['loanApplication'])) 
+                        {
 
-                        // Flag to indicate if a non-rejected loan application is found
-                        $hasNonRejectedLoan = false;
-        
-                        foreach ($customer['loanApplication'] as $loan) {
-                            // If the document_status_code is not rejected, flag it and break the loop
-                            if ($loan['document_status_code'] != $document_status_reject->id) {
-                                $hasNonRejectedLoan = true;
-                                break; // Exit loop after finding the first non-rejected loan
+                            // Flag to indicate if a non-rejected loan application is found
+                            $hasNonRejectedLoan = false;
+            
+                            foreach ($customer['loanApplication'] as $loan) 
+                            {
+                                // If the document_status_code is not rejected, flag it and break the loop
+                                if ($loan['document_status_code'] != $document_status_reject->id) 
+                                {
+                                    $hasNonRejectedLoan = true;
+                                    break; // Exit loop after finding the first non-rejected loan
+                                }
                             }
-                        }
-        
-                        // Only add customer if they have at least one non-rejected loan
-                        if ($hasNonRejectedLoan) {
-                            $customerDatas[] = $customer;
+            
+                            // Only add customer if they have at least one non-rejected loan
+                            if ($hasNonRejectedLoan) 
+                            {
+                                $customerDatas[] = $customer;
+                            }
                         }
                     }
                 }
             }
-        }
 
         if(!count($customerDatas) > 0)
         {

@@ -41,6 +41,11 @@ class LoanApplicationResource extends JsonResource
             'family_name' => $this->family_name,
             'first_name' => $this->first_name,
             'middle_name' => $this->middle_name,
+            'approved_by_user' => $this->approved_by_user,
+            'rejected_by_user' => $this->rejected_by_user,
+            'prepared_by_user' => $this->prepared_by_user,
+            'released_by_user' => $this->released_by_user,
+            'last_modified_by_user' => $this->last_modified_by_user,
         ];
     }
 }

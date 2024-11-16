@@ -894,7 +894,7 @@ Route::middleware('auth:sanctum')->prefix('FEES_AUTH')->group(function () use ($
 
 
 //loan applications
-Route::middleware('auth:sanctum')->prefix('LOAN_APPLICATIONS_AUTH')->group(function () use ($LOAN_APPLICATIONS, $VIEW, $CREATE, $UPDATE, $DELETE) {
+Route::middleware('auth:sanctum')->prefix('LOAN_APPLICATIONS_AUTH')->group(function () use ($LOAN_APPLICATIONS, $VIEW, $CREATE, $UPDATE, $DELETE, $APPROVE, $REJECT) {
     Route::patch('/view', function () {
         return response()->json(['message' => 'Access granted']);
     })->middleware("document_access:$LOAN_APPLICATIONS, $VIEW");
@@ -906,6 +906,14 @@ Route::middleware('auth:sanctum')->prefix('LOAN_APPLICATIONS_AUTH')->group(funct
     Route::patch('/create', function () {
         return response()->json(['message' => 'Access granted']);
     })->middleware("document_access:$LOAN_APPLICATIONS, $CREATE");
+
+    Route::patch('/approve', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$LOAN_APPLICATIONS, $APPROVE");
+
+    Route::patch('/reject', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$LOAN_APPLICATIONS, $REJECT");
 });
 
 

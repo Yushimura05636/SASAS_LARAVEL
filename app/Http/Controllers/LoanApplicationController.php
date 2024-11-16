@@ -216,14 +216,6 @@ class LoanApplicationController extends Controller
             $userId = auth()->user()->id;
             $data = $request->input('allCustomerData');
 
-            // Define helper functions within store
-
-            $validateCustomerCount = function() use ($data) {
-                if (count($data) < 4) {
-                    throw new \Exception('The amount of customers should be at least 4');
-                }
-            };
-
             $checkPendingLoans = function() use ($data) {
                 foreach ($data as $customerData) {
 
@@ -325,7 +317,6 @@ class LoanApplicationController extends Controller
             };
 
             // Run the validation and checks
-            $validateCustomerCount();
             $checkPendingLoans();
             $checkGroupBalances();
             $checkCoMakerBalances();

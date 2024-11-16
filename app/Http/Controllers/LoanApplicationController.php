@@ -97,7 +97,7 @@ class LoanApplicationController extends Controller
             
             if(isset($last_modified_by_user) && !is_null($last_modified_by_user))
             {
-                $loanApp->approved_by_user = $last_modified_by_user->last_name . ' '
+                $loanApp->last_modified_by_user = $last_modified_by_user->last_name . ' '
                 . $last_modified_by_user->first_name . ' '
                 . $last_modified_by_user->middle_name ?? null;
             }

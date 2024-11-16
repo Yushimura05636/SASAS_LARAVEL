@@ -106,6 +106,8 @@ class LoanApplicationController extends Controller
             $loanApp->released_by_user = $userAccounts[$loanApp->released_by_id]->full_name ?? null;
             $loanApp->last_modified_by_user = $userAccounts[$loanApp->last_modified_by_id]->full_name ?? null;
         }
+
+        throw new Exception($loanApps);
     
         // Step 6: Create a map of loan applications, linking to customer and personality data
         $loanAppsMap = [];

@@ -108,7 +108,7 @@ class AuthPermission extends Model
 
     private static function getPermissionId(string $description, string $model = null): int
     {
-        return $model::where('description', $description)->first()?->id ?? 0; // Return 0 if not found
+        return $model::where('description', 'like', "%{$description}%")->first()?->id ?? 0; // Return 0 if not found
     }
 
     // Getters for the permission IDs

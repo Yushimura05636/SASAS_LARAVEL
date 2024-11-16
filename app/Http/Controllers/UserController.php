@@ -114,7 +114,7 @@ class UserController extends Controller
 
     public function sendCode(Request $request)
     {
-        //return response()->json(['message', $request->all()], Response::HTTP_INTERNAL_SERVER_ERROR);
+        
         $request->validate(['email' => 'required']);
         $request->validate(['method' => 'required']);
 
@@ -123,6 +123,14 @@ class UserController extends Controller
             $emailVerificaiton = new EmailVerificationController($request);
             return $emailVerificaiton->sendEmailVerification();
         }
+
+        if($request->method == 'email.customer')
+        {
+            $emailVerificaiton = new EmailVerificationController($request);
+            return $emailVerificaiton->sendEmailVerificationUsingMemory();
+        }
+
+        throw new \Exception('stop');
 
         if($request->method == 'phone')
         {
@@ -143,17 +151,29 @@ class UserController extends Controller
 
     public function verifyCode(Request $request)
     {
+        //throw new \Exception('stop');
+
         $request->validate(['email' => 'required']);
         // return response()->json([
         //     'message' => 'hello',
         // ], Response::HTTP_INTERNAL_SERVER_ERROR);
         // $request->validate(['code' => 'required', 'email' => 'required']);
 
+        
+
         if($request->method == 'email')
         {
             $request->validate(['code' => 'required']);
             $verifyEmail = new EmailVerificationController($request);
             return $verifyEmail->verifyEmailCode();
+        }
+
+
+        if($request->method == 'email.customer')
+        {
+            $request->validate(['code' => 'required']);
+            $verifyEmail = new EmailVerificationController($request);
+            return $verifyEmail->verifyEmailCodeUsingMemory();
         }
 
         if($request->method == 'phone')

@@ -35,6 +35,8 @@ class DocumentAccess
         $documentId = '';
         $clientSentPermissionValue = '';
 
+        //return response()->json([$requiredPermissionValue, $requiredDocId], Response::HTTP_INTERNAL_SERVER_ERROR);
+
         if($request->input('docId') && $request->input('perm'))
         {
            // Retrieve docId and perm from the request (either POST body or GET parameters)

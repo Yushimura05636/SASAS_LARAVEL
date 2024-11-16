@@ -176,14 +176,17 @@ class PaymentController extends Controller
 
             $document_status = Document_Status_Code::where('description', 'like', '%Reject%')->first();
 
-            if($payment['document_stauts_code'] == $document_status->id)
+            if($payment['document_status_code'] == $document_status->id)
             {
-                throw new \Exception('Payment is already been rejected!');
+                return response()->json(['message' => 'Payment is already been rejected!'], Response::HTTP_INTERNAL_SERVER_ERROR);
             }
 
-            //throw new \Exception('stop');
-
             $document_status = Document_Status_Code::where('description', 'like', '%Approve%')->first();
+
+            if($payment['document_status_code'] == $document_status->id)
+            {
+                return response()->json(['message' => 'Payment is already been approved!'], Response::HTTP_INTERNAL_SERVER_ERROR);
+            }
 
             // Create the payment record
             $paymentData = [
@@ -228,6 +231,20 @@ class PaymentController extends Controller
             $payment = $request->input('jsonObject.state.payment');
             $payment_status_description = $request->input('jsonObject.payment_status_description');
             
+            $document_status = Document_Status_Code::where('description', 'like', '%Reject%')->first();
+
+            if($payment['document_status_code'] == $document_status->id)
+            {
+                return response()->json(['message' => 'Payment is already been rejected!'], Response::HTTP_INTERNAL_SERVER_ERROR);
+            }
+
+            $document_status = Document_Status_Code::where('description', 'like', '%Approve%')->first();
+
+            if($payment['document_status_code'] == $document_status->id)
+            {
+                return response()->json(['message' => 'Payment is already been approved!'], Response::HTTP_INTERNAL_SERVER_ERROR);
+            }
+
             //get the reject payment code
             $document_status_code = Document_Status_Code::where('description', 'like', "%{$payment_status_description}%")->first()->id;
 

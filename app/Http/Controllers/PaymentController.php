@@ -845,6 +845,20 @@ if (empty($loanApplicationNos)) {
         try {
             // Get payment details from request
             $payment = $request->input('payment');
+
+            $document_status = Document_Status_Code::where('description', 'like', '%Reject%')->first();
+
+            if($payment['document_status_code'] == $document_status->id)
+            {
+                return response()->json(['message' => 'Payment is already been rejected!'], Response::HTTP_INTERNAL_SERVER_ERROR);
+            }
+
+            $document_status = Document_Status_Code::where('description', 'like', '%Approve%')->first();
+
+            if($payment['document_status_code'] == $document_status->id)
+            {
+                return response()->json(['message' => 'Payment is already been approved!'], Response::HTTP_INTERNAL_SERVER_ERROR);
+            }
             
             // Find the payment record and update it
             $customer_payment = Payment::where('id', $payment['id'])->first();

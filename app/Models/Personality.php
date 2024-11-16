@@ -46,76 +46,78 @@ class Personality extends Model
     ];
 
     /**
-     * Get the branch that the personality belongs to.
-     */
-    // public function branch(): BelongsTo
-    // {
-    //     return $this->belongsTo(Branch::class, 'branch_id', 'id');
-    // }
-
+ * Get the branch that the personality belongs to.
+ */
     /**
-     * Get the barangay that the personality belongs to.
-     */
-    // public function barangay(): BelongsTo
-    // {
-    //     return $this->belongsTo(Barangay::class, 'barangay_id', 'id');
-    // }
+ * Get the branch that the personality belongs to.
+ */
+public function branch(): BelongsTo
+{
+    return $this->belongsTo(Branch::class, 'branch_id', 'id');
+}
 
-    /**
-     * Get the city that the personality belongs to.
-     */
-    // public function city(): BelongsTo
-    // {
-    //     return $this->belongsTo(City::class, 'city_id', 'id');
-    // }
+/**
+ * Get the barangay that the personality belongs to.
+ */
+public function barangay(): BelongsTo
+{
+    return $this->belongsTo(Barangay::class, 'barangay_id', 'id');
+}
 
-    // /**
-    //  * Get the country that the personality belongs to.
-    //  */
-    // public function country(): BelongsTo
-    // {
-    //     return $this->belongsTo(Country::class, 'country_id', 'id');
-    // }
+/**
+ * Get the city that the personality belongs to.
+ */
+public function city(): BelongsTo
+{
+    return $this->belongsTo(City::class, 'city_id', 'id');
+}
 
-    // /**
-    //  * Get the province that the personality belongs to.
-    //  */
-    // public function province(): BelongsTo
-    // {
-    //     return $this->belongsTo(Province::class, 'province_id', 'id');
-    // }
+/**
+ * Get the country that the personality belongs to.
+ */
+public function country(): BelongsTo
+{
+    return $this->belongsTo(Country::class, 'country_id', 'id');
+}
 
-    // /**
-    //  * Get the spouse of the personality.
-    //  */
-    // public function spouse(): BelongsTo
-    // {
-    //     return $this->belongsTo(Personality::class, 'personality_id', 'id');
-    // }
+/**
+ * Get the province that the personality belongs to.
+ */
+public function province(): BelongsTo
+{
+    return $this->belongsTo(Province::class, 'province_id', 'id');
+}
 
-    // /**
-    //  * Get the credit status of the personality.
-    //  */
-    // public function creditStatus(): BelongsTo
-    // {
-    //     return $this->belongsTo(Credit_Status::class, 'credit_status_id', 'id');
-    // }
+/**
+ * Get the spouse of the personality.
+ */
+public function spouse(): BelongsTo
+{
+    return $this->belongsTo(Personality::class, 'personality_id', 'id');
+}
 
-    // /**
-    //  * Get the personality status of the personality.
-    //  */
-    // public function personalityStatus(): BelongsTo
-    // {
-    //     return $this->belongsTo(Personality_Status_Map::class, 'personality_status_map', 'id');
-    // }
+/**
+ * Get the credit status of the personality.
+ */
+public function creditStatus(): BelongsTo
+{
+    return $this->belongsTo(Credit_Status::class, 'credit_status_id', 'id');
+}
 
+/**
+ * Get the personality status of the personality.
+ */
+public function personalityStatus(): BelongsTo
+{
+    return $this->belongsTo(Personality_Status_Map::class, 'personality_status_map', 'id');
+}
     public function employee(): HasOne
     {
-        return $this->hasOne(Employee::class,'personality_id', 'id');
+        return $this->hasOne(Employee::class,'id', 'personality_id');
     }
 
     public function customer(): HasOne
     {
-        return $this->hasOne(Customer::class,'personality_id', 'id');
+        return $this->hasOne(Customer::class,'id', 'personality_id');
     }
 }

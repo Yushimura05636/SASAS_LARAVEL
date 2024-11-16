@@ -734,14 +734,17 @@ class CustomerPersonalityController extends Controller
         }
     }
 
-    public function showGroupApprove(int $id)
+    public function showGroupApproveNoReject(int $id)
     {
 
         //get first the approve id
         $personalityStatusId = Personality_Status_Map::where('description', 'Approved')->first()->id;
 
+        //get the reject loan
+        $document_status_reject = Document_Status_Code::where('description', 'like', '%Reject%')->first();
+
         $customers = Customer::where('group_id', $id)
-        ->with('personality')  // Include related personality data
+        ->with(['personality', 'loanApplication'])  // Eager load relationships
         ->orderBy('personality_id')
         ->get();
 
@@ -765,14 +768,34 @@ class CustomerPersonalityController extends Controller
         $customerDatas = [];
 
         foreach ($customers as $customer) {
-            if ($customer['personality']['personality_status_code'] == $personalityStatusId) {
-                $customerDatas[] = $customer; // Using array shorthand
+            if (isset($customer['personality']['personality_status_code']) && 
+                $customer['personality']['personality_status_code'] == $personalityStatusId) {
+        
+                    // Check if document_status_reject exists
+                    if (isset($document_status_reject) && !is_null($document_status_reject)) {
+                        
+                        // Ensure loan_application is a non-empty iterable (like a collection or array)
+                        if (isset($customer['loanApplication']) && !is_null($customer['loanApplication'])) {
+
+                        // Flag to indicate if a non-rejected loan application is found
+                        $hasNonRejectedLoan = false;
+        
+                        foreach ($customer['loanApplication'] as $loan) {
+                            // If the document_status_code is not rejected, flag it and break the loop
+                            if ($loan['document_status_code'] != $document_status_reject->id) {
+                                $hasNonRejectedLoan = true;
+                                break; // Exit loop after finding the first non-rejected loan
+                            }
+                        }
+        
+                        // Only add customer if they have at least one non-rejected loan
+                        if ($hasNonRejectedLoan) {
+                            $customerDatas[] = $customer;
+                        }
+                    }
+                }
             }
         }
-
-        // return response()->json([
-        //     'message group' => $customerDatas,
-        // ], Response::HTTP_INTERNAL_SERVER_ERROR);
 
         if(!count($customerDatas) > 0)
         {
@@ -784,8 +807,100 @@ class CustomerPersonalityController extends Controller
         return response()->json([
             'data' => $customerDatas,
         ]);
+    }
 
+    public function showGroupApproveNoPending(int $id)
+    {
 
+        //get first the approve id
+        $personalityStatusId = Personality_Status_Map::where('description', 'Approved')->first()->id;
+
+        //get the reject loan
+        $document_status_pending = Document_Status_Code::where('description', 'like', '%Pending%')->first();
+
+        $customers = Customer::where('group_id', $id)
+        ->with(['personality', 'loanApplication'])  // Eager load relationships
+        ->orderBy('personality_id')
+        ->get();
+
+        foreach($customers as $customer)
+        {
+            if(!is_null($customer))
+            {
+                $canReloan = Payment_Schedule::where('customer_id', $customer->id)
+                ->whereNotIn('payment_status_code', ['PAID', 'PARTIALLY PAID, FORWARDED'])
+                ->where('payment_status_code', ['UNPAID', 'PARTIALLY PAID'])
+                ->doesntExist();
+
+                //throw new \Exception($canReloan . ' ' . $customer->id);
+                if(!$canReloan > 0 || is_null($canReloan))
+                {
+                    throw new \Exception('The group cannot be able to loan or reloan because there is still member that has dues.');
+                }
+            }
+        }
+        
+        $customerDatas = [];
+        $debug = [];
+
+        foreach ($customers as $customer) 
+        {
+            if (isset($customer['personality']['personality_status_code']) && 
+                $customer['personality']['personality_status_code'] == $personalityStatusId) 
+            {
+                $hasNonPendingLoan = false;
+                $hasLoanRecords = false;
+                    
+                // Check if document_status_pending exists
+                if (isset($document_status_pending) && !is_null($document_status_pending)) 
+                {
+                    
+                    // Ensure loan_application is a non-empty iterable (like a collection or array)
+                    if (isset($customer['loanApplication']) && !is_null($customer['loanApplication'])) 
+                    {
+
+                        // Flag to indicate if a non-rejected loan application is found
+                        $hasNonPendingLoan = false;
+        
+                        foreach ($customer['loanApplication'] as $loan) 
+                        {
+                            // If the document_status_code is not rejected, flag it and break the loop
+                            if ($loan['document_status_code'] != $document_status_pending->id) 
+                            {
+                                $hasNonPendingLoan = true;
+                                break; // Exit loop after finding the first non-rejected loan
+                            }
+                            else
+                            {
+                                $hasLoanRecords = true;
+                            }
+                        }
+        
+                        // Only add customer if they have at least one non-rejected loan
+                        if ($hasNonPendingLoan) 
+                        {
+                            $customerDatas[] = $customer;
+                        }
+                    }
+
+                    if($hasNonPendingLoan === false && $hasLoanRecords === false)
+                    {
+                        $customerDatas[] = $customer;
+                    }
+                }                
+            }   
+        }
+
+        if(!count($customerDatas) > 0)
+        {
+            return response()->json([
+                'message' => 'there is no customer in this group'
+            ], Response::HTTP_NOT_FOUND);
+        }
+
+        return response()->json([
+            'data' => $customerDatas,
+        ]);
     }
 
     public function showGroupApproveActive(int $id)

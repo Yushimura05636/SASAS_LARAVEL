@@ -896,6 +896,17 @@ public function reject(Request $request, CustomerPersonalityController $customer
                             {
                                 throw new \Exception('A member in the group is not APPROVED nor ACTIVE');
                             }
+
+                            $document_status_reject = Document_Status_Code::where('id', $dat['document_status_code'])
+                            ->first();
+
+                            if(isset($document_status_reject) && !is_null($document_status_reject))
+                            {
+                                if($document_status_reject->id == $dat['document_status_code'])
+                                {
+                                    return response()->json(['message' => "The customer {$dat['personality']['family_name']} {$dat['personality']['first_name']} {$dat['personality']['middle_name']}"], Response::HTTP_INTERNAL_SERVER_ERROR);
+                                }
+                            }
                         }
                     }
                 }

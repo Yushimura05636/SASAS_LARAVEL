@@ -7,6 +7,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Customer extends Model
 {
@@ -45,11 +46,16 @@ class Customer extends Model
 
     public function personality(): BelongsTo
     {
-        return $this->belongsTo(Personality::class,'personality_id', 'id');
+        return $this->belongsTo(Personality::class, 'personality_id', 'id');
     }
 
     public function loanCount(): BelongsTo
     {
         return $this->belongsTo(Loan_Count::class, 'loan_count', 'id');
+    }
+
+    public function loanApplication(): HasMany
+    {
+        return $this->hasMany(Loan_Application::class, 'customer_id', 'id');
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Document_Status_Code;
 use App\Models\Loan_Application;
 use App\Models\Payment;
 use App\Models\Payment_Schedule;
@@ -11,8 +12,16 @@ class ReportController extends Controller
 {
     public function index()
     {
+
+        $document_status = Document_Status_Code::where('description', 'like', '%Approve%')->first();
+
+        if(isset($document_status) && !is_null($document_status))
+        {
+            $document_status = $document_status->id;
+        }
+
         // Fetch only approved payments with customer and personality information
-        $approvedPayments = Payment::where('document_status_code', 'APPROVED')
+        $approvedPayments = Payment::where('document_status_code', $document_status)
             ->with('customer.personality:id,first_name,middle_name,family_name') // Eager load customer with personality data
             ->get(['id', 'customer_id', 'prepared_at', 'amount_paid']);
     

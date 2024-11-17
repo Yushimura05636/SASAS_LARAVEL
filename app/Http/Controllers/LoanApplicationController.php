@@ -86,6 +86,14 @@ class LoanApplicationController extends Controller
         // Loop through loanApps and assign user names
         foreach ($loanApps as $loanApp) {
 
+            //get the value of the factor rate
+            $factor_rate = Factor_Rate::where('id', $loanApp['factor_rate'])->first();
+
+            if(isset($factor_rate) && !is_null($factor_rate))
+            {
+                $loanApp->factor_rate_value = $factor_rate->value;
+            }
+
             $document_status_description = Document_Status_Code::where('id', $loanApp['document_status_code'])->first();
 
             if(isset($document_status_description) && !is_null($document_status_description))

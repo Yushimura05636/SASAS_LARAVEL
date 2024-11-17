@@ -1135,7 +1135,6 @@ class CustomerPersonalityController extends Controller
         $customerData = $request->input('customer');
         $personalityData = $request->input('personality');
         $customerFees = $request->input('fees');
-        $captchaData = $request->input('recaptchaResponse');
     
         // Get the personality status code
         $personalityStatusId = Personality_Status_Map::where('description', 'Pending')->first()->id;
@@ -1151,17 +1150,6 @@ class CustomerPersonalityController extends Controller
         // Validate data
         $validate = Validator::make($datas, $rules);
         if ($validate->fails()) {
-            return response()->json([
-                'message' => 'Validation error!',
-                'data' => $datas,
-                'error' => $validate->errors(),
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
-        }
-
-        $validate_captcha = Validator::make($request->all(), [
-            'recaptchaResponse' => 'required',
-        ]);
-        if ($validate_captcha->fails()) {
             return response()->json([
                 'message' => 'Validation error!',
                 'data' => $datas,

@@ -1123,7 +1123,8 @@ class CustomerPersonalityController extends Controller
         PaymentScheduleController $paymentScheduleController,
         CustomerController $customerController,
         PersonalityController $personalityController,
-        UserController $userAccount
+        UserController $userAccount,
+        CaptchaController $captchaController,
     ) {
         // Summons the storeRequest from both controllers
         $customerStoreRequest = new CustomerStoreRequest();
@@ -1134,6 +1135,7 @@ class CustomerPersonalityController extends Controller
         $customerData = $request->input('customer');
         $personalityData = $request->input('personality');
         $customerFees = $request->input('fees');
+        $captchaData = $request->input('recaptchaResponse');
     
         // Get the personality status code
         $personalityStatusId = Personality_Status_Map::where('description', 'Pending')->first()->id;
@@ -1155,10 +1157,28 @@ class CustomerPersonalityController extends Controller
                 'error' => $validate->errors(),
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
+
+        $validate_captcha = Validator::make($request->all(), [
+            'recaptchaResponse' => 'required',
+        ]);
+        if ($validate_captcha->fails()) {
+            return response()->json([
+                'message' => 'Validation error!',
+                'data' => $datas,
+                'error' => $validate->errors(),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     
         try {
             // Start a database transaction
             DB::beginTransaction();
+
+            $captcha_result = $captchaController->store($request);
+
+            if(is_null($captcha_result))
+            {
+                throw new \Exception('captcha needs to be performed!');
+            }
     
             // First, store the personality
             $requestForPersonality = new Request();

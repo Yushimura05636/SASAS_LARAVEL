@@ -38,6 +38,7 @@ class AuthPermission extends Model
     private static int $REQUIREMENTS;
     private static int $HOLIDAYS;
 
+    private static int $DASHBOARD_EMPLOYEES;
 
 
 
@@ -84,6 +85,7 @@ class AuthPermission extends Model
         self::$CUSTOMER_REQUIREMENTS = self::getPermissionId('CUSTOMER_REQUIREMENTS', Document_Map::class);
         self::$REQUIREMENTS = self::getPermissionId('REQUIREMENTS', Document_Map::class);
         self::$HOLIDAYS = self::getPermissionId('HOLIDAYS', Document_Map::class);
+        self::$DASHBOARD_EMPLOYEES = self::getPermissionId('DASHBOARD_EMPLOYEES', Document_Map::class);
 
 
         self::$CREATE = self::getPermissionId('CREATE', Document_Permission_Map::class);
@@ -228,6 +230,14 @@ class AuthPermission extends Model
     {
         return self::$LOAN_APPLICATION_COMAKERS;
     }
+
+    public static function DASHBOARD_EMPLOYEES(): int
+    {
+        return self::$DASHBOARD_EMPLOYEES;
+    }
+
+
+    //unique
 
     public static function CREATE_PERM(): int
     {

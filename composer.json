@@ -7,6 +7,7 @@
     "require": {
         "php": "^8.2",
         "ext-pdo_mysql": "*",
+        "anhskohbo/no-captcha": "^3.6",
         "getbrevo/brevo-php": "^2.0",
         "laravel/framework": "^11.0",
         "laravel/sanctum": "^4.0",

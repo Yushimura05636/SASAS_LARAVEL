@@ -74,6 +74,8 @@ $CUSTOMER_REQUIREMENTS = AuthPermission::CUSTOMER_REQUIREMENTS();
 $REQUIREMENTS = AuthPermission::REQUIREMENTS();
 $HOLIDAYS = AuthPermission::HOLIDAYS();
 
+$DASHBOARD_EMPLOYEES = AuthPermission::DASHBOARD_EMPLOYEES();
+
 
 $VIEW =   AuthPermission::VIEW_PERM();
 $CREATE = AuthPermission::CREATE_PERM();
@@ -995,6 +997,21 @@ Route::middleware('auth:sanctum')->prefix('PAYMENT_SCHEDULES_AUTH')->group(funct
     Route::patch('/create', function () {
         return response()->json(['message' => 'Access granted']);
     })->middleware("document_access:$PAYMENT_LINES, $CREATE");
+});
+
+//Dashboard Admin
+Route::middleware('auth:sanctum')->prefix('DASHBOARD_EMPLOYEES_AUTH')->group(function () use ($DASHBOARD_EMPLOYEES, $VIEW, $CREATE, $UPDATE, $DELETE) {
+    Route::patch('/view', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$DASHBOARD_EMPLOYEES, $VIEW");
+    
+    Route::patch('/update', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$DASHBOARD_EMPLOYEES, $UPDATE");
+    
+    Route::patch('/create', function () {
+        return response()->json(['message' => 'Access granted']);
+    })->middleware("document_access:$DASHBOARD_EMPLOYEES, $CREATE");
 });
 
 }

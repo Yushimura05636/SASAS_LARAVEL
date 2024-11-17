@@ -307,12 +307,12 @@ class DatabaseSeeder extends Seeder
         ]);
 
         User_Account::create([
-            'last_name' => 'Layur',
-            'first_name' => 'Yapsuri',
+            'last_name' => 'Segurog',
+            'first_name' => 'Mabby',
             'middle_name' => 'Kui',
-            'email' => 'Layuor0@gmail.com',
+            'email' => 'segurogmaviel07@gmail.com',
             'phone_number' => '09606863294',
-            'password' => Hash::make('password'),
+            'password' => Hash::make('Lendcash123'),
             'employee_id' => 2,
             'customer_id' => null,
             'status_id' => 1,

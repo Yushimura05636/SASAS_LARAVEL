@@ -749,5 +749,191 @@ class DatabaseSeeder extends Seeder
             'created_at' => now(),
             'updated_at' => now(),
         ]);
+
+        
+        //BINI SEEDER
+        Personality::create([
+            'datetime_registered' => now(),
+            'family_name' => 'Arceta',
+            'middle_name' => 'Bini',
+            'first_name' => 'Aiah',
+            'birthday' => '2001-01-27',
+            'civil_status' => 1, // Single
+            'gender_code' => 2, // Female
+            'house_street' => 'Cebu',
+            'purok_zone' => '16',
+            'postal_code' => '8001',
+            'telephone_no' => '022010202',
+            'email_address' => 'ericramones1253@gmail.com',
+            'cellphone_no' => '09171234567',
+            'name_type_code' => 2,
+            'personality_status_code' => 2,
+            'barangay_id' => 5, // Adjust based on your data
+            'city_id' => 1, // Adjust based on your data
+            'country_id' => 1, // Adjust based on your data
+            'province_id' => 1, // Adjust based on your data
+            'credit_status_id' => 1, // Adjust based on your data
+            'notes' => 'New to the area.',
+        ]);
+
+        Customer::create([
+            'group_id' => 3, // Adjust as necessary
+            'passbook_no' => 322312, // Example passbook number
+            'loan_count' => 1, // Initial loan count
+            'personality_id' => 12, // ID of Lily Carter
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        User_Account::create([
+            'last_name' => 'Arceta',
+            'first_name' => 'Aiah',
+            'middle_name' => 'Bini',
+            'email' => 'ericramones1253@gmail.com',
+            'phone_number' => '09171234567',
+            'password' => Hash::make('password'),
+            'employee_id' => null,
+            'customer_id' => 9,
+            'status_id' => 1,
+        ]);
+
+
+        //BINI SEEDER
+        Personality::create([
+            'datetime_registered' => now(),
+            'family_name' => 'Lim',
+            'middle_name' => 'Bini',
+            'first_name' => 'Mikha',
+            'birthday' => '2003-11-08',
+            'civil_status' => 1, // Single
+            'gender_code' => 2, // Female
+            'house_street' => 'Cebu',
+            'purok_zone' => '16',
+            'postal_code' => '8001',
+            'telephone_no' => '022010202',
+            'email_address' => 'mikha_lim@gmail.com',
+            'cellphone_no' => '09172232567',
+            'name_type_code' => 2,
+            'personality_status_code' => 2,
+            'barangay_id' => 5, // Adjust based on your data
+            'city_id' => 1, // Adjust based on your data
+            'country_id' => 1, // Adjust based on your data
+            'province_id' => 1, // Adjust based on your data
+            'credit_status_id' => 1, // Adjust based on your data
+            'notes' => 'New to the area.',
+        ]);
+
+        Customer::create([
+            'group_id' => 3, // Adjust as necessary
+            'passbook_no' => 322317, // Example passbook number
+            'loan_count' => 1, // Initial loan count
+            'personality_id' => 13, // ID of Lily Carter
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        User_Account::create([
+            'last_name' => 'Lim',
+            'first_name' => 'Mikha',
+            'middle_name' => 'Bini',
+            'email' => 'mikha_lim@gmail.com',
+            'phone_number' => '09172232567',
+            'password' => Hash::make('password'),
+            'employee_id' => null,
+            'customer_id' => 10,
+            'status_id' => 1,
+        ]);
+
+        Personality::create([
+            'datetime_registered' => now(),
+            'family_name' => 'Yves',
+            'middle_name' => 'Bini',
+            'first_name' => 'Ricalde',
+            'birthday' => '2002-05-27',
+            'civil_status' => 1, // Single
+            'gender_code' => 2, // Female
+            'house_street' => 'Batangas',
+            'purok_zone' => '16',
+            'postal_code' => '8001',
+            'telephone_no' => '022010202',
+            'email_address' => 'lucky@gmail.com',
+            'cellphone_no' => '09171234267',
+            'name_type_code' => 2,
+            'personality_status_code' => 2,
+            'barangay_id' => 5, // Adjust based on your data
+            'city_id' => 1, // Adjust based on your data
+            'country_id' => 1, // Adjust based on your data
+            'province_id' => 1, // Adjust based on your data
+            'credit_status_id' => 1, // Adjust based on your data
+            'notes' => 'New to the area.',
+        ]);
+
+        Customer::create([
+            'group_id' => 3, // Adjust as necessary
+            'passbook_no' => 322313, // Example passbook number
+            'loan_count' => 1, // Initial loan count
+            'personality_id' => 14, // ID of Lily Carter
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        User_Account::create([
+            'last_name' => 'Yves',
+            'first_name' => 'Bini',
+            'middle_name' => 'Ricalde',
+            'email' => 'lucky@gmail.com',
+            'phone_number' => '09171234267',
+            'password' => Hash::make('password'),
+            'employee_id' => null,
+            'customer_id' => 11,
+            'status_id' => 1,
+        ]);
+
+
+        
+        Personality::create([
+            'datetime_registered' => now(),
+            'family_name' => 'Colet',
+            'middle_name' => 'Bini',
+            'first_name' => 'Vergara',
+            'birthday' => '2001-09-14',
+            'civil_status' => 1, // Single
+            'gender_code' => 2, // Female
+            'house_street' => 'Bohol',
+            'purok_zone' => '16',
+            'postal_code' => '8001',
+            'telephone_no' => '022010202',
+            'email_address' => 'anger@gmail.com',
+            'cellphone_no' => '09173214267',
+            'name_type_code' => 2,
+            'personality_status_code' => 2,
+            'barangay_id' => 5, // Adjust based on your data
+            'city_id' => 1, // Adjust based on your data
+            'country_id' => 1, // Adjust based on your data
+            'province_id' => 1, // Adjust based on your data
+            'credit_status_id' => 1, // Adjust based on your data
+            'notes' => 'New to the area.',
+        ]);
+
+        Customer::create([
+            'group_id' => 3, // Adjust as necessary
+            'passbook_no' => 322314, // Example passbook number
+            'loan_count' => 1, // Initial loan count
+            'personality_id' => 15, // ID of Lily Carter
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        User_Account::create([
+            'last_name' => 'Colet',
+            'first_name' => 'Bini',
+            'middle_name' => 'Vergara',
+            'email' => 'anger@gmail.com',
+            'phone_number' => '09173214267',
+            'password' => Hash::make('password'),
+            'employee_id' => null,
+            'customer_id' => 12,
+            'status_id' => 1,
+        ]);
     }
 }

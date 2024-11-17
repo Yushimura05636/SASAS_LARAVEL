@@ -728,108 +728,105 @@ class LoanApplicationController extends Controller
         }
 
         //return response()->json(['message' => 'done no error'], Response::HTTP_INTERNAL_SERVER_ERROR);
-
+        
         foreach($AllCustomerData as $data)
         {
-            if(!is_null($data))
+            if(!is_null($data) && isset($data))
             {
-                //return response()->json(['message' => $data], Response::HTTP_INTERNAL_SERVER_ERROR);
                 $loanApplicationNo = $data['loan_application_no'];
                 $customerId = $data['customer_id'];
-                //search loang application id
+        
+                // Search loan application id
                 $loanId = Loan_Application::where('loan_application_no', $loanApplicationNo)->first()->id;
-            $loanApproveId = Document_Status_Code::where('description', 'Approved')->first()->id;
-
-            $loanApplication = Loan_Application::findOrFail($loanId);
-
-            $loanApplication->document_status_code = $loanApproveId;
-            $loanApplication->approved_by_id = $userId;
-            $loanApplication->released_by_id = $userId;
-            $loanApplication->datetime_approved = now();
-            $loanApplication->save();
-            $loanApplication->fresh();
-
-            $passbookNo = Customer::where('id', $customerId)->first()->passbook_no;
-
-            $loanAmount = $data['amount_loan'];
-            $factorRateId = $data['factor_rate'];
-            $amountInterest = $data['amount_interest'];
-
-            $factorRate = Factor_Rate::findOrFail($factorRateId);
-            $paymentFrequencyId = $factorRate->payment_frequency_id;
-            $paymentDurationId = $factorRate->payment_duration_id;
-
-            $paymentFrequency = Payment_Frequency::findOrFail($paymentFrequencyId);
-            $paymentDuration = Payment_Duration::findOrFail($paymentDurationId);
-
-            $loanReleasePayload = [
-                'datetime_prepared' => now(),
-                'passbook_number' => $passbookNo,
-                'loan_application_id' => $loanId,
-                'prepared_by_id' => $userId,
-                'amount_loan' => $loanAmount,
-                'amount_interest' => $amountInterest,
-                'datetime_first_due' => now()->addDays($paymentFrequency->days_interval),
-                'notes' => $request->get('notes', null),
-            ];
-
-            $loanReleasePayload = new Request($loanReleasePayload);
-
-            //create loan release data
-            $loanRelease = $loanReleaseService->createLoanRelease($loanReleasePayload);
-
-            //get the numuber of payments
-            $numberOfPayments = $paymentDuration->number_of_payments;
-
-            //calculate amount due
-            $amountDue = (($loanAmount + $amountInterest) / $numberOfPayments);
-
-            //get amount interest
-            $amountInterestPerPayment = $amountInterest / $numberOfPayments;
-
-            $firstDueDate = $loanReleasePayload['datetime_first_due'];
-
-            //throw new \Exception($amountDue);
-
-            $paymentFrequency = $paymentFrequency->days_interval; // Weekly interval in days
-
-            $holidays = Holiday::get();
-
-            for($i = 0; $i < $numberOfPayments; $i++)
-            {
-                foreach($holidays as $k => $holiday)
-                {
-                    if(!is_null($holiday))
-                    {
-                        if($firstDueDate == $holiday->date || $firstDueDate->isSunday())
-                        {
-                            $debug[$i] = $firstDueDate = $firstDueDate->addDays();
+                $loanApproveId = Document_Status_Code::where('description', 'Approved')->first()->id;
+        
+                $loanApplication = Loan_Application::findOrFail($loanId);
+                $loanApplication->document_status_code = $loanApproveId;
+                $loanApplication->approved_by_id = $userId;
+                $loanApplication->released_by_id = $userId;
+                $loanApplication->datetime_approved = now();
+                $loanApplication->save();
+                $loanApplication->fresh();
+        
+                $passbookNo = Customer::where('id', $customerId)->first()->passbook_no;
+        
+                $loanAmount = $data['amount_loan'];
+                $factorRateId = $data['factor_rate'];
+                $amountInterest = $data['amount_interest'];
+        
+                $factorRate = Factor_Rate::findOrFail($factorRateId);
+                $paymentFrequencyId = $factorRate->payment_frequency_id;
+                $paymentDurationId = $factorRate->payment_duration_id;
+        
+                $paymentFrequency = Payment_Frequency::findOrFail($paymentFrequencyId);
+                $paymentDuration = Payment_Duration::findOrFail($paymentDurationId);
+        
+                $loanReleasePayload = [
+                    'datetime_prepared' => now(),
+                    'passbook_number' => $passbookNo,
+                    'loan_application_id' => $loanId,
+                    'prepared_by_id' => $userId,
+                    'amount_loan' => $loanAmount,
+                    'amount_interest' => $amountInterest,
+                    'datetime_first_due' => now()->addDays($paymentFrequency->days_interval),
+                    'notes' => $request->get('notes', null),
+                ];
+        
+                $loanReleasePayload = new Request($loanReleasePayload);
+        
+                // Create loan release data
+                $loanRelease = $loanReleaseService->createLoanRelease($loanReleasePayload);
+        
+                // Get the number of payments
+                $numberOfPayments = $paymentDuration->number_of_payments;
+        
+                // Calculate base amount due
+                $totalAmount = $loanAmount + $amountInterest;
+                $baseAmountDue = round($totalAmount / $numberOfPayments, 2);
+        
+                // Calculate total from rounded payments
+                $roundedTotal = $baseAmountDue * $numberOfPayments;
+        
+                // Calculate the remainder to add to the last payment
+                $remainder = round($totalAmount - $roundedTotal, 2);
+        
+                $firstDueDate = $loanReleasePayload['datetime_first_due'];
+                $paymentFrequency = $paymentFrequency->days_interval; // Weekly interval in days
+                $holidays = Holiday::get();
+        
+                for ($i = 0; $i < $numberOfPayments; $i++) {
+                    foreach ($holidays as $k => $holiday) {
+                        if (!is_null($holiday)) {
+                            if ($firstDueDate == $holiday->date || $firstDueDate->isSunday()) {
+                                $debug[$i] = $firstDueDate = $firstDueDate->addDays();
+                            }
                         }
                     }
-                }
-
-                $payload = [
-                    'customer_id' => $customerId,
-                    'loan_released_id' => $loanRelease->id,
-                    'datetime_due' => $firstDueDate,
-                    'amount_due' => $amountDue,
-                    'amount_interest' => $amountInterestPerPayment,
-                    'amount_paid' => 0,
-                    'payment_status_code' => 'UNPAID',
-                    'remarks' => null,
-                ];
-
-                $payload = new Request($payload);
-                $paymentScheduleService->createPaymentSchedule($payload);
-
-                $dateDebug[$i] = $firstDueDate = $firstDueDate->copy()->addDays($paymentFrequency);
+        
+                    // Adjust the last payment with the remainder
+                    $currentAmountDue = ($i == $numberOfPayments - 1) 
+                        ? $baseAmountDue + $remainder 
+                        : $baseAmountDue;
+        
+                    $payload = [
+                        'customer_id' => $customerId,
+                        'loan_released_id' => $loanRelease->id,
+                        'datetime_due' => $firstDueDate,
+                        'amount_due' => $currentAmountDue,
+                        'amount_interest' => round($amountInterest / $numberOfPayments, 2),
+                        'amount_paid' => 0,
+                        'payment_status_code' => 'UNPAID',
+                        'remarks' => null,
+                    ];
+        
+                    $payload = new Request($payload);
+                    $paymentScheduleService->createPaymentSchedule($payload);
+        
+                    $dateDebug[$i] = $firstDueDate = $firstDueDate->copy()->addDays($paymentFrequency);
                 }
             }
-
-
         }
-
-
+        
         //return response()->json(['message' => $debug, 'message date' => $dateDebug], Response::HTTP_INTERNAL_SERVER_ERROR);
 
         DB::commit();

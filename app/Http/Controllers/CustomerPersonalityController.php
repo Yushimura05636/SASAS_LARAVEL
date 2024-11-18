@@ -1160,13 +1160,6 @@ class CustomerPersonalityController extends Controller
         try {
             // Start a database transaction
             DB::beginTransaction();
-
-            $captcha_result = $captchaController->store($request);
-
-            if(is_null($captcha_result))
-            {
-                throw new \Exception('captcha needs to be performed!');
-            }
     
             // First, store the personality
             $requestForPersonality = new Request();

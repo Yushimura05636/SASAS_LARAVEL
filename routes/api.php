@@ -1084,3 +1084,5 @@ Route::middleware('auth:sanctum')->prefix('DASHBOARD')->group(function () {
 
 
 
+//login dummy
+Route::post('/loginDebug', [AuthController::class, 'loginDebug']);

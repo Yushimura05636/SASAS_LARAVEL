@@ -1124,7 +1124,6 @@ class CustomerPersonalityController extends Controller
         CustomerController $customerController,
         PersonalityController $personalityController,
         UserController $userAccount,
-        CaptchaController $captchaController,
     ) {
         // Summons the storeRequest from both controllers
         $customerStoreRequest = new CustomerStoreRequest();
@@ -1251,7 +1250,4 @@ class CustomerPersonalityController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-    
-    
-    
 }

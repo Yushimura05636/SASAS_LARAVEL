@@ -27,6 +27,9 @@ return new class extends Migration
             $table->foreign('group_id')->references('id')->on('customer_group')->onDelete('cascade');
             $table->foreign('personality_id')->references('id')->on('personality')->onDelete('cascade');
 
+            #gi add nako karung nov 18 2024
+            $table->unique('passbook_no');
+
             $table->timestamps();
         });
     }

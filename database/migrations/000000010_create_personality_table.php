@@ -26,7 +26,7 @@ return new class extends Migration
             $table->string('house_street');
             $table->string('purok_zone');
             $table->string('postal_code');
-            $table->string('telephone_no');
+            $table->string('telephone_no')->nullable();
             $table->string('email_address');
             $table->string('cellphone_no');
 
@@ -43,6 +43,11 @@ return new class extends Migration
 
             #constraints
             $table->unique(['first_name', 'middle_name', 'family_name']);
+            
+
+            #gi dungag nako karung nov 18 2024
+            $table->unique('email_address');
+            $table->unique('cellphone_no');
 
             $table->string('notes')->nullable(true);
             $table->timestamps();

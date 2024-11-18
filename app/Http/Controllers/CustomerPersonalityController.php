@@ -213,9 +213,26 @@ class CustomerPersonalityController extends Controller
         } catch (\Exception $e) {
             // Rollback transaction on any other exception
             DB::rollBack();
+            
+            // Get the error message
+            $errorMessage = $e->getMessage();
+
+            // Detect specific types of database errors
+            if (str_contains($errorMessage, 'foreign key constraint')) {
+                $friendlyMessage = 'A foreign key constraint violation occurred.';
+            } elseif (str_contains($errorMessage, 'duplicate entry')) {
+                $friendlyMessage = 'Duplicate entry detected. Please ensure unique values.';
+            } elseif (str_contains($errorMessage, 'syntax error')) {
+                $friendlyMessage = 'There is a syntax error in your query.';
+            } else {
+                $friendlyMessage = 'An unexpected database error occurred.';
+            }
+
+            // Return a JSON response with the user-friendly message
             return response()->json([
-                'message' => 'An error occurred while saving data.',
-                'error' => $e->getMessage(),
+                'message' => substr($errorMessage, 0, 95) . '...',
+                // Optionally log the full error message for debugging
+                'error' => substr($errorMessage, 0, 75), // Shorten the error for security
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
@@ -1224,7 +1241,7 @@ class CustomerPersonalityController extends Controller
     
             // Call the store method for User_Account
             $userAccountResponse = $userAccount->store($userRequest); // Now passing UserStoreRequest
-    
+            
             // Commit the transaction
             DB::commit();
     
@@ -1245,7 +1262,7 @@ class CustomerPersonalityController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([
-                'message' => 'An error occurred while saving data.',
+                'message' => substr($e->getMessage(), 0, 95) . '...',
                 'error' => $e->getMessage(),
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }

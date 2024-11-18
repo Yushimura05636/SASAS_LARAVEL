@@ -1080,7 +1080,6 @@ Route::get('DISBURSEMENT', [ReportController::class, 'getLoanDisbursementSummary
 Route::middleware('auth:sanctum')->prefix('DASHBOARD')->group(function () {
     Route::get('/NoAUTH/USER/DETAILS', [UserController::class, 'showUserDetails']);
     Route::get('/NoAUTH/USER/LOAN/DETAILS', [UserController::class, 'showUserLoanDetails']);
-    
 });
 
 

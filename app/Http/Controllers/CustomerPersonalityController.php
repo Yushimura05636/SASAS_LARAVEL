@@ -1179,7 +1179,7 @@ class CustomerPersonalityController extends Controller
     
             $requestForCustomer = new Request();
             $requestForCustomer->merge($customerData);
-            $customerController->store($requestForCustomer);
+            $customerResponse = $customerController->store($requestForCustomer);
     
             $customer_id = Customer::where('passbook_no', $customerData['passbook_no'])->first()->id;
     
@@ -1223,13 +1223,16 @@ class CustomerPersonalityController extends Controller
             $userRequest->merge((array)$userPayload); // Merge the data into the request object
     
             // Call the store method for User_Account
-            $userAccount->store($userRequest); // Now passing UserStoreRequest
+            $userAccountResponse = $userAccount->store($userRequest); // Now passing UserStoreRequest
     
             // Commit the transaction
             DB::commit();
     
             return response()->json([
                 'message' => 'Customer, Personality, and User Account saved successfully',
+                'customer' => $customerResponse, // Use resource class
+                'personality' => $personalityResponse, // Use resource class
+                'user_account' => $userAccountResponse,
             ], Response::HTTP_OK);
     
         } catch (ModelNotFoundException $e) {

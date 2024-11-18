@@ -34,6 +34,7 @@ return new class extends Migration
            // $table->foreign('customer_id')->references('id')->on('customer')->onDelete('cascade');
 
             $table->unique(['last_name', 'middle_name', 'first_name']);
+
             $table->timestamps();
         });
 

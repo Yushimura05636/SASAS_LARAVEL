@@ -1042,6 +1042,7 @@ Route::prefix('REGISTER_LIBRARIES')->group(function () {
 });
     Route::get('REGISTER/NoAUTH/FeeActive/', [FeeController::class, 'indexActive']);
 
+Route::post('testingCust', [CustomerPersonalityController::class, 'store']);
 
 
 //get customer under this group (EG: Banana, Grapes)
@@ -1080,7 +1081,6 @@ Route::get('DISBURSEMENT', [ReportController::class, 'getLoanDisbursementSummary
 Route::middleware('auth:sanctum')->prefix('DASHBOARD')->group(function () {
     Route::get('/NoAUTH/USER/DETAILS', [UserController::class, 'showUserDetails']);
     Route::get('/NoAUTH/USER/LOAN/DETAILS', [UserController::class, 'showUserLoanDetails']);
-    
 });
 
 

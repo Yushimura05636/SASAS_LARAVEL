@@ -1230,9 +1230,6 @@ class CustomerPersonalityController extends Controller
     
             return response()->json([
                 'message' => 'Customer, Personality, and User Account saved successfully',
-                'customer' => new CustomerResource($customerResponse), // Use resource class
-                'personality' => new PersonalityResource($personalityResponse), // Use resource class
-                'user_account' => new UserResource($userAccountResponse),
             ], Response::HTTP_OK);
     
         } catch (ModelNotFoundException $e) {

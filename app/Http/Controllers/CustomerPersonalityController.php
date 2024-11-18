@@ -1179,7 +1179,7 @@ class CustomerPersonalityController extends Controller
     
             $requestForCustomer = new Request();
             $requestForCustomer->merge($customerData);
-            $customerResponse = $customerController->store($requestForCustomer);
+            $customerController->store($requestForCustomer);
     
             $customer_id = Customer::where('passbook_no', $customerData['passbook_no'])->first()->id;
     
@@ -1223,7 +1223,7 @@ class CustomerPersonalityController extends Controller
             $userRequest->merge((array)$userPayload); // Merge the data into the request object
     
             // Call the store method for User_Account
-            $userAccountResponse = $userAccount->store($userRequest); // Now passing UserStoreRequest
+            $userAccount->store($userRequest); // Now passing UserStoreRequest
     
             // Commit the transaction
             DB::commit();

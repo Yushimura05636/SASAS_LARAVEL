@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\PorfileChangePasswordMail;
 use App\Mail\TwoFactorCodeMail;
 use App\Mail\VerificationCodeMail;
 use App\Models\Customer;
@@ -72,6 +73,36 @@ class EmailVerificationController extends Controller
         Mail::to($this->request->email)->send(new VerificationCodeMail($code));
 
         return response()->json(['success' => true, 'message' => '2FA code sent']);
+    }
+
+    public function sendProfileEmailVerificationUsingMemory()
+    {
+        $email = $this->request->email;
+
+        // Check if the email is already registered in the Personality table
+        $emailExistsInPersonality = Personality::where('email_address', $email)->exists();
+        
+        if (!$emailExistsInPersonality) {
+            return response()->json(['success' => false, 'message' => 'Email does not recognized!'], Response::HTTP_BAD_REQUEST);
+        }
+
+        // Check if the email is already registered in the User_Account table
+        $emailExistsInUserAccount = User_Account::where('email', $email)->exists();
+
+        if (!$emailExistsInUserAccount) {
+            return response()->json(['success' => false, 'message' => 'Email does not recognized!'], Response::HTTP_BAD_REQUEST);
+        }
+        
+        //return response()->json(['message' => $email ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        
+        // Generate a random 6-digit code
+        $code = random_int(100000, 999999);
+
+        Cache::put('verify_'.$email, $code, 600); // Store for 10 minutes
+
+        Mail::to($this->request->email)->send(new PorfileChangePasswordMail($code));
+
+        return response()->json(['success' => true, 'message' => 'Verification code sent']);
     }
 
     public function verifyEmailCodeUsingMemory()

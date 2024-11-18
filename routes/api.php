@@ -1014,6 +1014,12 @@ Route::middleware('auth:sanctum')->prefix('DASHBOARD_EMPLOYEES_AUTH')->group(fun
     })->middleware("document_access:$DASHBOARD_EMPLOYEES, $CREATE");
 });
 
+//User Account Profile
+Route::middleware('auth:sanctum')->prefix('PROFILES')->group(function () {
+    Route::get('/NoAUTH/profile', [UserController::class, 'profile']);
+    Route::put('/NoAUTH/password/reset/{id}', [UserController::class, 'profileResetPassword']);
+});
+
 }
 
 Route::middleware('auth:sanctum')->prefix('COLLECTORS')->group(function () {

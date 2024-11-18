@@ -8,13 +8,17 @@ use App\Interface\Service\UserServiceInterface;
 use App\Mail\TwoFactorCodeMail;
 use App\Models\Customer;
 use App\Models\Document_Map;
+use App\Models\Document_Permission;
+use App\Models\Document_Permission_Map;
 use App\Models\Document_Status_Code;
+use App\Models\Employee;
 use App\Models\Loan_Application;
 use App\Models\Payment;
 use App\Models\Payment_Schedule;
 use App\Models\Personality;
 use App\Models\Personality_Status_Map;
 use App\Models\User_Account;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Cache;
@@ -47,9 +51,14 @@ class UserController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(UserStoreRequest $request)
-    {
-         // Prepare the payload with the request data
+
+public function store(UserStoreRequest $request)
+{
+    // Begin a database transaction
+    DB::beginTransaction();
+
+    try {
+        // Prepare the payload with the request data
         $userPayload = (object)[
             'employee_id' => $request->input('employee_id'),
             'customer_id' => $request->input('customer_id'),
@@ -63,9 +72,74 @@ class UserController extends Controller
         ];
 
         // Pass the formatted payload to the service
-        return $this->userService->createUser($userPayload);
+        $this->userService->createUser($userPayload);
 
+        if(is_null($request->input('employee_id')) || $request->input('employee_id') <= 0) {
+            // Successful creation for customer (No need to do anything extra here)
+            return response()->json(['message' => 'Succesfully create customer!'], Response::HTTP_OK);
+        }
+
+        // Debug
+        $debug = null;
+
+        // Get the document map
+        $document_map = Document_Map::where('description', 'like', '%DASHBOARD_EMPLOYEES%')->first();
+
+        if(isset($document_map) && !is_null($document_map)) {
+            $document_map = $document_map->id;
+        }
+
+        // Get the document map permission
+        $document_map_permission = Document_Permission_Map::where('description', 'like', '%View%')->first();
+
+        if(isset($document_map_permission) && !is_null($document_map_permission)) {
+            $document_map_permission = $document_map_permission->id;
+        }
+
+        // Check if both document map and permission are valid
+        if(!is_null($document_map) && !is_null($document_map_permission)) {
+            $employee_id = $request->input('employee_id');
+
+            // Find the user by employee_id
+            $user_id = User_Account::where('employee_id', $employee_id)->first();
+
+            if(isset($user_id) && !is_null($user_id)) {
+                $user_id = $user_id->id;
+
+                // Create a document permission entry
+                $debug = Document_Permission::create([
+                    'user_id' => $user_id, // Grant permission to the user
+                    'document_map_code' => $document_map, // Use document map ID as code
+                    'document_permission' => $document_map_permission, // Use document permission ID
+                    'datetime_granted' => now(), // Set the current timestamp
+                ]);
+            }
+        }
+
+        // Commit the transaction if everything went well
+        DB::commit();
+
+        // Return success response
+        return response()->json([
+            'status' => 'success',
+            'success' => true,
+            'message' => 'User and permissions created successfully!'
+        ], Response::HTTP_OK);
+
+    } catch (\Exception $e) {
+        // Rollback the transaction if any exception occurs
+        DB::rollback();
+
+        // Return error response
+        return response()->json([
+            'status' => 'error',
+            'success' => false,
+            'message' => 'Transaction failed. Please try again later.',
+            'error' => $e->getMessage()
+        ], Response::HTTP_BAD_REQUEST);
     }
+}
+
 
     /**
      * Display the specified resource.
@@ -130,7 +204,11 @@ class UserController extends Controller
             return $emailVerificaiton->sendEmailVerificationUsingMemory();
         }
 
-        throw new \Exception('stop');
+        if($request->method == 'email.customer.profile')
+        {
+            $emailVerificaiton = new EmailVerificationController($request);
+            return $emailVerificaiton->sendProfileEmailVerificationUsingMemory();
+        }
 
         if($request->method == 'phone')
         {
@@ -170,6 +248,13 @@ class UserController extends Controller
 
 
         if($request->method == 'email.customer')
+        {
+            $request->validate(['code' => 'required']);
+            $verifyEmail = new EmailVerificationController($request);
+            return $verifyEmail->verifyEmailCodeUsingMemory();
+        }
+
+        if($request->method == 'email.customer.profile')
         {
             $request->validate(['code' => 'required']);
             $verifyEmail = new EmailVerificationController($request);
@@ -447,4 +532,131 @@ class UserController extends Controller
         'can_reloan' => $can_reloan  // Add the reloan status to the response
     ], Response::HTTP_OK);
 }
+
+public function profile()
+{
+    DB::beginTransaction();  // Start the transaction
+
+    try {
+
+        $user_id = auth()->user()->id;
+
+        // Get the full name of the user
+        $user = User_Account::findOrFail($user_id);
+
+        $user_data = null;
+
+        if(isset($user) && !is_null($user))
+        {
+            $user_data = [
+                'last_name' => $user->last_name,
+                'first_name' => $user->first_name,
+                'middle_name' => $user->middle_name,
+                'email' => $user->email,
+            ];
+        }
+
+        // Get the phone number of the user and address
+        $employee_id = $user->employee_id;
+
+        if(is_null($employee_id) || $employee_id <= 0)
+        {
+            $customer_id = $user->customer_id;
+
+            $customer = Customer::findOrFail($customer_id);
+
+            $personality = Personality::findOrFail($customer->personality_id);
+
+            if(isset($personality) && !is_null($personality))
+            {
+                // Get the address
+                $user_data['house_street'] = $personality->house_street;
+                $user_data['purok_zone'] = $personality->purok_zone;
+                $user_data['postal_code'] = $personality->postal_code;
+                $user_data['cellphone_no'] = $personality->cellphone_no;
+
+                DB::commit();  // Commit the transaction if everything is successful
+
+                return response()->json(['success' => true, 'message' => 'Successfully retrieved customer profile', 'data' => $user_data], Response::HTTP_OK);
+            }
+        }
+
+        if(!is_null($employee_id) && $employee_id > 0)
+        {
+            $employee = Employee::findOrFail($employee_id);
+
+            $personality = Personality::findOrFail($employee->personality_id);
+
+            if(isset($personality) && !is_null($personality))
+            {
+                // Get the address
+                $user_data['house_street'] = $personality->house_street;
+                $user_data['purok_zone'] = $personality->purok_zone;
+                $user_data['postal_code'] = $personality->postal_code;
+                $user_data['cellphone_no'] = $personality->cellphone_no;
+
+                DB::commit();  // Commit the transaction if everything is successful
+
+                return response()->json(['success' => true, 'message' => 'Successfully retrieved employee profile', 'data' => $user_data], Response::HTTP_OK);
+            }
+        }
+
+        // If no personality data found, throw an exception
+        throw new \Exception('Personality data not found');
+
+    } catch (\Exception $e) {
+        DB::rollback();  // Rollback the transaction if any exception occurs
+
+        return response()->json(['success' => false, 'message' => 'Failed to retrieve profile. Please try again.'], Response::HTTP_INTERNAL_SERVER_ERROR);
+    }
+}
+
+public function profileResetPassword(Request $request)
+{
+    // Validate incoming request
+    $validated = $request->validate([
+        'email' => 'required|email',
+        'password' => 'required|string',
+    ]);
+
+    $email = $validated['email'];
+    $password = $validated['password'];
+
+    // Start database transaction
+    DB::beginTransaction();
+
+    try {
+        // Check if email exists in User_Account table
+        $userAccountExists = DB::table('user_account')->where('email', $email)->exists();
+
+        if (!$userAccountExists) {
+            return response()->json(['error' => 'Email does not exist in User_Account.'], 404);
+        }
+
+        // Check if email exists in Personality table
+        $personalityExists = DB::table('personality')->where('email_address', $email)->exists();
+
+        if (!$personalityExists) {
+            return response()->json(['error' => 'Email does not exist in Personality.'], 404);
+        }
+
+        // Reset password (example: update the User_Account table)
+        DB::table('user_account')
+            ->where('email', $email)
+            ->update(['password' => Hash::make($password)]);
+
+        // Commit transaction
+        DB::commit();
+
+        return response()->json(['success' => true, 'message' => 'Password reset successfully.'], 200);
+    } catch (\Exception $e) {
+        // Rollback transaction in case of error
+        DB::rollBack();
+
+        return response()->json(['error' => 'An error occurred during password reset.', 'details' => $e->getMessage()], 500);
+    }
+}
+
+
+
 }

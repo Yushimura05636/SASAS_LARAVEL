@@ -1031,12 +1031,7 @@ Route::middleware('auth:sanctum')->prefix('COLLECTORS')->group(function () {
     //payment_schedules
     //payment_line
     //customer
-});
-
-Route::middleware('auth:sanctum')->prefix('TEST_COLLECTORS')->group(function () {
-    Route::patch('/create', function () {
-        return response()->json(['message' => 'Access granted']);
-    });
+    Route::get('/NoAUTH', [UserController::class, 'getOnlyCollectorPermissions']);
 });
 
 // REGISTER FOR CUSTOMER IN LANDING PAGE
@@ -1047,7 +1042,6 @@ Route::prefix('REGISTER_LIBRARIES')->group(function () {
 });
     Route::get('REGISTER/NoAUTH/FeeActive/', [FeeController::class, 'indexActive']);
 
-Route::post('testingCust', [CustomerPersonalityController::class, 'store']);
 
 
 //get customer under this group (EG: Banana, Grapes)

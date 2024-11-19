@@ -764,7 +764,7 @@ class DatabaseSeeder extends Seeder
             'house_street' => 'Cebu',
             'purok_zone' => '16',
             'postal_code' => '8001',
-            'telephone_no' => '022010202',
+            'telephone_no' => '0220102012',
             'email_address' => 'ericramones12534@gmail.com',
             'cellphone_no' => '09171234567',
             'name_type_code' => 2,
@@ -856,7 +856,7 @@ class DatabaseSeeder extends Seeder
             'house_street' => 'Batangas',
             'purok_zone' => '16',
             'postal_code' => '8001',
-            'telephone_no' => '022010202',
+            'telephone_no' => '0220102023',
             'email_address' => 'lucky@gmail.com',
             'cellphone_no' => '09171234267',
             'name_type_code' => 2,
@@ -903,7 +903,7 @@ class DatabaseSeeder extends Seeder
             'house_street' => 'Bohol',
             'purok_zone' => '16',
             'postal_code' => '8001',
-            'telephone_no' => '022010202',
+            'telephone_no' => '0220102024',
             'email_address' => 'anger@gmail.com',
             'cellphone_no' => '09173214267',
             'name_type_code' => 2,
@@ -934,43 +934,6 @@ class DatabaseSeeder extends Seeder
             'password' => Hash::make('password'),
             'employee_id' => null,
             'customer_id' => 12,
-            'status_id' => 1,
-        ]);
-
-
-        Personality::create([
-            'datetime_registered' => now(),
-            'family_name' => 'Sasas',
-            'middle_name' => 'Miky',
-            'first_name' => 'John',
-            'birthday' => '2001-01-27',
-            'civil_status' => 1, // Single
-            'gender_code' => 1, // Female
-            'house_street' => 'Cebu',
-            'purok_zone' => '16',
-            'postal_code' => '8001',
-            'telephone_no' => '022010202',
-            'email_address' => 'rosendosastrejr125@gmail.com',
-            'cellphone_no' => '09606863294',
-            'name_type_code' => 2,
-            'personality_status_code' => 2,
-            'barangay_id' => 5, // Adjust based on your data
-            'city_id' => 1, // Adjust based on your data
-            'country_id' => 1, // Adjust based on your data
-            'province_id' => 1, // Adjust based on your data
-            'credit_status_id' => 1, // Adjust based on your data
-            'notes' => 'New to the area.',
-        ]);
-
-        User_Account::create([
-            'last_name' => 'Sasas',
-            'first_name' => 'Miky',
-            'middle_name' => 'John',
-            'email' => 'rosendosastrejr125@gmail.com',
-            'phone_number' => '09606863294',
-            'password' => Hash::make('password'),
-            'employee_id' => null,
-            'customer_id' => 13,
             'status_id' => 1,
         ]);
     }

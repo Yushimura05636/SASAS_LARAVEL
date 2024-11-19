@@ -415,121 +415,127 @@ class UserController extends Controller
         return response()->json(['data' => $user_details, 'role' => $role], Response::HTTP_OK);
     }
 
-    public function showUserLoanDetails()
+public function showUserLoanDetails()
 {
     $user_id = auth()->user()->id;
 
-    $user_details = User_Account::where('id', $user_id)->first();
+    try {
+        // Start a database transaction
+        $responseData = DB::transaction(function () use ($user_id) {
+            $user_details = User_Account::where('id', $user_id)->first();
 
-    // Check if the user is an employee or a customer
-    if (is_null($user_details->customer_id)) {
-        return response()->json(['data' => $user_details, 'role' => 'EMPLOYEE'], Response::HTTP_OK);
-    }
-
-    // Customer role setup
-    $role = 'CUSTOMER';
-    
-    $outstanding_balance = Payment_Schedule::where('customer_id', $user_details->customer_id)
-    ->whereNotIn('payment_status_code', ['PAID', 'PARTIALLY PAID, FORWARDED'])
-    ->selectRaw('IFNULL(SUM(amount_due) - SUM(amount_paid), 0) as outstanding_balance')
-    ->value('outstanding_balance');
-
-    $total_balances = Payment_Schedule::where('customer_id', $user_details->customer_id)
-        ->whereIn('payment_status_code', ['PAID', 'PARTIALLY PAID', 'UNPAID'])
-        ->sum('amount_due') ?? 0;
-
-    $total_payments = Payment_Schedule::where('customer_id', $user_details->customer_id)
-        ->whereIn('payment_status_code', ['PAID', 'PARTIALLY PAID'])
-        ->sum('amount_paid') ?? 0;
-
-    $payment_history = Payment::where('customer_id', $user_details->customer_id)->get();
-
-    if(!is_null($payment_history))
-    {
-        foreach($payment_history as $payment)
-        {
-            if(!is_null($payment))
-            {
-                //set the status of the payment
-                $document_status = Document_Status_Code::where('id', $payment['document_status_code'])->first();
-                $payment['document_status_description'] = strtoupper($document_status->description);
+            if (!$user_details) {
+                throw new \Exception("User details not found");
             }
-        }
-    }
 
-    $loan_history = Loan_Application::where('customer_id', $user_details->customer_id)->get();
+            // Check if the user is an employee
+            if (is_null($user_details->customer_id)) {
+                return [
+                    'data' => $user_details,
+                    'role' => 'EMPLOYEE',
+                ];
+            }
 
-    // Get the status codes for Approved and Pending loan applications
-    $approveIds = Document_Status_Code::where('description', 'like', '%Approved%')->pluck('id')->toArray();
-    $pendingIds = Document_Status_Code::where('description', 'like', '%Pending%')->pluck('id')->toArray();
+            $role = 'CUSTOMER';
 
-    $number_of_loans = Loan_Application::where('customer_id', $user_details->customer_id)
-        ->whereIn('document_status_code', array_merge($approveIds, $pendingIds))
-        ->count();
+            // Fetch outstanding balance
+            $outstanding_balance = Payment_Schedule::where('customer_id', $user_details->customer_id)
+                ->whereNotIn('payment_status_code', ['PAID', 'PARTIALLY PAID, FORWARDED'])
+                ->selectRaw('IFNULL(SUM(amount_due) - SUM(amount_paid), 0) as outstanding_balance')
+                ->value('outstanding_balance');
 
-    // Get the current customer by customer_id from user_details
-    $currentCustomer = Customer::where('id', $user_details->customer_id)->first();
+            // Fetch total balances and payments
+            $total_balances = Payment_Schedule::where('customer_id', $user_details->customer_id)
+                ->whereIn('payment_status_code', ['PAID', 'PARTIALLY PAID', 'UNPAID'])
+                ->sum('amount_due') ?? 0;
 
-    // Initialize the flag to check reloan possibility
-    $can_reloan = true;
+            $total_payments = Payment_Schedule::where('customer_id', $user_details->customer_id)
+                ->whereIn('payment_status_code', ['PAID', 'PARTIALLY PAID'])
+                ->sum('amount_paid') ?? 0;
 
-    $personality_status_code = Personality_Status_Map::where('description', 'like', '%Approved%')
-    ->first();
+            // Fetch payment and loan history
+            $payment_history = Payment::where('customer_id', $user_details->customer_id)->get();
+            $loan_history = Loan_Application::where('customer_id', $user_details->customer_id)->get();
 
-    if ($personality_status_code) {
-        $isApproved = Personality::where('id', $currentCustomer->personality_id)
-            ->where('personality_status_code', $personality_status_code->id) // or relevant field
-            ->exists();
-
-        if(!$isApproved) {
-            $can_reloan = false;
-        }
-    } else {
-        // Handle case where no approved status is found (if needed)
-        $can_reloan = false;
-    }
-
-    // Ensure customer exists before proceeding
-    if ($currentCustomer && $can_reloan == true) {
-        // Get the group_id of the current customer
-        $customerGroupId = $currentCustomer->group_id;
-
-        // Get all other customers in the same group
-        $groupCustomers = Customer::where('group_id', $customerGroupId)
-            ->with('personality')  // Include related personality data
-            ->orderBy('personality_id')
-            ->get();
-
-        // Loop through each customer in the group
-        foreach ($groupCustomers as $customer) {
-            if ($customer) {
-                // Check if there are any unpaid or partially paid payment schedules
-                $canReloan = Payment_Schedule::where('customer_id', $customer->id)
-                    ->whereNotIn('payment_status_code', ['PAID', 'PARTIALLY PAID', 'FORWARDED'])
-                    ->whereIn('payment_status_code', ['UNPAID', 'PARTIALLY PAID'])
-                    ->exists(); // returns true if any records found
-
-                // If there are payment issues, set can_reloan to false
-                if ($canReloan) {
-                    $can_reloan = false;
-                    break;  // No need to check further once we know the group can't reloan
+            // Populate document status descriptions in payment history
+            foreach ($payment_history as $payment) {
+                if ($payment) {
+                    $document_status = Document_Status_Code::where('id', $payment['document_status_code'])->first();
+                    $payment['document_status_description'] = strtoupper($document_status->description ?? '');
                 }
             }
+
+            // Get the status codes for Approved and Pending loans
+            $approveIds = Document_Status_Code::where('description', 'like', '%Approved%')->pluck('id')->toArray();
+            $pendingIds = Document_Status_Code::where('description', 'like', '%Pending%')->pluck('id')->toArray();
+
+            $number_of_loans = Loan_Application::where('customer_id', $user_details->customer_id)
+                ->whereIn('document_status_code', array_merge($approveIds, $pendingIds))
+                ->count();
+
+            // Check reloan eligibility
+            $can_reloan = $this->checkReloanEligibility($user_details);
+
+            return [
+                'data' => $user_details,
+                'role' => $role,
+                'outstanding_balance' => $outstanding_balance,
+                'total_balances' => $total_balances,
+                'total_payments' => $total_payments,
+                'payment_history' => $payment_history,
+                'loan_history' => $loan_history,
+                'number_of_loans' => $number_of_loans,
+                'can_reloan' => $can_reloan,
+            ];
+        });
+
+        return response()->json($responseData, Response::HTTP_OK);
+
+    } catch (\Throwable $e) {
+        // Rollback is automatically handled by DB::transaction if an exception occurs
+        return response()->json(['error' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
+    }
+}
+
+/**
+ * Check if the customer is eligible for reloan.
+ */
+private function checkReloanEligibility($user_details)
+{
+    $currentCustomer = Customer::where('id', $user_details->customer_id)->first();
+    if (!$currentCustomer) {
+        return false;
+    }
+
+    $personality_status_code = Personality_Status_Map::where('description', 'like', '%Approved%')->first();
+    if (!$personality_status_code) {
+        return false;
+    }
+
+    $isApproved = Personality::where('id', $currentCustomer->personality_id)
+        ->where('personality_status_code', $personality_status_code->id)
+        ->exists();
+
+    if (!$isApproved) {
+        return false;
+    }
+
+    // Check group reloan eligibility
+    $groupCustomers = Customer::where('group_id', $currentCustomer->group_id)
+        ->with('personality')
+        ->orderBy('personality_id')
+        ->get();
+
+    foreach ($groupCustomers as $customer) {
+        if (Payment_Schedule::where('customer_id', $customer->id)
+            ->whereNotIn('payment_status_code', ['PAID', 'PARTIALLY PAID', 'FORWARDED'])
+            ->whereIn('payment_status_code', ['UNPAID', 'PARTIALLY PAID'])
+            ->exists()) {
+            return false;
         }
     }
 
-    // Prepare the data for the response
-    return response()->json([
-        'data' => $user_details,
-        'role' => $role,
-        'outstanding_balance' => $outstanding_balance,
-        'total_balances' => $total_balances,
-        'total_payments' => $total_payments,
-        'payment_history' => $payment_history,
-        'loan_history' => $loan_history,
-        'number_of_loans' => $number_of_loans,
-        'can_reloan' => $can_reloan  // Add the reloan status to the response
-    ], Response::HTTP_OK);
+    return true;
 }
 
 public function profile()

@@ -371,8 +371,7 @@ class UserController extends Controller
             return [$item->description => $item]; // Map each item with description as key
         });
 
-        $permissions = DB::table('document_permission')
-        ->join('document_map', 'document_permission.document_map_code', '=', 'document_map.id')
+        $permissions = Document_Permission::join('document_map', 'document_permission.document_map_code', '=', 'document_map.id')
         ->whereIn('document_map.description', ['CUSTOMER_GROUPS', 'PAYMENTS', 'PAYMENT_SCHEDULES', 'PAYMENT_LINES', 'CUSTOMERS'])
         ->distinct('document_permission.user_id') // Add distinct for user_id
         ->select('document_permission.user_id') // Only select user_id

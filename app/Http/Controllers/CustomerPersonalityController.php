@@ -955,7 +955,6 @@ class CustomerPersonalityController extends Controller
             ];
         }
 
-
         if(!count($customerDatas) > 0)
         {
             return response()->json([

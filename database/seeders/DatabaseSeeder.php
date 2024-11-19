@@ -473,7 +473,7 @@ class DatabaseSeeder extends Seeder
             'house_street' => '45 Pine Street',
             'purok_zone' => 'Zone 3',
             'postal_code' => '2500',
-            'telephone_no' => '(045) 123-4567',
+            'telephone_no' => '(045) 123-4512',
             'email_address' => 'ericramones1253@gmail.com',
             'cellphone_no' => '+63 917 765 4321',
             'name_type_code' => 2,

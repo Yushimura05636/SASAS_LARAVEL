@@ -226,6 +226,7 @@ class CustomerPersonalityController extends Controller
                 'customer' => new CustomerResource($customerResponse), // Use resource class
                 'personality' => new PersonalityResource($personalityResponse), // Use resource class
                 'user_account' => new UserResource($userAccountResponse),
+                'success' => true,
             ], Response::HTTP_OK);
 
         } catch (ModelNotFoundException $e) {

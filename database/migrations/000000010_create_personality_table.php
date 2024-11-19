@@ -48,6 +48,7 @@ return new class extends Migration
             #gi dungag nako karung nov 18 2024
             $table->unique('email_address');
             $table->unique('cellphone_no');
+            $table->unique('telephone_no');
 
             $table->string('notes')->nullable(true);
             $table->timestamps();

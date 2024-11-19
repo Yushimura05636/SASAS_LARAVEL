@@ -8,7 +8,7 @@ use App\Models\Barangay; #Done
 use App\Models\Branch; #Done
 use App\Models\City; #Done
 use App\Models\Civil_Status; #Done
-use App\Models\Document_Status_code;
+use App\Models\Document_Status_Code;
 use App\Models\Gender_Map; #Done
 use App\Models\Country; #Done
 use App\Models\Province; #Done
@@ -156,7 +156,7 @@ class DBBaseLibraryFactory
                 Customer_Group::createEntry($description, $collector_id);
                 break;
             case 'document_status_code':
-                Document_Status_code::createEntry($description);
+                Document_Status_Code::createEntry($description);
                 break;
             case 'requirement':
                 Requirements::createEntry($description);
@@ -231,7 +231,7 @@ class DBBaseLibraryFactory
 
                 return $customer_group;
             case 'document_status_code':
-                return Document_Status_code::findOne($id);
+                return Document_Status_Code::findOne($id);
             case 'requirement':
                 return Requirements::findOne($id);
             default:
@@ -289,7 +289,7 @@ class DBBaseLibraryFactory
 
                 return $customer_group;
             case 'document_status_code':
-                return Document_Status_code::findMany();
+                return Document_Status_Code::findMany();
             case 'requirement':
                 return Requirements::findMany();
             default:
@@ -329,7 +329,7 @@ class DBBaseLibraryFactory
             case 'customer_group':
                 return Customer_Group::deleteEntry($id);
             case 'document_status_code':
-                return Document_Status_code::deleteEntry($id);
+                return Document_Status_Code::deleteEntry($id);
             case 'requirement':
                 return Requirements::deleteEntry($id);
             default:
@@ -371,7 +371,7 @@ public static function updateEntry($modelType, $id, $description, $collector_id)
                 //throw new \Exception('stop');
                 return Customer_Group::updateEntry($id, $description, $collector_id);
             case 'document_status_code':
-                return Document_Status_code::updateEntry($id, $description);
+                return Document_Status_Code::updateEntry($id, $description);
             case 'requirement':
                 return Requirements::updateEntry($id, $description);
             default:

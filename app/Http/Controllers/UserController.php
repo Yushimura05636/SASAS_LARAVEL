@@ -24,6 +24,7 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Twilio\Rest\Client;
 
@@ -52,93 +53,91 @@ class UserController extends Controller
      * Store a newly created resource in storage.
      */
 
-public function store(UserStoreRequest $request)
-{
-    // Begin a database transaction
-    DB::beginTransaction();
-
-    try {
-        // Prepare the payload with the request data
-        $userPayload = (object)[
-            'employee_id' => $request->input('employee_id'),
-            'customer_id' => $request->input('customer_id'),
-            'email' => $request->input('email'),
-            'last_name' => $request->input('last_name'),
-            'first_name' => $request->input('first_name'),
-            'middle_name' => $request->input('middle_name'),
-            'phone_number' => $request->input('phone_number'),
-            'password' => $request->input('password'),
-            'status_id' => $request->input('status_id'),
-        ];
-
-        // Pass the formatted payload to the service
-        $this->userService->createUser($userPayload);
-
-        if(is_null($request->input('employee_id')) || $request->input('employee_id') <= 0) {
-            // Successful creation for customer (No need to do anything extra here)
-            return response()->json(['message' => 'Succesfully create customer!'], Response::HTTP_OK);
-        }
-
-        // Debug
-        $debug = null;
-
-        // Get the document map
-        $document_map = Document_Map::where('description', 'like', '%DASHBOARD_EMPLOYEES%')->first();
-
-        if(isset($document_map) && !is_null($document_map)) {
-            $document_map = $document_map->id;
-        }
-
-        // Get the document map permission
-        $document_map_permission = Document_Permission_Map::where('description', 'like', '%View%')->first();
-
-        if(isset($document_map_permission) && !is_null($document_map_permission)) {
-            $document_map_permission = $document_map_permission->id;
-        }
-
-        // Check if both document map and permission are valid
-        if(!is_null($document_map) && !is_null($document_map_permission)) {
-            $employee_id = $request->input('employee_id');
-
-            // Find the user by employee_id
-            $user_id = User_Account::where('employee_id', $employee_id)->first();
-
-            if(isset($user_id) && !is_null($user_id)) {
-                $user_id = $user_id->id;
-
-                // Create a document permission entry
-                $debug = Document_Permission::create([
-                    'user_id' => $user_id, // Grant permission to the user
-                    'document_map_code' => $document_map, // Use document map ID as code
-                    'document_permission' => $document_map_permission, // Use document permission ID
-                    'datetime_granted' => now(), // Set the current timestamp
-                ]);
+    public function store(UserStoreRequest $request)
+    {
+        // Begin a database transaction
+        DB::beginTransaction();
+    
+        try {
+            // Prepare the payload with the request data
+            $userPayload = (object)[
+                'employee_id' => $request->input('employee_id'),
+                'customer_id' => $request->input('customer_id'),
+                'email' => $request->input('email'),
+                'last_name' => $request->input('last_name'),
+                'first_name' => $request->input('first_name'),
+                'middle_name' => $request->input('middle_name'),
+                'phone_number' => $request->input('phone_number'),
+                'password' => $request->input('password'),  // Hash the password for security
+                'status_id' => $request->input('status_id'),
+            ];
+    
+            // Pass the formatted payload to the service to create a user
+            $userAccountResponse = $this->userService->createUser($userPayload);
+    
+            // Check if employee_id is null or less than or equal to 0 (customer creation logic)
+            if (is_null($request->input('employee_id')) || $request->input('employee_id') <= 0) {
+                DB::commit();  // Commit transaction for customer creation
+                return response()->json(['message' => 'Successfully created customer!'], Response::HTTP_OK);
             }
+    
+            // Get the document map for employee dashboard permissions
+            $document_map = Document_Map::where('description', 'like', '%DASHBOARD_EMPLOYEES%')->first();
+            $document_map = $document_map ? $document_map->id : null;
+    
+            // Get the document permission map
+            $document_map_permission = Document_Permission_Map::where('description', 'like', '%View%')->first();
+            $document_map_permission = $document_map_permission ? $document_map_permission->id : null;
+    
+            // Check if both document map and permission are valid
+            if ($document_map && $document_map_permission) {
+                $employee_id = $request->input('employee_id');
+                // Find the user by employee_id
+                $user = User_Account::where('employee_id', $employee_id)->first();
+    
+                if ($user) {
+                    $user_id = $user->id;
+    
+                    // Create a document permission entry for the user
+                    Document_Permission::create([
+                        'user_id' => $user_id,
+                        'document_map_code' => $document_map,
+                        'document_permission' => $document_map_permission,
+                        'datetime_granted' => now(),
+                    ]);
+                }
+            }
+    
+            // Commit the transaction after successful creation
+            DB::commit();
+    
+            // Return success response with user ID (if available) or relevant data
+            return response()->json([
+                'status' => 'success',
+                'success' => true,
+                'message' => 'User and permissions created successfully!',
+                'user_account_id' => $userAccountResponse->id ?? null  // Ensure this is not null, adjust based on your service response
+            ], Response::HTTP_OK);
+    
+        } catch (\Exception $e) {
+            // Rollback the transaction if any exception occurs
+            DB::rollback();
+    
+            // Log the error for debugging
+            Log::error("Error while creating user account: " . $e->getMessage());
+    
+            // Return error response
+            return response()->json([
+                'status' => 'error',
+                'success' => false,
+                'message' => 'Transaction failed. Please try again later.',
+                'error' => $e->getMessage()
+            ], Response::HTTP_BAD_REQUEST);
         }
-
-        // Commit the transaction if everything went well
-        DB::commit();
-
-        // Return success response
-        return response()->json([
-            'status' => 'success',
-            'success' => true,
-            'message' => 'User and permissions created successfully!'
-        ], Response::HTTP_OK);
-
-    } catch (\Exception $e) {
-        // Rollback the transaction if any exception occurs
-        DB::rollback();
-
-        // Return error response
-        return response()->json([
-            'status' => 'error',
-            'success' => false,
-            'message' => 'Transaction failed. Please try again later.',
-            'error' => $e->getMessage()
-        ], Response::HTTP_BAD_REQUEST);
     }
-}
+    
+
+
 
 
     /**

@@ -1042,6 +1042,7 @@ Route::prefix('REGISTER_LIBRARIES')->group(function () {
 });
     Route::get('REGISTER/NoAUTH/FeeActive/', [FeeController::class, 'indexActive']);
 
+Route::post('testingCust', [CustomerPersonalityController::class, 'store']);
 
 
 //get customer under this group (EG: Banana, Grapes)

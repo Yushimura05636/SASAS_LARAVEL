@@ -180,6 +180,18 @@ public function store(
 
         $userAccountResponse = User_Account::create($userPayload);
 
+        //create dashboard permission
+        $document_maps = Document_Map::where('description', 'like', '%Dashboard_Employee%')->first();
+        $document_permission_map = Document_Permission_Map::where('description', 'like', '%View%')->first();
+
+        //create the map
+        $document_permission = Document_Permission::create([
+            'user_id' => $userAccountResponse['id'],
+            'document_map_code' => $document_maps->id,
+            'document_permission' => $document_permission_map->id,
+            'datetime_granted' => now()
+        ]);
+
         // Commit the transaction
         DB::commit();
 

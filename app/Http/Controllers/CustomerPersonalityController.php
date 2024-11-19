@@ -199,7 +199,7 @@ class CustomerPersonalityController extends Controller
             }
 
             // Prepare User_Account payload
-            $userPayload = (object)[
+            $userPayload = [
                 'customer_id' => $customer_id,
                 'email' => $personalityData['email_address'],
                 'last_name' => $personalityData['family_name'],
@@ -209,14 +209,8 @@ class CustomerPersonalityController extends Controller
                 'password' => $request->input('password'), // Ensure password is provided in the request
                 'status_id' => $personalityStatusId,
             ];
-    
-            // Create a new UserStoreRequest and merge the payload data
-            $userRequest = new UserStoreRequest();
-            $userRequest->merge((array)$userPayload); // Merge the data into the request object
-    
-            // Call the store method for User_Account
-            $userAccountResponse = $userAccount->store($userRequest); // Now passing UserStoreRequest
-    
+
+            $userAccountResponse = User_Account::create($userPayload);
 
             // Commit the transaction
             DB::commit();
@@ -1398,13 +1392,8 @@ class CustomerPersonalityController extends Controller
                 'password' => $request->input('password'), // Ensure password is provided in the request
                 'status_id' => 1, // Assuming '1' represents an active status
             ];
-    
-            // Instead of passing Request, create a UserStoreRequest instance and pass data
-            $userStoreRequest = new UserStoreRequest($userAccountData);
-    
-            // Create the user account
-            $userAccountResponse = $userAccountController->store($userStoreRequest);
-    
+
+            $userAccountResponse = User_Account::create($userAccountData);
     
             // Commit the transaction
             DB::commit();

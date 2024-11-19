@@ -168,6 +168,7 @@ public function store(
 
         // Prepare user payload
         $userPayload = [
+            'customer_id' => null,
             'employee_id' => $employee_id, // Use the extracted ID
             'email' => $personalityData['email_address'],
             'last_name' => $personalityData['family_name'],

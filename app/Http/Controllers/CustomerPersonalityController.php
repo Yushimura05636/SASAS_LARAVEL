@@ -1412,8 +1412,9 @@ class CustomerPersonalityController extends Controller
                         'User Account Response:' => $userAccountResponse,
                         'Personality Response:'=> $personalityResponse,
                         'Customer Response:'=> $customerResponse,
-                        'message' => 'error.',
-                ], Response::HTTP_INTERNAL_SERVER_ERROR);
+                        'message' => 'Successfully created!',
+                        'success' => true,
+                ], Response::HTTP_OK);
     
         } catch (ModelNotFoundException $e) {
             // Rollback transaction on model not found

@@ -1031,7 +1031,12 @@ Route::middleware('auth:sanctum')->prefix('COLLECTORS')->group(function () {
     //payment_schedules
     //payment_line
     //customer
-    Route::get('/NoAUTH', [UserController::class, 'getOnlyCollectorPermissions']);
+});
+
+Route::middleware('auth:sanctum')->prefix('TEST_COLLECTORS')->group(function () {
+    Route::patch('/create', function () {
+        return response()->json(['message' => 'Access granted']);
+    });
 });
 
 // REGISTER FOR CUSTOMER IN LANDING PAGE

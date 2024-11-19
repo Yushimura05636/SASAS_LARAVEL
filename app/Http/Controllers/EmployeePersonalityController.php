@@ -192,6 +192,7 @@ public function store(
             'employee' => $employeeResponse, // Use resource class
             'personality' => $personalityResponse, // Use resource class
             'user_account' => $userAccountResponse,
+            'success' => true,
         ], Response::HTTP_OK);
 
     } catch (ModelNotFoundException $e) {

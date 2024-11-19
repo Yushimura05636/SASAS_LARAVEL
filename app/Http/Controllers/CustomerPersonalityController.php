@@ -1383,6 +1383,7 @@ class CustomerPersonalityController extends Controller
             }
 
             $userAccountData = [
+                'employee_id' => null,
                 'customer_id' => $customer_id, // Link the customer_id
                 'email' => $personalityData['email_address'], // Map email_address from personality table
                 'last_name' => $personalityData['family_name'], // Map family_name from personality table
@@ -1394,9 +1395,10 @@ class CustomerPersonalityController extends Controller
             ];
 
             $userAccountResponse = User_Account::create($userAccountData);
-    
+
             // Commit the transaction
             DB::commit();
+
             
             return response()->json([
                         'message' => 'Successfully created!',
@@ -1432,7 +1434,7 @@ class CustomerPersonalityController extends Controller
             // Return a JSON response with the user-friendly message
             return response()->json([
                 'message' => substr($errorMessage, 0, 95) . '...',
-                'error' => substr($errorMessage, 0, 75), // Shorten the error for security
+                'error' => $errorMessage, // Shorten the error for security
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }

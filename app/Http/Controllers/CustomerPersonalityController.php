@@ -1399,9 +1399,6 @@ class CustomerPersonalityController extends Controller
             DB::commit();
             
             return response()->json([
-                        'User Account Response:' => $userAccountResponse,
-                        'Personality Response:'=> $personalityResponse,
-                        'Customer Response:'=> $customerResponse,
                         'message' => 'Successfully created!',
                         'success' => true,
                 ], Response::HTTP_OK);

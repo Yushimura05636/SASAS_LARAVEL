@@ -194,12 +194,9 @@ public function store(
 
         // Commit the transaction
         DB::commit();
-
+        
         return response()->json([
             'message' => 'Both Employee and Personality saved successfully',
-            'employee' => $employeeResponse, // Use resource class
-            'personality' => $personalityResponse, // Use resource class
-            'user_account' => $userAccountResponse,
             'success' => true,
         ], Response::HTTP_OK);
 

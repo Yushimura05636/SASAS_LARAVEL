@@ -1022,16 +1022,8 @@ Route::middleware('auth:sanctum')->prefix('PROFILES')->group(function () {
 
 }
 
-Route::middleware('auth:sanctum')->prefix('COLLECTORS')->group(function () {
-
-    //show only the user with collector permission
-    //collector permission consists of
-    //customer_group
-    //payments
-    //payment_schedules
-    //payment_line
-    //customer
-    Route::get('/NoAUTH', [UserController::class, 'getOnlyCollectorPermissions']);
+Route::middleware('auth:sanctum')->prefix('TEST_COLLECTORS')->group(function () {
+    Route::get('/NoAUTH', [EmployeePersonalityController::class, 'getOnlyCollectorPermissions']);
 });
 
 // REGISTER FOR CUSTOMER IN LANDING PAGE

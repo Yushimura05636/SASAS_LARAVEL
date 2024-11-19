@@ -355,46 +355,6 @@ class UserController extends Controller
         return response()->json(['success' => true, 'message' => 'Email exists!'], Response::HTTP_OK);
     }
 
-    public function getOnlyCollectorPermissions()
-    {
-        //show only the user with collector permission
-        //collector permission consists of
-        //customer_group
-        //payments
-        //payment_schedules
-        //payment_line
-        //customer
-
-        $document_map = Document_Map::whereIn('description', ['CUSTOMER_GROUPS', 'PAYMENTS', 'PAYMENT_SCHEDULES', 'PAYMENT_LINES', 'CUSTOMERS'])
-        ->get() // Get all records
-        ->mapWithKeys(function ($item) {
-            return [$item->description => $item]; // Map each item with description as key
-        });
-
-        $permissions = Document_Permission::join('document_map', 'document_permission.document_map_code', '=', 'document_map.id')
-        ->whereIn('document_map.description', ['CUSTOMER_GROUPS', 'PAYMENTS', 'PAYMENT_SCHEDULES', 'PAYMENT_LINES', 'CUSTOMERS'])
-        ->distinct('document_permission.user_id') // Add distinct for user_id
-        ->select('document_permission.user_id') // Only select user_id
-        ->get();
-
-        $user_map = [];
-        $index = 0;
-        foreach($permissions as $perm)
-        {
-            if(!is_null($perm))
-            {
-                $user_id = $perm->user_id;
-                $users = User_Account::where('id', $user_id)->first();
-
-                $user_map[$index] = $users;
-
-            }
-            $index++;
-        }
-
-        return response()->json(['data' => $user_map], Response::HTTP_OK);
-    }
-
     public function showUserDetails()
     {
         $user_id = auth()->user()->id;

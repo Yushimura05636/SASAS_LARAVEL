@@ -178,11 +178,7 @@ public function store(
             'status_id' => 1,// Ensure password is provided in the request
         ];
 
-        // Instead of passing Request, create a UserStoreRequest instance and pass data
-        $userStoreRequest = new UserStoreRequest($userPayload);
-
-        // Call the store method for User_Account
-        $userAccountResponse = $userAccount->store($userStoreRequest);
+        $userAccountResponse = User_Account::create($userPayload);
 
         // Commit the transaction
         DB::commit();

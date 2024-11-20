@@ -521,6 +521,10 @@ Route::middleware('auth:sanctum')->prefix('CUSTOMER_GROUPS')->group(function () 
 });
 
 
+Route::post('GROUP_INSERT', [CustomerGroupController::class, 'store']);
+Route::GET('getCollector', [UserController::class, 'getUserwithEmp']);
+
+
 // Payment Duration routes
 Route::middleware('auth:sanctum')->prefix('FEES')->group(function () use ($FEES, $VIEW, $CREATE, $UPDATE, $DELETE) {
     Route::get('/', [FeeController::class, 'index'])->middleware("document_access:$FEES, $VIEW");

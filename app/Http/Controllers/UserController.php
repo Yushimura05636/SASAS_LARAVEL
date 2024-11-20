@@ -621,6 +621,17 @@ public function profileResetPassword(Request $request)
     }
 }
 
+public function getUserwithEmp(){
+
+    // Retrieve users where employee_id is not null and customer_id is null
+    $users = User_Account::whereNotNull('employee_id')
+    ->whereNull('customer_id')
+    ->get();
+
+    return $users;
+
+}
+
 
 
 }

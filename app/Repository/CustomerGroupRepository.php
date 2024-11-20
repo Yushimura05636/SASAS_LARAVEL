@@ -23,6 +23,7 @@ class CustomerGroupRepository implements CustomerGroupRepositoryInterface
     {
         $customer_Group = new Customer_Group();
         $customer_Group->description = $payload->description;
+        $customer_Group->collector_id = $payload->collector_id;
         $customer_Group->save();
 
         return $customer_Group->fresh();

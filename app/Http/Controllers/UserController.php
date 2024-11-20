@@ -7,6 +7,7 @@ use App\Http\Requests\UserUpdateRequest;
 use App\Interface\Service\UserServiceInterface;
 use App\Mail\TwoFactorCodeMail;
 use App\Models\Customer;
+use App\Models\Customer_Group;
 use App\Models\Document_Map;
 use App\Models\Document_Permission;
 use App\Models\Document_Permission_Map;
@@ -355,6 +356,46 @@ class UserController extends Controller
         return response()->json(['success' => true, 'message' => 'Email exists!'], Response::HTTP_OK);
     }
 
+    public function getOnlyCollectorPermissions()
+    {
+        //show only the user with collector permission
+        //collector permission consists of
+        //customer_group
+        //payments
+        //payment_schedules
+        //payment_line
+        //customer
+
+        $document_map = Document_Map::whereIn('description', ['CUSTOMER_GROUPS', 'PAYMENTS', 'PAYMENT_SCHEDULES', 'PAYMENT_LINES', 'CUSTOMERS'])
+        ->get() // Get all records
+        ->mapWithKeys(function ($item) {
+            return [$item->description => $item]; // Map each item with description as key
+        });
+
+        $permissions = Document_Permission::join('document_map', 'document_permission.document_map_code', '=', 'document_map.id')
+        ->whereIn('document_map.description', ['CUSTOMER_GROUPS', 'PAYMENTS', 'PAYMENT_SCHEDULES', 'PAYMENT_LINES', 'CUSTOMERS'])
+        ->distinct('document_permission.user_id') // Add distinct for user_id
+        ->select('document_permission.user_id') // Only select user_id
+        ->get();
+
+        $user_map = [];
+        $index = 0;
+        foreach($permissions as $perm)
+        {
+            if(!is_null($perm))
+            {
+                $user_id = $perm->user_id;
+                $users = User_Account::where('id', $user_id)->first();
+
+                $user_map[$index] = $users;
+
+            }
+            $index++;
+        }
+
+        return response()->json(['data' => $user_map], Response::HTTP_OK);
+    }
+
     public function showUserDetails()
     {
         $user_id = auth()->user()->id;
@@ -621,17 +662,25 @@ public function profileResetPassword(Request $request)
     }
 }
 
-public function getUserwithEmp(){
-
-    // Retrieve users where employee_id is not null and customer_id is null
+public function getCollectorData()
+{
     $users = User_Account::whereNotNull('employee_id')
-    ->whereNull('customer_id')
+    ->where('notes', 'employee.collector')
     ->get();
 
-    return $users;
+    return response()->json(['data' => $users], Response::HTTP_OK);
+}
+
+public function getGroupWithMembers()
+{
 
 }
 
+public function getGroupOnlyNameAndCollector()
+{
+    $group = Customer_Group::get();
 
+    return response()->json(['data' => $group], Response::HTTP_OK);
+}
 
 }

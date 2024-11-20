@@ -312,7 +312,7 @@ class DatabaseSeeder extends Seeder
             'first_name' => 'Mabby',
             'middle_name' => 'Kui',
             'email' => 'rosendosastrejr125@gmail.com',
-            'phone_number' => '09606863221',
+            'phone_number' => '09606863294',
             'password' => Hash::make('password'),
             'employee_id' => 2,
             'customer_id' => null,

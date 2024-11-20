@@ -628,7 +628,8 @@ public function getUserwithEmp(){
     ->whereNull('customer_id')
     ->get();
 
-return $users;
+    return $users;
+
 }
 
 

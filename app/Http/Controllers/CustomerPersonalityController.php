@@ -654,21 +654,22 @@ class CustomerPersonalityController extends Controller
             throw new \Exception('Approve denied, the customer still have pending payments');
         }
 
-        // //get the personality status code
-        // $personalityStatusId = Personality_Status_Map::where('description', 'Pending')->first()->id;
+        //get the personality status code
+        $personalityStatus = Personality_Status_Map::where('description', 'like', '%Approve%')->first();
 
-        // //set the personality status code
-        // $personalityData['personality_status_code'] = $personalityStatusId;
+        $personality_code_id = 0;
 
-        // Check if personality_status_code is provided; otherwise, set it to "Pending"
-        if (isset($personalityData['personality_status_code'])) {
-            $personalityStatusId = $personalityData['personality_status_code'];
+        if (isset($personalityStatus) && !is_null($personalityStatus)) {
+            // //set the personality status code
+            $personality_code_id = $personalityStatus->id;
         } else {
-            $personalityStatusId = Personality_Status_Map::where('description', 'Pending')->first()->id;
+            throw new \Exception('Approve denied, the approve method is empty');
         }
 
+        // Check if personality_status_code is provided; otherwise, set it to "Pending"
         // Set the personality status code
-        $personalityData['personality_status_code'] = $personalityStatusId;
+        $personalityData['personality_status_code'] = $personality_code_id;
+
 
         // Merge data for validation
         $datas = array_merge($customerData, $personalityData);
@@ -702,49 +703,49 @@ class CustomerPersonalityController extends Controller
             //     'message' => $customer_id,
             // ], Response::HTTP_BAD_REQUEST);
 
-            // Step 1: Get all requirement_ids from the request data
-            $requestedRequirementIds = array_column($requirementDatas, 'id');
+            // // Step 1: Get all requirement_ids from the request data
+            // $requestedRequirementIds = array_column($requirementDatas, 'id');
 
-            // Step 2: Find and delete database records not in the request data
-            Customer_Requirements::where('customer_id', $customer_id)
-                ->whereNotIn('requirement_id', $requestedRequirementIds)
-                ->delete();
+            // // Step 2: Find and delete database records not in the request data
+            // Customer_Requirements::where('customer_id', $customer_id)
+            //     ->whereNotIn('requirement_id', $requestedRequirementIds)
+            //     ->delete();
 
-            // Step 3: Update or create customer_requirements
-            for ($i = 0; $i < count($requirementDatas); $i++) {
-                $requireData = $requirementDatas[$i];
+            // // Step 3: Update or create customer_requirements
+            // for ($i = 0; $i < count($requirementDatas); $i++) {
+            //     $requireData = $requirementDatas[$i];
 
-                $payload = [
-                    'customer_id' => $customer_id,
-                    'requirement_id' => $requireData['id'],
-                    'expiry_date' => $requireData['expiry_date'],
-                ];
+            //     $payload = [
+            //         'customer_id' => $customer_id,
+            //         'requirement_id' => $requireData['id'],
+            //         'expiry_date' => $requireData['expiry_date'],
+            //     ];
 
-                $payload = new Request($payload);
+            //     $payload = new Request($payload);
 
-                // Find the record by customer_id and requirement_id, if it exists
-                $customerRequirement = Customer_Requirements::where('customer_id', $customer_id)
-                                                            ->where('requirement_id', $requireData['id'])
-                                                            ->first();
+            //     // Find the record by customer_id and requirement_id, if it exists
+            //     $customerRequirement = Customer_Requirements::where('customer_id', $customer_id)
+            //                                                 ->where('requirement_id', $requireData['id'])
+            //                                                 ->first();
 
-                if ($customerRequirement) {
-                    // Update the existing record
-                    // return response()->json([
-                    //     'message update' => $payload->all(),
-                    // ], Response::HTTP_INTERNAL_SERVER_ERROR);
-                    $customerRequirementController->update($payload, $customerRequirement->id);
-                } else {
-                    // return response()->json([
-                    //     'message create' => $payload->all(),
-                    // ], Response::HTTP_INTERNAL_SERVER_ERROR);
-                    // Create a new record if it doesn't exist
-                    $customerRequirementController->store($payload);
-                }
+            //     if ($customerRequirement) {
+            //         // Update the existing record
+            //         // return response()->json([
+            //         //     'message update' => $payload->all(),
+            //         // ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            //         $customerRequirementController->update($payload, $customerRequirement->id);
+            //     } else {
+            //         // return response()->json([
+            //         //     'message create' => $payload->all(),
+            //         // ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            //         // Create a new record if it doesn't exist
+            //         $customerRequirementController->store($payload);
+            //     }
 
-                // return response()->json([
-                //     'message' => $customerRequirement,
-                // ], Response::HTTP_INTERNAL_SERVER_ERROR);
-            }
+            //     // return response()->json([
+            //     //     'message' => $customerRequirement,
+            //     // ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            // }
 
             // Commit the transaction
             DB::commit();

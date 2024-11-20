@@ -28,19 +28,19 @@ class AuthenticationService implements AuthenticationServiceInterface
         
         if (!$user) {
             return response()->json([
-                'message' => 'No account found'
-            ], Response::HTTP_UNAUTHORIZED);
+                'message' => 'Invalid Email'
+            ], Response::HTTP_BAD_REQUEST);
         }
         
         if(!is_null($user->customer_id))
         {
-            return response()->json(['message' => 'No account found'], Response::HTTP_FORBIDDEN);
+            return response()->json(['message' => 'No account found'], Response::HTTP_BAD_REQUEST);
         }
 
         if (!Hash::check($payload->password, $user->password)) {
             return response()->json([
                 'message' => 'Invalid Credentials'
-            ], Response::HTTP_UNAUTHORIZED);
+            ], Response::HTTP_BAD_REQUEST);
         }
 
         //$token = $user->createToken('auth-token')->plainTextToken;

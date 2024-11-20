@@ -23,6 +23,7 @@ use App\Models\Payment_Schedule;
 use App\Models\Personality;
 use App\Models\Personality_Status_Map;
 use App\Models\User_Account;
+use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -1479,4 +1480,86 @@ class CustomerPersonalityController extends Controller
         }
     }
     
+    public function getGroupOnlyNameAndCollector()
+    {
+        
+        $group_details = [];
+
+        $users = User_Account::whereNotNull('employee_id')
+        ->whereNull('customer_id')
+        ->get();
+
+        foreach($users as $user)
+        {
+            if(isset($user) && !is_null($user))
+            {
+                $user_data = Customer_Group::where('collector_id', $user->id)->get();
+
+                foreach($user_data as $data)
+                {
+                    if(isset($data) && !is_null($data))
+                    {
+                        $group_details[] = [
+                            'id' => $data->id,
+                            'last_name' => $user->last_name,
+                            'first_name' => $user->first_name,
+                            'middle_name' => $user->middle_name,
+                            'description' => $data->description,
+                            'created_at' => $data->created_at,
+                            'updated_at' => $data->updated_at,
+                        ];
+                    }
+                }
+            }
+        }
+
+        return $group_details;
+    }
+
+    public function getGroupWithMembers(int $id)
+    {
+        
+        //get the collector in the group
+        $collector = Customer_Group::where('id', $id)->first();
+        $users = Customer::where('group_id', $id)->get();
+
+        $customer_group_details = [];
+        $collector_name = [];
+        $group_name = null;
+        
+        if(isset($collector) && !is_null($collector)
+        && isset($users) && !is_null($users))
+        {
+            $collector_details = User_Account::where('id', $collector->collector_id)->first();
+            //get the users in the group
+
+            if(isset($collector_details) && !is_null($collector_details))
+            {
+                $collector_name = [
+                    'last_name' => $collector_details->last_name,
+                    'first_name' => $collector_details->first_name,
+                    'middle_name' => $collector_details->middle_name,
+                ];
+
+                $group_name = $collector->description;
+
+                foreach($users as $user)
+                {
+                    $user_personality = Personality::where('id', $user->personality_id)->first();
+                    
+                    if(isset($user) && !is_null($user)
+                    && isset($user_personality) && !is_null($user_personality))
+                    {
+                        $customer_group_details[] = [
+                            'family_name' => $user_personality->family_name,
+                            'first_name' => $user_personality->first_name,
+                            'middle_name' => $user_personality->middle_name,
+                        ];
+                    }
+                }
+            }
+        }
+
+        return response()->json(['data' => $customer_group_details, 'collector' => $collector_name, 'group_name' => $group_name], Response::HTTP_OK);
+    }
 }

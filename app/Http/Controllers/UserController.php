@@ -405,7 +405,14 @@ class UserController extends Controller
         $role = null;
         if(is_null($user_details->customer_id))
         {
-            $role = 'EMPLOYEE';   
+            if($user_details->notes == 'employee.collector')
+            {
+                $role = 'COLLECTOR';
+            }
+            else
+            {
+                $role = 'EMPLOYEE';
+            }   
         }
         else
         {
@@ -669,18 +676,6 @@ public function getCollectorData()
     ->get();
 
     return response()->json(['data' => $users], Response::HTTP_OK);
-}
-
-public function getGroupWithMembers()
-{
-
-}
-
-public function getGroupOnlyNameAndCollector()
-{
-    $group = Customer_Group::get();
-
-    return response()->json(['data' => $group], Response::HTTP_OK);
-}
+}   
 
 }

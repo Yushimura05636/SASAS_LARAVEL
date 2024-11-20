@@ -82,4 +82,9 @@ class User_Account extends Authenticatable
     {
         return $this->hasMany(Document_Permission::class, 'id', 'user_id');
     }
+
+    public function customerGroup()
+    {
+        return $this->hasOne(Customer_Group::class, 'collector_id', 'id');
+    }
 }

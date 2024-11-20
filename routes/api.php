@@ -1,5 +1,6 @@
 <?php
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CollectorController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\CustomerGroupController;
 use App\Http\Controllers\CustomerPersonalityController;
@@ -1078,3 +1079,13 @@ Route::middleware('auth:sanctum')->prefix('DASHBOARD')->group(function () {
 
 //login dummy
 Route::post('/loginDebug', [AuthController::class, 'loginDebug']);
+
+//COLLECTOR DASHBOARD
+Route::middleware('auth:sanctum')->get('/GET_COLLECTORandGROUP_ID', [CollectorController::class, 'getCollectorIDAndGroupID']);
+
+Route::POST('/FETCH_LOANS', [CollectorController::class, 'fetchToCollect']);
+Route::POST('/FETCH_COLLECTED_LOANS', [CollectorController::class, 'fetchToCollected']);
+
+
+
+

@@ -24,8 +24,8 @@ class PhoneVerificationController extends Controller
         try {
             // Send SMS verification code
             $verification = $twilio->verify->v2->services(env('TWILIO_VSID'))
-                ->verifications
-                ->create($this->request->phone_number, "sms");
+            ->verifications
+            ->create($this->request->phone_number, "sms");
 
             // Save the code and expiration
             $user->two_factor_code = null;

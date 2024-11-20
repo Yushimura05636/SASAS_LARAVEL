@@ -788,6 +788,13 @@ class CustomerPersonalityController extends Controller
         ->orderBy('personality_id')
         ->get();
 
+        $customer_group_collector = Customer_Group::where('id', $id)->first();
+
+        if(isset($customer_group_collector) && !is_null($customer_group_collector))
+        {
+            $customer_group_collector = $customer_group_collector->collector_id;
+        }
+
         foreach($customers as $customer)
         {
             if(!is_null($customer))
@@ -844,6 +851,17 @@ class CustomerPersonalityController extends Controller
                 }
             }
 
+            $data_user = User_Account::where('id', $customer_group_collector)->first();
+
+        $collectorData = [];
+        if(isset($data_user) && !is_null($data_user))
+        {
+            $collectorData = [
+                'collector_id' => $data_user->id,
+                'name' => $data_user->last_name . ' ' . $data_user->first_name . ' ' . $data_user->middle_name,
+            ];
+        }
+
         if(!count($customerDatas) > 0)
         {
             return response()->json([
@@ -853,6 +871,7 @@ class CustomerPersonalityController extends Controller
 
         return response()->json([
             'data' => $customerDatas,
+            'collector' => $collectorData,
         ]);
     }
 

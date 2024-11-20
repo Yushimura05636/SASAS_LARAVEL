@@ -35,6 +35,7 @@ class User_Account extends Authenticatable
         'status_id',
         'datetime_registered',
         'employee_id',
+        'notes',
     ];
 
     protected $casts = [

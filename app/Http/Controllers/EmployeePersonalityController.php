@@ -177,6 +177,7 @@ public function store(
             'phone_number' => $personalityData['cellphone_no'],
             'password' => $request->input('password'), 
             'status_id' => 1,// Ensure password is provided in the request
+            'notes' => $request->input('notes'),
         ];
 
         $userAccountResponse = User_Account::create($userPayload);
@@ -192,6 +193,43 @@ public function store(
             'document_permission' => $document_permission_map->id,
             'datetime_granted' => now()
         ]);
+
+        if($request->input('notes') == 'employee.collector')
+        {
+            //create dashboard permission
+            $document_maps = Document_Map::where(function($query) {
+                $query->where('description', 'like', '%PAYMENTS%')
+                      ->orWhere('description', 'like', '%PAYMENT_SCHEDULES%');
+            })->get();
+            $document_permission_map = Document_Permission_Map::where(function($query) {
+                $query->where('description', 'like', '%View%')
+                      ->orWhere('description', 'like', '%Create%')
+                      ->orWhere('description', 'like', '%Update%')
+                      ->orWhere('description', 'like', '%Approve%')
+                      ->orWhere('description', 'like', '%Reject%');
+            })->get();
+            
+
+            foreach($document_maps as $map)
+            {
+                if(isset($map) && !is_null($map))
+                {
+                    foreach($document_permission_map as $permission)
+                    {
+                        if(isset($permission) && !is_null($permission))
+                        {
+                            //create the map
+                            $document_permission = Document_Permission::create([
+                                'user_id' => $userAccountResponse['id'],
+                                'document_map_code' => $map->id,
+                                'document_permission' => $permission->id,
+                                'datetime_granted' => now()
+                            ]);
+                        }
+                    }
+                }
+            }
+        }
 
         // Commit the transaction
         DB::commit();

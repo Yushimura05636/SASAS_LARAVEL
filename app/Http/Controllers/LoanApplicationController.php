@@ -303,7 +303,9 @@ class LoanApplicationController extends Controller
                 }
             };
 
-            $saveLoanApplication = function($customerData) use ($userId, $saveFeesAndPaymentSchedule, $loanApplicationCoMakerController) {
+            $debug_comaker = null;
+
+            $saveLoanApplication = function($customerData, $data) use ($userId, $saveFeesAndPaymentSchedule, $loanApplicationCoMakerController) {
                 $customerData['document_status_code'] = Document_Status_Code::where('description', $customerData['document_status_code'])->first()->id;
                 $customerData['datetime_prepared'] = now();
                 $customerData['prepared_by_id'] = $userId;
@@ -312,16 +314,26 @@ class LoanApplicationController extends Controller
                 $payload = new Request($customerData);
                 $this->loanApplicationService->createLoanApplication($payload);
 
-                if (isset($customerData['coMaker']) && $customerData['coMaker'] > 0) {
-                    $loanId = Loan_Application::where('loan_application_no', $customerData['loan_application_no'])->first()->id;
-                    $coMaker = [
-                        'loan_application_id' => $loanId,
-                        'customer_id' => $customerData['customer_id'],
-                    ];
-                    $loanApplicationCoMakerController->store(new Request($coMaker));
-                }
 
                 $saveFeesAndPaymentSchedule($customerData);
+            };
+
+            $saveLoanComaker = function($customerData, $data) use ($userId, $loanApplicationCoMakerController)
+            {
+                for($i = 0; $i < count($data); $i++)
+                {
+                    if($data[$i]['customer_id'] != $customerData['customer_id'])
+                    {
+                        if (isset($customerData['customer_id']) && $customerData['customer_id'] > 0) {
+                            $loanId = Loan_Application::where('loan_application_no', $data[$i]['loan_application_no'])->first()->id;
+                            $coMaker = [
+                                'loan_application_id' => $loanId,
+                                'customer_id' => $data[$i]['customer_id'],
+                            ];
+                            $loanApplicationCoMakerController->store(new Request($coMaker));
+                        }
+                    }
+                }
             };
 
             // Run the validation and checks
@@ -331,8 +343,14 @@ class LoanApplicationController extends Controller
 
             // Insert loan applications
             foreach ($data as $customerData) {
-                $saveLoanApplication($customerData);
+                $saveLoanApplication($customerData, $data);
             }
+
+            foreach ($data as $customerData) {
+                $saveLoanComaker($customerData, $data);
+            }
+
+            //throw new \Exception($debug_comaker ?? 'empty');
 
             DB::commit();
 

@@ -29,7 +29,7 @@ class AuthenticationClientService implements AuthenticationClientServiceInterfac
 
     if (!$user) {
         return response()->json([
-            'message' => 'No account found'
+            'message' => 'Invalid email'
         ], Response::HTTP_BAD_REQUEST);
     }
 

@@ -27,7 +27,7 @@ class EmployeeStoreRequest extends FormRequest
             'tin_no' => ['required', 'integer'],
             'date_hired' => ['nullable', 'date'],
             'date_resigned' => ['nullable', 'date'],
-            'personality_id' => ['required', 'integer']
+            'personality_id' => ['required', 'integer'],
         ];
     }
 }

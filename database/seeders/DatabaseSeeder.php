@@ -53,35 +53,6 @@ class DatabaseSeeder extends Seeder
         $this->c = 500;
         $this->f = 1;
 
-        for($i = 0; $i < 3; $i++)
-        {
-            Personality::create([
-                'datetime_registered'=>now(),
-                'family_name'=>$faker->name(),
-                'middle_name'=>$faker->name(),
-                'first_name'=>$faker->name(),
-                //'description'=>$faker->sentence(6),
-                'birthday'=>now(),
-                'civil_status'=>$faker->sentence(6),
-                'gender_code'=>$faker->numberBetween(1,2),
-                'house_street'=>$faker->address(),
-                'purok_zone'=>$faker->state(),
-                'postal_code'=> $faker->postcode(),
-                'telephone_no'=>$faker->phoneNumber(),
-                'email_address'=>$faker->email(),
-                'cellphone_no'=> $faker->phoneNumber(),
-                'name_type_code'=>$faker->numberBetween(1,2),
-                'personality_status_code'=>1,
-                //'branch_id'=>$faker->numberBetween(1,10),
-                'barangay_id'=>$faker->numberBetween(1,10),
-                'city_id'=>$faker->numberBetween(1,10),
-                'country_id'=>$faker->numberBetween(1,10),
-                'province_id'=>$faker->numberBetween(1,10),
-                //'spouse_id'=>$faker->numberBetween(1,10),
-                'credit_status_id'=>$faker->numberBetween(1,10),
-            ]);
-        }
-
         $modelTypes = [
             'barangay',
             'branch',
@@ -95,7 +66,6 @@ class DatabaseSeeder extends Seeder
 
         // Defining unique value arrays beforehand
 
-
         $civilStatusNames = ['Married', 'Widowed', 'Single'];
         $genderNames = ['Male', 'Female'];
         $creditStatusNames = ['Active', 'Inactive', 'Suspended', 'Blacklisted'];
@@ -104,7 +74,43 @@ class DatabaseSeeder extends Seeder
         $nameTypes = ['Employee', 'Customer'];
         $document_status_code = ['Pending', 'Approved', 'Reject', 'Active', 'Inactive'];
         $personality_status_map = ['Pending', 'Approved','Reject','Active','Inactive'];
+        
         $city = [
+            // NCR
+            'Quezon City',
+            'Manila',
+            'Caloocan',
+            'Pasig',
+            'Makati',
+            'Taguig',
+            'Pasay',
+            'Las Piñas',
+            'Muntinlupa',
+            'Malabon',
+            'Navotas',
+            'Parañaque',
+            'Valenzuela',
+            'Marikina',
+            // Luzon
+            'Baguio City',
+            'San Fernando City (La Union)',
+            'Angeles City',
+            'Olongapo City',
+            'Batangas City',
+            'Lucena City',
+            'Calamba City',
+            'Antipolo City',
+            'Puerto Princesa City',
+            // Visayas
+            'Cebu City',
+            'Mandaue City',
+            'Lapu-Lapu City',
+            'Iloilo City',
+            'Bacolod City',
+            'Dumaguete City',
+            'Tagbilaran City',
+            'Tacloban City',
+            // Mindanao
             'Davao City',
             'Cagayan de Oro',
             'Zamboanga City',
@@ -121,13 +127,147 @@ class DatabaseSeeder extends Seeder
             'Valencia City',
             'Ozamiz City'
         ];
-
-        $customer_group = [
-            ["collector_id" => 1, "name" => "Apple", "members" => 5],
-            ["collector_id" => 2, "name" => "Banan", "members" => 8],
-            ["collector_id" => 3, "name" => "Orange", "members" => 12],
+        
+        $barangay = [
+            // NCR
+            'Barangay Bagumbayan (Quezon City)',
+            'Barangay Poblacion (Makati)',
+            'Barangay Ususan (Taguig)',
+            'Barangay San Isidro (Parañaque)',
+            'Barangay Malibay (Pasay)',
+            'Barangay Longos (Malabon)',
+            'Barangay Dagat-dagatan (Navotas)',
+            'Barangay Talipapa (Caloocan)',
+            'Barangay San Bartolome (Novaliches, Quezon City)',
+            // Luzon
+            'Barangay Mines View (Baguio City)',
+            'Barangay San Fernando (San Fernando City, La Union)',
+            'Barangay Balibago (Angeles City)',
+            'Barangay Barretto (Olongapo City)',
+            'Barangay Pallocan (Batangas City)',
+            'Barangay Ibabang Dupay (Lucena City)',
+            'Barangay Halang (Calamba City)',
+            'Barangay San Roque (Antipolo City)',
+            'Barangay San Pedro (Puerto Princesa City)',
+            // Visayas
+            'Barangay Lahug (Cebu City)',
+            'Barangay Pajo (Lapu-Lapu City)',
+            'Barangay Tipolo (Mandaue City)',
+            'Barangay Jaro (Iloilo City)',
+            'Barangay Mandalagan (Bacolod City)',
+            'Barangay Piapi (Dumaguete City)',
+            'Barangay Cogon (Tagbilaran City)',
+            'Barangay San Jose (Tacloban City)',
+            // Mindanao
+            'Barangay Buhangin (Davao City)',
+            'Barangay Carmen (Cagayan de Oro)',
+            'Barangay Talon-Talon (Zamboanga City)',
+            'Barangay San Isidro (General Santos City)',
+            'Barangay Baan Riverside (Butuan City)',
+            'Barangay Poblacion (Iligan City)',
+            'Barangay Bagua (Cotabato City)',
+            'Barangay Magugpo East (Tagum City)',
+            'Barangay Balangasan (Pagadian City)',
+            'Barangay Miputak (Dipolog City)',
+            'Barangay Washington (Surigao City)',
+            'Barangay Gen. Paulino Santos (Koronadal City)',
+            'Barangay Kalasungay (Malaybalay City)',
+            'Barangay Poblacion (Valencia City)',
+            'Barangay Maningcol (Ozamiz City)'
         ];
 
+        $provinces = [
+            // NCR (No provinces, but for reference, it's the National Capital Region)
+            'Metro Manila',
+        
+            // Luzon
+            'Abra',
+            'Albay',
+            'Aurora',
+            'Bataan',
+            'Batangas',
+            'Benguet',
+            'Bulacan',
+            'Cagayan',
+            'Camarines Norte',
+            'Camarines Sur',
+            'Catanduanes',
+            'Cavite',
+            'Ilocos Norte',
+            'Ilocos Sur',
+            'Isabela',
+            'Kalinga',
+            'La Union',
+            'Laguna',
+            'Marinduque',
+            'Masbate',
+            'Nueva Ecija',
+            'Nueva Vizcaya',
+            'Occidental Mindoro',
+            'Oriental Mindoro',
+            'Palawan',
+            'Pampanga',
+            'Pangasinan',
+            'Quezon',
+            'Quirino',
+            'Rizal',
+            'Romblon',
+            'Sorsogon',
+            'Tarlac',
+            'Zambales',
+        
+            // Visayas
+            'Aklan',
+            'Antique',
+            'Bohol',
+            'Capiz',
+            'Cebu',
+            'Eastern Samar',
+            'Guimaras',
+            'Iloilo',
+            'Leyte',
+            'Negros Occidental',
+            'Negros Oriental',
+            'Northern Samar',
+            'Samar (Western Samar)',
+            'Siquijor',
+            'Southern Leyte',
+        
+            // Mindanao
+            'Agusan del Norte',
+            'Agusan del Sur',
+            'Basilan',
+            'Bukidnon',
+            'Camiguin',
+            'Compostela Valley (Davao de Oro)',
+            'Davao del Norte',
+            'Davao del Sur',
+            'Davao Occidental',
+            'Davao Oriental',
+            'Dinagat Islands',
+            'Lanao del Norte',
+            'Lanao del Sur',
+            'Maguindanao del Norte',
+            'Maguindanao del Sur',
+            'Misamis Occidental',
+            'Misamis Oriental',
+            'North Cotabato (Cotabato)',
+            'Sarangani',
+            'South Cotabato',
+            'Sultan Kudarat',
+            'Surigao del Norte',
+            'Surigao del Sur',
+            'Tawi-Tawi',
+            'Zamboanga del Norte',
+            'Zamboanga del Sur',
+            'Zamboanga Sibugay'
+        ];
+        
+        $country = [
+            'Philippines'
+        ];
+
+        //document
         $documentMap = [
             'USER_ACCOUNTS', # 1
             'BUTTON_AUTHORIZARIONS',
@@ -157,6 +297,18 @@ class DatabaseSeeder extends Seeder
 
         foreach ($city as $name) {
             City::createEntry($name); // No duplicates, direct array iteration
+        }
+
+        foreach ($provinces as $name) {
+            Province::createEntry($name); // No duplicates, direct array iteration
+        }
+
+        foreach ($barangay as $name) {
+            Barangay::createEntry($name); // No duplicates, direct array iteration
+        }
+
+        foreach ($country as $name) {
+            Barangay::createEntry($name); // No duplicates, direct array iteration
         }
 
         foreach ($personality_status_map as $name) {
@@ -236,33 +388,6 @@ class DatabaseSeeder extends Seeder
             }
         }
 
-        Employee::create([
-            'sss_no' => $faker->unique()->randomDigit(),
-            'phic_no' => $faker->unique()->randomDigit(),
-            'tin_no' => $faker->unique()->randomDigit(),
-            'datetime_hired' => $faker->unique()->date(),
-            'datetime_resigned' => $faker->unique()->date(),
-            'personality_id' => 1,
-        ]);
-
-        Employee::create([
-            'sss_no' => $faker->unique()->randomDigit(),
-            'phic_no' => $faker->unique()->randomDigit(),
-            'tin_no' => $faker->unique()->randomDigit(),
-            'datetime_hired' => $faker->unique()->date(),
-            'datetime_resigned' => $faker->unique()->date(),
-            'personality_id' => 2,
-        ]);
-
-        Employee::create([
-            'sss_no' => $faker->unique()->randomDigit(),
-            'phic_no' => $faker->unique()->randomDigit(),
-            'tin_no' => $faker->unique()->randomDigit(),
-            'datetime_hired' => $faker->unique()->date(),
-            'datetime_resigned' => $faker->unique()->date(),
-            'personality_id' => 3,
-        ]);
-
         Requirements::create([
             'description' => '2x2 picture ID',
             'isActive' => 1,
@@ -331,46 +456,52 @@ class DatabaseSeeder extends Seeder
         //     ]);
         // }
 
+        Personality::create([
+            'datetime_registered'=>now(),
+            'family_name'=>'Sastre',
+            'middle_name'=>'Queroa',
+            'first_name'=>'Adrian',
+            //'description'=>$faker->sentence(6),
+            'birthday'=>'2000-01-01',
+            'civil_status'=>3,
+            'gender_code'=>1,
+            'house_street'=>'House No. 15, Purok 2, Julian Rivera Street, Barangay Agdao Proper, Davao City, 8000, Philippines',
+            'purok_zone'=>'House No. 25, Purok 3, Zone 2, Rizal Street, Barangay Agdao Proper, Davao City, 8000, Philippines',
+            'postal_code'=> '8000',
+            'telephone_no'=>'',
+            'email_address'=>'zipppycole@gmail.com',
+            'cellphone_no'=> '09606863294',
+            'name_type_code'=>1,
+            'personality_status_code'=>2,
+            //'branch_id'=>$faker->numberBetween(1,10),
+            'barangay_id'=>1,
+            'city_id'=>1,
+            'country_id'=>1,
+            'province_id'=>1,
+            //'spouse_id'=>$faker->numberBetween(1,10),
+            'credit_status_id'=>1,
+        ]);
+
+        Employee::create([
+            'sss_no' => 3412345678,
+            'phic_no' => 123456789012,
+            'tin_no' => 123456789000,
+            'datetime_hired' => now(),
+            'personality_id' => 1,
+        ]);
+
         User_Account::create([
-            'last_name' => 'Eric',
-            'first_name' => 'Eric',
-            'middle_name' => 'Eric',
-            'email' => 'ericramonesexb@gmail.com',
-            'phone_number' => '09536404961',
-            'password' => Hash::make('password'),
+            'status_id' => 1,
+            'last_name' => 'Sastre',
+            'first_name' => 'Adrian',
+            'middle_name' => 'Queroa',
+            'phone_number' => '09606863294',
+            'password' => Hash::make('Lendcash123'),
+            'email' => 'zipppycole@gmail.com',
             'employee_id' => 1,
             'customer_id' => null,
-            'status_id' => 1,
+            'notes' => 'admin',
         ]);
-
-        User_Account::create([
-            'last_name' => 'Segurog',
-            'first_name' => 'Mabby',
-            'middle_name' => 'Kui',
-            'email' => 'rosendosastrejr125@gmail.com',
-            'phone_number' => '09606863294',
-            'password' => Hash::make('password'),
-            'employee_id' => 2,
-            'customer_id' => null,
-            'status_id' => 1,
-        ]);
-
-        User_Account::create([
-            'last_name' => 'Mars',
-            'first_name' => 'Mars',
-            'middle_name' => 'Mars',
-            'email' => 'MarsAmarillento@email.com',
-            'phone_number' => '09078625434',
-            'password' => Hash::make('marsamarillento123'),
-            'employee_id' => 3,
-            'customer_id' => null,
-            'status_id' => 1,
-        ]);
-
-        foreach ($customer_group as $name) {
-            echo $name['name'] . ' ' . $name['collector_id'];
-            Customer_Group::createEntry($name['name'], $name['collector_id']); // No duplicates, direct array iteration
-        }
 
         //here is the permission
         // Fetch all document maps
@@ -379,13 +510,13 @@ class DatabaseSeeder extends Seeder
         // Fetch all document permissions
         $documentPermissions = Document_Permission_Map::all();
 
-        for($i = 0; $i < 3; $i++)
+        for($i = 0; $i < 1; $i++)
         {
             // Loop through each document map and permission, and assign to user_id 1
             foreach ($documentMaps as $documentMap) {
                 foreach ($documentPermissions as $documentPermission) {
                     Document_Permission::create([
-                        'user_id' => $i+1, // Assuming you are granting permissions to user with ID 1
+                        'user_id' => 1, // Assuming you are granting permissions to user with ID 1
                         'document_map_code' => $documentMap->id, // Use document map id as code
                         'document_permission' => $documentPermission->id, // Use document permission id
                         'datetime_granted' => now() // Current timestamp
@@ -396,20 +527,20 @@ class DatabaseSeeder extends Seeder
 
         Loan_Count::create([
             'loan_count' => 1,
-            'min_amount' => 5000.00,
-            'max_amount' => 15000.00,
+            'min_amount' => 4000.00,
+            'max_amount' => 10000.00,
         ]);
 
         Loan_Count::create([
             'loan_count' => 2,
-            'min_amount' => 15000.00,
-            'max_amount' => 30000.00,
+            'min_amount' => 10000.00,
+            'max_amount' => 20000.00,
         ]);
 
         Loan_Count::create([
             'loan_count' => 3,
-            'min_amount' => 30000.00,
-            'max_amount' => 60000.00,
+            'min_amount' => 20000.00,
+            'max_amount' => 30000.00,
         ]);
 
         //there are four (4) predefined duration in the database
@@ -419,61 +550,51 @@ class DatabaseSeeder extends Seeder
             'notes' => 'Weekly Payments',
         ]);
 
-        Payment_Frequency::create([
-            'description' => 'Monthly',
-            'days_interval' => 30, // Or 31 depending on the month
-            'notes' => 'Monthly Payments',
+        //there are three (3) predefined frequency in the database
+        Payment_Duration::create([
+            'description' => '15 Weeks',
+            'number_of_payments' => 15,
+            'notes' => 'For 15 Weekly Payments',
         ]);
-
-        Payment_Frequency::create([
-            'description' => 'Quarterly',
-            'days_interval' => 90, // Or 91, 92 depending on the quarter
-            'notes' => 'Quarterly Payments',
-        ]);
-
-        Payment_Frequency::create([
-            'description' => 'Annual',
-            'days_interval' => 365, // Or 366 in leap years
-            'notes' => 'Annual Payments',
-        ]);
-
 
         //there are three (3) predefined frequency in the database
         Payment_Duration::create([
-            'description' => '12 Weeks',
-            'number_of_payments' => 12,
-            'notes' => 'For 12 Weekly Payments',
-        ]);
-
-        Payment_Duration::create([
-            'description' => '6 Months',
-            'number_of_payments' => 26, // Assuming 4 weeks per month
-            'notes' => 'For 6 Monthly Payments',
-        ]);
-
-        Payment_Duration::create([
-            'description' => '1 Year',
-            'number_of_payments' => 52, // Assuming 4 weeks per month
-            'notes' => 'For 12 Monthly Payments',
+            'description' => '24 Weeks',
+            'number_of_payments' => 24,
+            'notes' => 'For 24 Weekly Payments',
         ]);
 
         Factor_Rate::create([
             'payment_frequency_id' => 1,
             'payment_duration_id' => 1,
-            'description' => 'weekly payment in 12 weeks',
-            'value' => 12,
+            'description' => 'weekly payment in 15 weeks',
+            'value' => 30,
+        ]);
+
+        Factor_Rate::create([
+            'payment_frequency_id' => 1,
+            'payment_duration_id' => 1,
+            'description' => 'weekly payment in 24 weeks',
+            'value' => 30,
         ]);
 
         Fees::create([
-            'description' => 'Transaction Fees',
-            'amount' => 12.00000,
+            'description' => 'Transaction Loan Fee',
+            'amount' => 100,
             'isactive' => 1,
-            'notes' => 'Transaction fee',
+            'notes' => 'Transaction Loan fee',
+        ]);
+
+        Fees::create([
+            'description' => 'Membership Fees',
+            'amount' => 100,
+            'isactive' => 1,
+            'notes' => 'Membership fee',
         ]);
 
         Fees::create([
             'description' => 'Passbook fees',
-            'amount' => 230.00000,
+            'amount' => 200,
             'isactive' => 1,
             'notes' => 'Passbook fee',
         ]);
@@ -495,482 +616,6 @@ class DatabaseSeeder extends Seeder
             'description' => 'Black Saturday',
             'date' => '2024-11-22',
             'isActive' => 1,
-        ]);
-
-        //customer
-        Personality::create([
-            'datetime_registered' => now(),
-            'family_name' => 'Carter',
-            'middle_name' => 'John',
-            'first_name' => 'Lily',
-            'birthday' => '1985-06-15',
-            'civil_status' => 1, // Single
-            'gender_code' => 2, // Female
-            'house_street' => '45 Pine Street',
-            'purok_zone' => 'Zone 3',
-            'postal_code' => '2500',
-            'telephone_no' => '(045) 123-4512',
-            'email_address' => 'ericramones1253@gmail.com',
-            'cellphone_no' => '+63 917 765 4321',
-            'name_type_code' => 2,
-            'personality_status_code' => 2,
-            'barangay_id' => 1, // Adjust based on your data
-            'city_id' => 4, // Adjust based on your data
-            'country_id' => 1, // Adjust based on your data
-            'province_id' => 2, // Adjust based on your data
-            'credit_status_id' => 1, // Adjust based on your data
-            'notes' => null, // If applicable, otherwise set to NULL
-        ]);
-
-        Personality::create([
-            'datetime_registered' => now(),
-            'family_name' => 'Ramirez',
-            'middle_name' => 'Ana',
-            'first_name' => 'Carlos',
-            'birthday' => '1990-03-22',
-            'civil_status' => 2, // Married
-            'gender_code' => 1, // Male
-            'house_street' => '102 Elm Road',
-            'purok_zone' => 'Zone 1',
-            'postal_code' => '2501',
-            'telephone_no' => '(045) 987-6543',
-            'email_address' => 'carlos.ramirez@example.com',
-            'cellphone_no' => '+63 917 123 4567',
-            'name_type_code' => 2,
-            'personality_status_code' => 2,
-            'barangay_id' => 2, // Adjust based on your data
-            'city_id' => 6, // Adjust based on your data
-            'country_id' => 1, // Adjust based on your data
-            'province_id' => 3, // Adjust based on your data
-            'credit_status_id' => 1, // Adjust based on your data
-            'notes' => null, // If applicable, otherwise set to NULL
-        ]);
-
-        Personality::create([
-            'datetime_registered' => now(),
-            'family_name' => 'Santos',
-            'middle_name' => 'Maria',
-            'first_name' => 'Juan',
-            'birthday' => '1995-12-30',
-            'civil_status' => 3, // Divorced
-            'gender_code' => 1, // Male
-            'house_street' => '12 Mango Avenue',
-            'purok_zone' => 'Zone 2',
-            'postal_code' => '2502',
-            'telephone_no' => '(045) 456-7890',
-            'email_address' => 'juan.santos@example.com',
-            'cellphone_no' => '+63 912 345 6789',
-            'name_type_code' => 2,
-            'personality_status_code' => 2,
-            'barangay_id' => 3, // Adjust based on your data
-            'city_id' => 8, // Adjust based on your data
-            'country_id' => 1, // Adjust based on your data
-            'province_id' => 4, // Adjust based on your data
-            'credit_status_id' => 1, // Adjust based on your data
-            'notes' => null, // If applicable, otherwise set to NULL
-        ]);
-
-        Personality::create([
-            'datetime_registered' => now(),
-            'family_name' => 'Lim',
-            'middle_name' => 'Wong',
-            'first_name' => 'Mei',
-            'birthday' => '1992-09-14',
-            'civil_status' => 1, // Single
-            'gender_code' => 2, // Female
-            'house_street' => '99 Orchid Street',
-            'purok_zone' => 'Zone 4',
-            'postal_code' => '2503',
-            'telephone_no' => '(045) 321-6547',
-            'email_address' => 'mei.lim@example.com',
-            'cellphone_no' => '+63 917 876 5432',
-            'name_type_code' => 2,
-            'personality_status_code' => 2,
-            'barangay_id' => 1, // Adjust based on your data
-            'city_id' => 1, // Adjust based on your data
-            'country_id' => 1, // Adjust based on your data
-            'province_id' => 1, // Adjust based on your data
-            'credit_status_id' => 1, // Adjust based on your data
-            'notes' => null, // If applicable, otherwise set to NULL
-        ]);
-
-        Personality::create([
-            'datetime_registered' => now(),
-            'family_name' => 'Santos J',
-            'middle_name' => 'Maria',
-            'first_name' => 'Juan',
-            'birthday' => '1985-02-25',
-            'civil_status' => 2, // Married
-            'gender_code' => 1, // Male
-            'house_street' => '45 Rose Avenue',
-            'purok_zone' => 'Zone 5',
-            'postal_code' => '2504',
-            'telephone_no' => '(045) 222-3333',
-            'email_address' => 'juans.santos@example.com',
-            'cellphone_no' => '+63 918 765 4321',
-            'name_type_code' => 2,
-            'personality_status_code' => 2,
-            'barangay_id' => 1, // Adjust based on your data
-            'city_id' => 1, // Adjust based on your data
-            'country_id' => 1, // Adjust based on your data
-            'province_id' => 1, // Adjust based on your data
-            'credit_status_id' => 1, // Adjust based on your data
-            'notes' => null,
-        ]);
-
-        Personality::create([
-            'datetime_registered' => now(),
-            'family_name' => 'De Guzman',
-            'middle_name' => 'Alfonso',
-            'first_name' => 'Ana',
-            'birthday' => '1990-06-30',
-            'civil_status' => 1, // Single
-            'gender_code' => 2, // Female
-            'house_street' => '88 Daisy Lane',
-            'purok_zone' => 'Zone 3',
-            'postal_code' => '2505',
-            'telephone_no' => '(045) 123-4567',
-            'email_address' => 'ana.deguzman@example.com',
-            'cellphone_no' => '+63 915 543 2100',
-            'name_type_code' => 2,
-            'personality_status_code' => 2,
-            'barangay_id' => 1, // Adjust based on your data
-            'city_id' => 1, // Adjust based on your data
-            'country_id' => 1, // Adjust based on your data
-            'province_id' => 1, // Adjust based on your data
-            'credit_status_id' => 1, // Adjust based on your data
-            'notes' => null,
-        ]);
-
-        Personality::create([
-            'datetime_registered' => now(),
-            'family_name' => 'Reyes',
-            'middle_name' => 'Lorenzo',
-            'first_name' => 'Pedro',
-            'birthday' => '1982-12-12',
-            'civil_status' => 1, // Married
-            'gender_code' => 1, // Male
-            'house_street' => '32 Lily Boulevard',
-            'purok_zone' => 'Zone 1',
-            'postal_code' => '2506',
-            'telephone_no' => '(045) 654-3210',
-            'email_address' => 'pedro.reyes@example.com',
-            'cellphone_no' => '+63 911 234 5678',
-            'name_type_code' => 2,
-            'personality_status_code' => 2,
-            'barangay_id' => 1, // Adjust based on your data
-            'city_id' => 1, // Adjust based on your data
-            'country_id' => 1, // Adjust based on your data
-            'province_id' => 1, // Adjust based on your data
-            'credit_status_id' => 1, // Adjust based on your data
-            'notes' => 'Frequent traveler.',
-        ]);
-
-        Personality::create([
-            'datetime_registered' => now(),
-            'family_name' => 'Tan',
-            'middle_name' => 'Li',
-            'first_name' => 'Xiu',
-            'birthday' => '1995-07-15',
-            'civil_status' => 1, // Single
-            'gender_code' => 2, // Female
-            'house_street' => '7 Bamboo Street',
-            'purok_zone' => 'Zone 6',
-            'postal_code' => '2507',
-            'telephone_no' => '(045) 111-2222',
-            'email_address' => 'xiu.tan@example.com',
-            'cellphone_no' => '+63 917 123 4564',
-            'name_type_code' => 2,
-            'personality_status_code' => 2,
-            'barangay_id' => 5, // Adjust based on your data
-            'city_id' => 1, // Adjust based on your data
-            'country_id' => 1, // Adjust based on your data
-            'province_id' => 1, // Adjust based on your data
-            'credit_status_id' => 1, // Adjust based on your data
-            'notes' => 'New to the area.',
-        ]);
-
-
-        Customer::create([
-            'group_id' => 1, // Adjust as necessary
-            'passbook_no' => 11123456, // Example passbook number
-            'loan_count' => 1, // Initial loan count
-            'enable_mortuary' => 1, // Enable mortuary coverage (1 for yes, 0 for no)
-            'mortuary_coverage_start' => now(), // Start date for coverage
-            'mortuary_coverage_end' => now()->addYear(), // End date for coverage, one year from now
-            'personality_id' => 3, // ID of Lily Carter
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-        Customer::create([
-            'group_id' => 1, // Adjust as necessary
-            'passbook_no' => 11123457, // Example passbook number
-            'loan_count' => 1, // Example loan count
-            'enable_mortuary' => 1, // Enable mortuary coverage
-            'mortuary_coverage_start' => now(),
-            'mortuary_coverage_end' => now()->addYear(),
-            'personality_id' => 4, // ID of Carlos Ramirez
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-        Customer::create([
-            'group_id' => 1, // Adjust as necessary
-            'passbook_no' => 11123458, // Example passbook number
-            'loan_count' => 1, // Example loan count
-            'enable_mortuary' => 0, // Disable mortuary coverage
-            'mortuary_coverage_start' => null, // No coverage
-            'mortuary_coverage_end' => null,
-            'personality_id' => 5, // ID of Juan Santos
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-        Customer::create([
-            'group_id' => 1, // Adjust as necessary
-            'passbook_no' => 1123459, // Example passbook number
-            'loan_count' => 1, // Initial loan count
-            'enable_mortuary' => 1, // Enable mortuary coverage
-            'mortuary_coverage_start' => now(),
-            'mortuary_coverage_end' => now()->addYear(),
-            'personality_id' => 6, // ID of Mei Lim
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-        Customer::create([
-            'group_id' => 2, // Group ID for all entries
-            'passbook_no' => 11123464, // Example passbook number
-            'loan_count' => 1, // Example loan count
-            'enable_mortuary' => 1, // Enable mortuary coverage
-            'mortuary_coverage_start' => now(),
-            'mortuary_coverage_end' => now()->addYear(),
-            'personality_id' => 7, // ID of another personality
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-        Customer::create([
-            'group_id' => 2, // Group ID for all entries
-            'passbook_no' => 11123465, // Example passbook number
-            'loan_count' => 1, // Example loan count
-            'enable_mortuary' => 1, // Enable mortuary coverage
-            'mortuary_coverage_start' => now(),
-            'mortuary_coverage_end' => now()->addYear(),
-            'personality_id' => 8, // ID of another personality
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-        Customer::create([
-            'group_id' => 2, // Group ID for all entries
-            'passbook_no' => 11123466, // Example passbook number
-            'loan_count' => 1, // Example loan count
-            'enable_mortuary' => 1, // Enable mortuary coverage
-            'mortuary_coverage_start' => now(),
-            'mortuary_coverage_end' => now()->addYear(),
-            'personality_id' => 9, // ID of another personality
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-        Customer::create([
-            'group_id' => 2, // Group ID for all entries
-            'passbook_no' => 11123467, // Example passbook number
-            'loan_count' => 1, // Example loan count
-            'enable_mortuary' => 1, // Enable mortuary coverage
-            'mortuary_coverage_start' => now(),
-            'mortuary_coverage_end' => now()->addYear(),
-            'personality_id' => 10, // ID of another personality
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-        
-        //BINI SEEDER
-        Personality::create([
-            'datetime_registered' => now(),
-            'family_name' => 'Arceta',
-            'middle_name' => 'Bini',
-            'first_name' => 'Aiah',
-            'birthday' => '2001-01-27',
-            'civil_status' => 1, // Single
-            'gender_code' => 2, // Female
-            'house_street' => 'Cebu',
-            'purok_zone' => '16',
-            'postal_code' => '8001',
-            'telephone_no' => '0220102012',
-            'email_address' => 'ericramones12534@gmail.com',
-            'cellphone_no' => '09171234567',
-            'name_type_code' => 2,
-            'personality_status_code' => 2,
-            'barangay_id' => 5, // Adjust based on your data
-            'city_id' => 1, // Adjust based on your data
-            'country_id' => 1, // Adjust based on your data
-            'province_id' => 1, // Adjust based on your data
-            'credit_status_id' => 1, // Adjust based on your data
-            'notes' => 'New to the area.',
-        ]);
-
-        Customer::create([
-            'group_id' => 3, // Adjust as necessary
-            'passbook_no' => 322312, // Example passbook number
-            'loan_count' => 1, // Initial loan count
-            'personality_id' => 12, // ID of Lily Carter
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-        User_Account::create([
-            'last_name' => 'Arceta',
-            'first_name' => 'Aiah',
-            'middle_name' => 'Bini',
-            'email' => 'ericramones1253@gmail.com',
-            'phone_number' => '09171234567',
-            'password' => Hash::make('password'),
-            'employee_id' => null,
-            'customer_id' => 9,
-            'status_id' => 1,
-        ]);
-
-
-        //BINI SEEDER
-        Personality::create([
-            'datetime_registered' => now(),
-            'family_name' => 'Lim',
-            'middle_name' => 'Bini',
-            'first_name' => 'Mikha',
-            'birthday' => '2003-11-08',
-            'civil_status' => 1, // Single
-            'gender_code' => 2, // Female
-            'house_street' => 'Cebu',
-            'purok_zone' => '16',
-            'postal_code' => '8001',
-            'telephone_no' => '022010202',
-            'email_address' => 'mikha_lim@gmail.com',
-            'cellphone_no' => '09172232567',
-            'name_type_code' => 2,
-            'personality_status_code' => 2,
-            'barangay_id' => 5, // Adjust based on your data
-            'city_id' => 1, // Adjust based on your data
-            'country_id' => 1, // Adjust based on your data
-            'province_id' => 1, // Adjust based on your data
-            'credit_status_id' => 1, // Adjust based on your data
-            'notes' => 'New to the area.',
-        ]);
-
-        Customer::create([
-            'group_id' => 3, // Adjust as necessary
-            'passbook_no' => 322317, // Example passbook number
-            'loan_count' => 1, // Initial loan count
-            'personality_id' => 13, // ID of Lily Carter
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-        User_Account::create([
-            'last_name' => 'Lim',
-            'first_name' => 'Mikha',
-            'middle_name' => 'Bini',
-            'email' => 'mikha_lim@gmail.com',
-            'phone_number' => '09172232567',
-            'password' => Hash::make('password'),
-            'employee_id' => null,
-            'customer_id' => 10,
-            'status_id' => 1,
-        ]);
-
-        Personality::create([
-            'datetime_registered' => now(),
-            'family_name' => 'Yves',
-            'middle_name' => 'Bini',
-            'first_name' => 'Ricalde',
-            'birthday' => '2002-05-27',
-            'civil_status' => 1, // Single
-            'gender_code' => 2, // Female
-            'house_street' => 'Batangas',
-            'purok_zone' => '16',
-            'postal_code' => '8001',
-            'telephone_no' => '0220102023',
-            'email_address' => 'lucky@gmail.com',
-            'cellphone_no' => '09171234267',
-            'name_type_code' => 2,
-            'personality_status_code' => 2,
-            'barangay_id' => 5, // Adjust based on your data
-            'city_id' => 1, // Adjust based on your data
-            'country_id' => 1, // Adjust based on your data
-            'province_id' => 1, // Adjust based on your data
-            'credit_status_id' => 1, // Adjust based on your data
-            'notes' => 'New to the area.',
-        ]);
-
-        Customer::create([
-            'group_id' => 3, // Adjust as necessary
-            'passbook_no' => 322313, // Example passbook number
-            'loan_count' => 1, // Initial loan count
-            'personality_id' => 14, // ID of Lily Carter
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-        User_Account::create([
-            'last_name' => 'Yves',
-            'first_name' => 'Bini',
-            'middle_name' => 'Ricalde',
-            'email' => 'lucky@gmail.com',
-            'phone_number' => '09171234267',
-            'password' => Hash::make('password'),
-            'employee_id' => null,
-            'customer_id' => 11,
-            'status_id' => 1,
-        ]);
-
-
-        
-        Personality::create([
-            'datetime_registered' => now(),
-            'family_name' => 'Colet',
-            'middle_name' => 'Bini',
-            'first_name' => 'Vergara',
-            'birthday' => '2001-09-14',
-            'civil_status' => 1, // Single
-            'gender_code' => 2, // Female
-            'house_street' => 'Bohol',
-            'purok_zone' => '16',
-            'postal_code' => '8001',
-            'telephone_no' => '0220102024',
-            'email_address' => 'anger@gmail.com',
-            'cellphone_no' => '09173214267',
-            'name_type_code' => 2,
-            'personality_status_code' => 2,
-            'barangay_id' => 5, // Adjust based on your data
-            'city_id' => 1, // Adjust based on your data
-            'country_id' => 1, // Adjust based on your data
-            'province_id' => 1, // Adjust based on your data
-            'credit_status_id' => 1, // Adjust based on your data
-            'notes' => 'New to the area.',
-        ]);
-
-        Customer::create([
-            'group_id' => 3, // Adjust as necessary
-            'passbook_no' => 322314, // Example passbook number
-            'loan_count' => 1, // Initial loan count
-            'personality_id' => 15, // ID of Lily Carter
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-        User_Account::create([
-            'last_name' => 'Colet',
-            'first_name' => 'Bini',
-            'middle_name' => 'Vergara',
-            'email' => 'anger@gmail.com',
-            'phone_number' => '09173214267',
-            'password' => Hash::make('password'),
-            'employee_id' => null,
-            'customer_id' => 12,
-            'status_id' => 1,
         ]);
     }
 }

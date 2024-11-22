@@ -308,7 +308,7 @@ class DatabaseSeeder extends Seeder
         }
 
         foreach ($country as $name) {
-            Barangay::createEntry($name); // No duplicates, direct array iteration
+            Country::createEntry($name); // No duplicates, direct array iteration
         }
 
         foreach ($personality_status_map as $name) {

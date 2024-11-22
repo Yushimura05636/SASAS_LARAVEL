@@ -352,42 +352,6 @@ class DatabaseSeeder extends Seeder
             Document_Status_Code::createEntry($name); // No duplicates, direct array iteration
         }
 
-        for($i = 0; $i < 100; $i++) {
-            echo "1"; echo $this->f+1;
-            $modeltype = $faker->randomElement($modelTypes);
-            $description = $faker->unique()->sentence(3);
-            echo $modeltype;
-
-            switch ($modeltype) {
-                case 'barangay':
-                    Barangay::createEntry($faker->unique()->streetName());
-                    break;
-                case 'branch':
-                    Branch::createEntry($description);
-                    break;
-                // case 'city':
-                //     City::createEntry($faker->unique()->city());
-                //     break;
-                case 'country':
-                    Country::createEntry($faker->unique()->country());
-                    break;
-                case 'province':
-                    Province::createEntry($faker->unique()->state());
-                    break;
-                // case 'personality_status_map':
-                //     Personality_Status_Map::createEntry($faker->unique()->sentence(6));
-                //     break;
-                // case 'document_map':
-                //     Document_Map::createEntry($description);
-                //     break;
-                // case 'customer_group':
-                //     Customer_Group::createEntry($description);
-                //     break;
-                default:
-                    throw new \InvalidArgumentException("Unknown model type: $modeltype");
-            }
-        }
-
         Requirements::create([
             'description' => '2x2 picture ID',
             'isActive' => 1,

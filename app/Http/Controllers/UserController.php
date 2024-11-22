@@ -77,7 +77,7 @@ class UserController extends Controller
             $userAccountResponse = $this->userService->createUser($userPayload);
     
             // Check if employee_id is null or less than or equal to 0 (customer creation logic)
-            if (is_null($request->input('employee_id')) || $request->input('employee_id') <= 0) {
+            if (empty($request->input('employee_id')) || $request->input('employee_id') <= 0) {
                 DB::commit();  // Commit transaction for customer creation
                 return response()->json(['message' => 'Successfully created customer!'], Response::HTTP_OK);
             }

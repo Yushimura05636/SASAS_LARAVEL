@@ -200,28 +200,29 @@ class CustomerPersonalityController extends Controller
                 }
             }
 
-            // Prepare User_Account payload
-            $userPayload = [
-                'customer_id' => $customer_id,
-                'email' => $personalityData['email_address'],
-                'last_name' => $personalityData['family_name'],
-                'first_name' => $personalityData['first_name'],
-                'middle_name' => $personalityData['middle_name'],
-                'phone_number' => $personalityData['cellphone_no'],
-                'password' => $request->input('password'), // Ensure password is provided in the request
-                'status_id' => $personalityStatusId,
-            ];
-
-            $userAccountResponse = User_Account::create($userPayload);
+            //email not required
+            if(!empty($personalityData['email_address']))
+            {
+                // Prepare User_Account payload
+                $userPayload = [
+                    'customer_id' => $customer_id,
+                    'email' => $personalityData['email_address'],
+                    'last_name' => $personalityData['family_name'],
+                    'first_name' => $personalityData['first_name'],
+                    'middle_name' => $personalityData['middle_name'],
+                    'phone_number' => $personalityData['cellphone_no'],
+                    'password' => $request->input('password'), // Ensure password is provided in the request
+                    'status_id' => $personalityStatusId,
+                ];
+    
+                $userAccountResponse = User_Account::create($userPayload);
+            }
 
             // Commit the transaction
             DB::commit();
 
             return response()->json([
-                'message' => 'Both Customer and Personality saved successfully',
-                'customer' => new CustomerResource($customerResponse), // Use resource class
-                'personality' => new PersonalityResource($personalityResponse), // Use resource class
-                'user_account' => new UserResource($userAccountResponse),
+                'message' => 'Customer Created Successffuly!',
                 'success' => true,
             ], Response::HTTP_OK);
 

@@ -521,11 +521,12 @@ Route::middleware('auth:sanctum')->prefix('CUSTOMER_GROUPS')->group(function () 
     })->middleware("document_access:$CUSTOMER_GROUPS, $CREATE");
 });
 
-
-Route::post('GROUP_INSERT', [CustomerGroupController::class, 'store']);
 Route::get('COLLECTORS/getCollectors/', [UserController::class, 'getCollectorData']);
-Route::get('GROUP_RETREIVE/all/{id}', [CustomerPersonalityController::class, 'getGroupWithMembers']);
-Route::get('GROUP_RETREIVE/collectors/data', [CustomerPersonalityController::class, 'getGroupOnlyNameAndCollector']);
+Route::middleware('auth:sanctum')->prefix('GROUP_RETREIVE')->group(function () use ($CUSTOMER_GROUPS, $VIEW, $CREATE, $UPDATE, $DELETE) {
+    Route::get('/collectors/data', [CustomerPersonalityController::class, 'getGroupOnlyNameAndCollector'])->middleware("document_access:$CUSTOMER_GROUPS, $VIEW");
+    Route::get('/all/{id}', [CustomerPersonalityController::class, 'getGroupWithMembers'])->middleware("document_access:$CUSTOMER_GROUPS, $VIEW");
+    Route::post('GROUP_INSERT', [CustomerGroupController::class, 'store'])->middleware("document_access:$CUSTOMER_GROUPS, $CREATE");
+});
 
 // Payment Duration routes
 Route::middleware('auth:sanctum')->prefix('FEES')->group(function () use ($FEES, $VIEW, $CREATE, $UPDATE, $DELETE) {

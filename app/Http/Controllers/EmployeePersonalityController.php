@@ -16,6 +16,7 @@ use App\Http\Resources\UserResource;
 use App\Interface\Service\CustomerServiceInterface;
 use App\Interface\Service\EmployeeServiceInterface;
 use App\Interface\Service\PersonalityServiceInterface;
+use App\Models\Customer;
 use App\Models\Document_Map;
 use App\Models\Document_Permission;
 use App\Models\Document_Permission_Map;
@@ -23,6 +24,7 @@ use App\Models\Employee;
 use App\Models\Name_Type;
 use App\Models\Personality;
 use App\Models\User_Account;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Auth\User;
 use Illuminate\Http\Request;
@@ -35,7 +37,7 @@ class EmployeePersonalityController extends Controller
     private $employeeService;
     private $personalityService;
 
-    public function __construct(EmployeeServiceInterface $employeeService, PersonalityServiceInterface $personalityServiceInterface)
+    public function __construct(EmployeeServiceInterface $employeeService, PersonalityServiceInterface $personalityServiceInterface, CustomerServiceInterface $customers)
     {
         $this->employeeService = $employeeService;
         $this->personalityService = $personalityServiceInterface;
@@ -76,37 +78,76 @@ class EmployeePersonalityController extends Controller
 public function look()
     {
     // Fetch employees and personalities from their respective services
-    $employees = $this->employeeService->findNoUserEmployees(); // Assuming findCustomers returns employees
+    // $employees = $this->employeeService->findNoUserEmployees(); // Assuming findCustomers returns employees
     $personalities = $this->personalityService->findPersonality();
 
-    //return response()->json(['message' => [$employees,$personalities]]);
+    // Query for employees without associated user accounts
+$employeesWithoutUsers = Employee::leftJoin('user_account as user', 'employee.id', '=', 'user.employee_id')
+->whereNull('user.employee_id')
+->select('employee.id', 'employee.personality_id', DB::raw("'employee' as type"));
 
-    // Create an associative array (lookup) for personalities using personality_id as key
-    $personalityMap = [];
-    foreach ($personalities as $personality) {
-        $personalityMap[$personality->id] = $personality;
-    }
+// Query for customers without associated user accounts
+$customersWithoutUsers = Customer::leftJoin('user_account as user', 'customer.id', '=', 'user.customer_id')
+->whereNull('user.customer_id')
+->select('customer.id', 'customer.personality_id', DB::raw("'customer' as type"));
 
-    // Loop through employees and pair them with their respective personality
-    $employeesWithPersonality = [];
-    foreach ($employees as $employee) {
-        $personalityId = $employee->personality_id;
-        // Find the corresponding personality using the personality_id
+// Combine both queries using union
+$results = $employeesWithoutUsers->union($customersWithoutUsers)->get();
 
-        $personality = $personalityMap[$personalityId] ?? null;
+    // //return response()->json(['message' => [$employees,$personalities]]);
 
-        // Pair the employee with their personality
-        $employeesWithPersonality[] = [
-            'employee' => $employee,
-            'personality' => $personality
-        ];
+    // // Create an associative array (lookup) for personalities using personality_id as key
+    // $personalityMap = [];
+    // foreach ($personalities as $personality) {
+    //     $personalityMap[$personality->id] = $personality;
+    // }
 
-    }
+    // // Loop through employees and pair them with their respective personality
+    // $employeesWithPersonality = [];
+    // foreach ($employees as $employee) {
+    //     $personalityId = $employee->personality_id;
+    //     // Find the corresponding personality using the personality_id
 
-    // Return the paired employees and personalities
-    return [
-        'data' => $employeesWithPersonality
+    //     $personality = $personalityMap[$personalityId] ?? null;
+
+    //     // Pair the employee with their personality
+    //     $employeesWithPersonality[] = [
+    //         'employee' => $employee,
+    //         'personality' => $personality
+    //     ];
+
+    // }
+
+    // // Return the paired employees and personalities
+    // return [
+    //     'data' => $employeesWithPersonality
+    // ];
+
+    // Create an associative array for personalities using personality_id as the key
+$personalityMap = [];
+foreach ($personalities as $personality) {
+    $personalityMap[$personality->id] = $personality;
+}
+
+// Pair entities (employees/customers) with their respective personalities
+$entitiesWithPersonality = [];
+foreach ($results as $entity) {
+    $personalityId = $entity->personality_id;
+
+    // Find the corresponding personality
+    $personality = $personalityMap[$personalityId] ?? null;
+
+    // Pair the entity with its personality
+    $entitiesWithPersonality[] = [
+        'entity' => $entity,
+        'personality' => $personality
     ];
+}
+
+// Return the combined result
+return [
+    'data' => $entitiesWithPersonality
+];
 }
 
 public function store(
@@ -197,13 +238,46 @@ public function store(
         if($request->input('notes') == 'employee.collector')
         {
             //create dashboard permission
-            $document_maps = Document_Map::where(function($query) {
+            $document_maps = Document_Map::where(function(Builder $query) {
                 $query->where('description', 'like', '%PAYMENTS%')
                       ->orWhere('description', 'like', '%PAYMENT_SCHEDULES%');
             })->get();
-            $document_permission_map = Document_Permission_Map::where(function($query) {
+            $document_permission_map = Document_Permission_Map::where(function(Builder $query) {
                 $query->where('description', 'like', '%View%')
                       ->orWhere('description', 'like', '%Create%')
+                      ->orWhere('description', 'like', '%Update%');
+            })->get();
+            
+
+            foreach($document_maps as $map)
+            {
+                if(isset($map) && !is_null($map))
+                {
+                    foreach($document_permission_map as $permission)
+                    {
+                        if(isset($permission) && !is_null($permission))
+                        {
+                            //create the map
+                            $document_permission = Document_Permission::create([
+                                'user_id' => $userAccountResponse['id'],
+                                'document_map_code' => $map->id,
+                                'document_permission' => $permission->id,
+                                'datetime_granted' => now()
+                            ]);
+                        }
+                    }
+                }
+            }
+        }
+
+        if($request->input('notes') == 'employee.membership.approval.manager')
+        {
+            //create dashboard permission
+            $document_maps = Document_Map::where(function(Builder $query) {
+                $query->where('description', 'like', '%CUSTOMER%');
+            })->get();
+            $document_permission_map = Document_Permission_Map::where(function(Builder $query) {
+                $query->where('description', 'like', '%View%')
                       ->orWhere('description', 'like', '%Update%')
                       ->orWhere('description', 'like', '%Approve%')
                       ->orWhere('description', 'like', '%Reject%');
@@ -225,6 +299,175 @@ public function store(
                                 'document_permission' => $permission->id,
                                 'datetime_granted' => now()
                             ]);
+                        }
+                    }
+                }
+            }
+        }
+
+        if($request->input('notes') == 'employee.supervisor')
+        {
+            //create dashboard permission
+            $document_maps = Document_Map::where(function(Builder $query) {
+                $query->where('description', 'like', '%PAYMENT%');
+            })->get();
+            $document_permission_map = Document_Permission_Map::where(function(Builder $query) {
+                $query->where('description', 'like', '%View%')
+                      ->orWhere('description', 'like', '%Update%')
+                      ->orWhere('description', 'like', '%Approve%')
+                      ->orWhere('description', 'like', '%Reject%');
+            })->get();
+            
+
+            foreach($document_maps as $map)
+            {
+                if(isset($map) && !is_null($map))
+                {
+                    foreach($document_permission_map as $permission)
+                    {
+                        if(isset($permission) && !is_null($permission))
+                        {
+                            //create the map
+                            $document_permission = Document_Permission::create([
+                                'user_id' => $userAccountResponse['id'],
+                                'document_map_code' => $map->id,
+                                'document_permission' => $permission->id,
+                                'datetime_granted' => now()
+                            ]);
+                        }
+                    }
+                }
+            }
+        }
+
+        if($request->input('notes') == 'employee.loan.approval.manager')
+        {
+            //create dashboard permission
+            $document_maps = Document_Map::where(function(Builder $query) {
+                $query->where('description', 'like', '%LOAN_APPLICATION%');
+            })->get();
+            $document_permission_map = Document_Permission_Map::where(function(Builder $query) {
+                $query->where('description', 'like', '%View%')
+                      ->orWhere('description', 'like', '%Update%')
+                      ->orWhere('description', 'like', '%Approve%')
+                      ->orWhere('description', 'like', '%Reject%');
+            })->get();
+            
+
+            foreach($document_maps as $map)
+            {
+                if(isset($map) && !is_null($map))
+                {
+                    foreach($document_permission_map as $permission)
+                    {
+                        if(isset($permission) && !is_null($permission))
+                        {
+                            //create the map
+                            $document_permission = Document_Permission::create([
+                                'user_id' => $userAccountResponse['id'],
+                                'document_map_code' => $map->id,
+                                'document_permission' => $permission->id,
+                                'datetime_granted' => now()
+                            ]);
+                        }
+                    }
+                }
+            }
+        }
+
+        if($request->input('notes') == 'employee.cashier')
+        {
+            //create dashboard permission
+            $document_maps = Document_Map::where(function(Builder $query) {
+                $query->where('description', 'like', '%PAYMENTS%');
+            })->get();
+            $document_permission_map = Document_Permission_Map::where(function(Builder $query) {
+                $query->where('description', 'like', '%View%')
+                    ->orWhere('description', 'like', '%Create%')
+                    ->orWhere('description', 'like', '%Update%')
+                    ->orWhere('description', 'like', '%Approve%')
+                    ->orWhere('description', 'like', '%Reject%');
+            })->get();
+            
+
+            foreach($document_maps as $map)
+            {
+                if(isset($map) && !is_null($map))
+                {
+                    foreach($document_permission_map as $permission)
+                    {
+                        if(isset($permission) && !is_null($permission))
+                        {
+                            //create the map
+                            $document_permission = Document_Permission::create([
+                                'user_id' => $userAccountResponse['id'],
+                                'document_map_code' => $map->id,
+                                'document_permission' => $permission->id,
+                                'datetime_granted' => now()
+                            ]);
+                        }
+                    }
+                }
+            }
+        }
+
+        if($request->input('notes') == 'employee')
+        {
+            //create dashboard permission
+            $document_maps = Document_Map::where(function(Builder $query) {
+                $query->where('description', 'like', '%LOAN_APPLICATION%')
+                    ->orWhere('description', 'like', '%CUSTOMER%');
+            })->get();
+            $document_permission_map = Document_Permission_Map::where(function(Builder $query) {
+                $query->where('description', 'like', '%View%')
+                    ->orWhere('description', 'like', '%Create%')
+                    ->orWhere('description', 'like', '%Update%')
+                    ->orWhere('description', 'like', '%Approve%')
+                    ->orWhere('description', 'like', '%Reject%');
+            })->get();
+            
+
+            
+            foreach($document_maps as $map)
+            {
+                if(isset($map) && !is_null($map))
+                {
+                    foreach($document_permission_map as $permission)
+                    {
+                        if($map->description == 'LOAN_APPLICATIONS')
+                        {
+                            if(isset($permission) && !is_null($permission))
+                            {
+                                if($permission->description != 'APPROVED'
+                                    || $permission->description != 'REJECT'
+                                ){
+                                    //create the map
+                                    $document_permission = Document_Permission::create([
+                                        'user_id' => $userAccountResponse['id'],
+                                        'document_map_code' => $map->id,
+                                        'document_permission' => $permission->id,
+                                        'datetime_granted' => now()
+                                    ]);
+                                }
+                            }
+                        }
+
+                        if($map->description == 'CUSTOMERS')
+                        {
+                            if(isset($permission) && !is_null($permission))
+                            {
+                                if($permission->description != 'APPROVED'
+                                    || $permission->description != 'REJECT'
+                                ){
+                                    //create the map
+                                    $document_permission = Document_Permission::create([
+                                        'user_id' => $userAccountResponse['id'],
+                                        'document_map_code' => $map->id,
+                                        'document_permission' => $permission->id,
+                                        'datetime_granted' => now()
+                                    ]);
+                                }
+                            }
                         }
                     }
                 }

@@ -27,7 +27,7 @@ return new class extends Migration
             $table->string('purok_zone');
             $table->string('postal_code');
             $table->string('telephone_no')->nullable();
-            $table->string('email_address');
+            $table->string('email_address')->nullable();
             $table->string('cellphone_no');
 
             #foregin key

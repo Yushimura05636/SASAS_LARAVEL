@@ -26,6 +26,7 @@ class UserStoreRequest extends FormRequest
             'customer_id' =>    ['nullable', 'integer'],
             'last_name' =>      ['required', 'string'],
             'middle_name' =>    ['required', 'string'],
+            'email' =>          ['required', 'string'],
             'first_name' =>     ['required', 'string'],
             'password' =>       ['required', 'string'],
             'status_id' =>      ['required', 'integer'],

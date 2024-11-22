@@ -2,8 +2,10 @@
 
 namespace App\Repository;
 use App\Interface\Repository\EmployeeRepositoryInterface;
+use App\Models\Customer;
 use App\Models\Employee;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\DB;
 
 class EmployeeRepository implements EmployeeRepositoryInterface
 {

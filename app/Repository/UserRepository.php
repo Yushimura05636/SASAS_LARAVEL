@@ -9,6 +9,8 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
+use function PHPUnit\Framework\isEmpty;
+
 class UserRepository implements UserRepositoryInterface
 {
     public function findOneById(int $id)
@@ -47,8 +49,8 @@ class UserRepository implements UserRepositoryInterface
     public function update(object $payload, int $id)
     {
         $user = User_Account::findOrFail($id);
-        if(!$payload->password && !$payload->password == "")
-        {
+        // Check if the password is provided and not empty
+        if (!empty($payload->password)) {
             $user->password = Hash::make($payload->password);
         }
         $user->status_id = $payload->status_id;

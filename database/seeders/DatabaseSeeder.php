@@ -264,19 +264,55 @@ class DatabaseSeeder extends Seeder
         ]);
 
         Requirements::create([
-            'description' => 'Barangay Certificate',
+            'description' => '2x2 picture ID',
             'isActive' => 1,
         ]);
         Requirements::create([
-            'description' => 'Birth Certificate',
+            'description' => 'Proof of Income',
             'isActive' => 1,
         ]);
         Requirements::create([
-            'description' => 'Valid ID',
+            'description' => 'House Bills',
             'isActive' => 1,
         ]);
         Requirements::create([
-            'description' => 'Proof of Address',
+            'description' => 'Passport',
+            'isActive' => 1,
+        ]);
+        Requirements::create([
+            'description' => 'PSA birth certificate',
+            'isActive' => 1,
+        ]);
+        Requirements::create([
+            'description' => 'Driver`s license',
+            'isActive' => 1,
+        ]);
+        Requirements::create([
+            'description' => 'TIN ID',
+            'isActive' => 1,
+        ]);
+        Requirements::create([
+            'description' => 'ePhilSys',
+            'isActive' => 1,
+        ]);
+        Requirements::create([
+            'description' => 'PhilHealth ID',
+            'isActive' => 1,
+        ]);
+        Requirements::create([
+            'description' => 'Postal ID',
+            'isActive' => 1,
+        ]);
+        Requirements::create([
+            'description' => 'NBI Clearance',
+            'isActive' => 1,
+        ]);
+        Requirements::create([
+            'description' => 'Police clearance',
+            'isActive' => 1,
+        ]);
+        Requirements::create([
+            'description' => 'Senior Citizen ID',
             'isActive' => 1,
         ]);
 

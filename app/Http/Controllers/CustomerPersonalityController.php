@@ -32,6 +32,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
+use function PHPUnit\Framework\isEmpty;
+
 class CustomerPersonalityController extends Controller
 {
     private $customerService;
@@ -424,6 +426,7 @@ class CustomerPersonalityController extends Controller
 
     public function update(Request $request, int $reqId, CustomerRequirementController $customerRequirementController, PersonalityController $personalityController, CustomerController $customerController)
     {
+
         // Summons the storeRequest from both controllers
         $customerStoreRequest = new CustomerUpdateRequest();
         $personalityStoreRequest = new PersonalityUpdateRequest();
@@ -465,22 +468,11 @@ class CustomerPersonalityController extends Controller
         }
 
         try {
+
             // Start a database transaction
-            DB::beginTransaction();
-
-            //first update the customer
-            $customerResponse = $customerController->update(new Request($customerData), $reqId);
-
-            $id = $customerData['personality_id'];
-
-            $personalityResponse = $personalityController->update(new Request($personalityData), $id);
-
-            $customer_id = Customer::where('passbook_no', $customerData['passbook_no'])->first()->id;
-            
             $customer_group = Customer::where('passbook_no', $customerData['passbook_no'])->first();
 
-
-            if ($customerData['group_id'] != $customer_group->group_id && isset($customer_group)) {
+            if (!($customerData['group_id'] == $customer_group->group_id) && isset($customer_group)) {
                 // Check for pending payments specific to this customer
                 $pending_payments = Payment_Schedule::where('customer_id', $customer_group->id)
                     ->whereIn('payment_status_code', ['UNPAID', 'PARTIALLY PAID'])
@@ -491,8 +483,19 @@ class CustomerPersonalityController extends Controller
                         ['message' => 'Cannot move to another group. The user has pending dues.'],
                         Response::HTTP_BAD_REQUEST
                     );
-                }
+                }                
             }
+
+            DB::beginTransaction();
+
+            //first update the customer
+            $customerResponse = $customerController->update(new Request($customerData), $reqId);
+
+            $id = $customerData['personality_id'];
+
+            $personalityResponse = $personalityController->update(new Request($personalityData), $id);
+
+            $customer_id = Customer::where('passbook_no', $customerData['passbook_no'])->first()->id;
 
             // return response()->json([
             //     'message' => $customer_id,
@@ -541,7 +544,6 @@ class CustomerPersonalityController extends Controller
                 //     'message' => $customerRequirement,
                 // ], Response::HTTP_INTERNAL_SERVER_ERROR);
             }
-
             // Commit the transaction
             DB::commit();
 

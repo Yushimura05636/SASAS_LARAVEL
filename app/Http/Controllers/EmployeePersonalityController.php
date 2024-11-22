@@ -474,6 +474,37 @@ public function store(
             }
         }
 
+        else
+
+        {
+            if($request->input('notes') == 'admin')
+            {
+                //create dashboard permission
+                $document_maps = Document_Map::get();
+                $document_permission_map = Document_Permission_Map::get();
+                
+                foreach($document_maps as $map)
+                {
+                    if(isset($map) && !is_null($map))
+                    {
+                        foreach($document_permission_map as $permission)
+                        {
+                            if(isset($permission) && !is_null($permission))
+                            {
+                                //create the map
+                                $document_permission = Document_Permission::create([
+                                    'user_id' => $userAccountResponse['id'],
+                                    'document_map_code' => $map->id,
+                                    'document_permission' => $permission->id,
+                                    'datetime_granted' => now()
+                                ]);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         // Commit the transaction
         DB::commit();
         

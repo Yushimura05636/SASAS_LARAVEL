@@ -476,6 +476,23 @@ class CustomerPersonalityController extends Controller
             $personalityResponse = $personalityController->update(new Request($personalityData), $id);
 
             $customer_id = Customer::where('passbook_no', $customerData['passbook_no'])->first()->id;
+            
+            $customer_group = Customer::where('passbook_no', $customerData['passbook_no'])->first();
+
+
+            if ($customerData['group_id'] != $customer_group->group_id && isset($customer_group)) {
+                // Check for pending payments specific to this customer
+                $pending_payments = Payment_Schedule::where('customer_id', $customer_group->id)
+                    ->whereIn('payment_status_code', ['UNPAID', 'PARTIALLY PAID'])
+                    ->exists();
+            
+                if ($pending_payments) {
+                    return response()->json(
+                        ['message' => 'Cannot move to another group. The user has pending dues.'],
+                        Response::HTTP_BAD_REQUEST
+                    );
+                }
+            }
 
             // return response()->json([
             //     'message' => $customer_id,

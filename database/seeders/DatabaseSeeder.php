@@ -461,7 +461,7 @@ class DatabaseSeeder extends Seeder
             'middle_name' => 'Queroa',
             'phone_number' => '09606863294',
             'password' => Hash::make('Lendcash123'),
-            'email' => 'zipppycole@gmail.com',
+            'email' => 'rosendosastrejr125@gmail.com',
             'employee_id' => 1,
             'customer_id' => null,
             'notes' => 'admin',

@@ -121,7 +121,8 @@ class PaymentScheduleController extends Controller
             $payment[$i]['group_name'] = " " . $group_name;
             // Adjust balance calculation to account for forwarded amounts
             //$originalDue = $payment[$i]['amount_due'] + $payment[$i]['amount_paid']; // or replace with stored original_amount_due if available
-            $balance = $payment[$i]['balance'] = $payment[$i]['amount_due'] - $payment[$i]['amount_paid'];
+            $balance = $payment[$i]['balance'] = round($payment[$i]['amount_due'] - $payment[$i]['amount_paid'], 2);
+            //$balance = $payment[$i]['balance'] = $payment[$i]['amount_due'] - $payment[$i]['amount_paid'];
             // $balance = $payment[$i]['amount_due'] - $payment[$i]['amount_paid'];
             // $balance = abs($balance) < 1e-10 ? 0 : $balance;
 
@@ -209,7 +210,8 @@ class PaymentScheduleController extends Controller
 
             // Adjust balance calculation to account for forwarded amounts
             //$originalDue = $payment[$i]['amount_due'] + $payment[$i]['amount_paid']; // or replace with stored original_amount_due if available
-            $balance = $payment[$i]['balance'] = $payment[$i]['amount_due'] - $payment[$i]['amount_paid'];
+            //$balance = $payment[$i]['balance'] = $payment[$i]['amount_due'] - $payment[$i]['amount_paid'];
+            $balance = $payment[$i]['balance'] = round($payment[$i]['amount_due'] - $payment[$i]['amount_paid'], 2);
             // $balance = $payment[$i]['amount_due'] - $payment[$i]['amount_paid'];
             // $balance = abs($balance) < 1e-10 ? 0 : $balance;
 

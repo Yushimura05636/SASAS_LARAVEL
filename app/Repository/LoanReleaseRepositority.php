@@ -10,7 +10,7 @@ class LoanReleaseRepositority implements LoanReleaseRepositoryInterface
 {
     public function findMany()
     {
-        return Loan_Release::paginate(10);
+        return Loan_Release::get();
     }
 
     public function findOneById($id)

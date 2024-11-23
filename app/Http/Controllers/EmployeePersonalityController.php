@@ -426,8 +426,6 @@ public function store(
                     ->orWhere('description', 'like', '%Reject%');
             })->get();
             
-
-            
             foreach($document_maps as $map)
             {
                 if(isset($map) && !is_null($map))

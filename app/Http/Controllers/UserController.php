@@ -451,14 +451,22 @@ public function showUserLoanDetails()
                 ->selectRaw('IFNULL(SUM(amount_due) - SUM(amount_paid), 0) as outstanding_balance')
                 ->value('outstanding_balance');
 
-            // Fetch total balances and payments
-            $total_balances = Payment_Schedule::where('customer_id', $user_details->customer_id)
-                ->whereIn('payment_status_code', ['PAID', 'PARTIALLY PAID', 'UNPAID'])
-                ->sum('amount_due') ?? 0;
-
-            $total_payments = Payment_Schedule::where('customer_id', $user_details->customer_id)
-                ->whereIn('payment_status_code', ['PAID', 'PARTIALLY PAID'])
-                ->sum('amount_paid') ?? 0;
+                
+                
+                //search the approve document code
+                $approve_payment_status = Document_Status_Code::where('description', 'like', '%Approve%')->first();
+                
+            if(isset($approve_payment_status) && !is_null($approve_payment_status))
+            {
+                $total_payments = Payment::where('customer_id', $user_details->customer_id)
+                    ->where('document_status_code', $approve_payment_status->id)
+                    ->sum('amount_paid') ?? 0;
+            }
+            
+            $total_balances = Loan_Application::where('customer_id', $user_details->customer_id)
+            ->whereIn('document_status_code', [$approve_payment_status->id])
+            ->selectRaw('SUM(amount_loan + amount_interest) as total_balances')
+            ->value('total_balances') ?? 0;
 
             // Fetch payment and loan history
             $payment_history = Payment::where('customer_id', $user_details->customer_id)->get();

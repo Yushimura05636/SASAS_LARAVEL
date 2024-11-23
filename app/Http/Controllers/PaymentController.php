@@ -486,43 +486,6 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
             // Create a payment line for the full payment
             $this->createPaymentLine($request, $payment, $schedule, $amountDue, 'APPROVED', $paymentLineService);
 
-            $isAllPaid = Payment_Schedule::where('customer_id', $payment['customer_id'])
-            ->whereNotIn('payment_status_code', ['PAID', 'PARTIALLY PAID, FORWARDED'])
-            ->doesntExist(); // If no records with unpaid and partially paid statuses exist, then all payments are paid
-
-            //return response()->json(['message' => $totalAmountPaid > 0], Response::HTTP_BAD_REQUEST);
-
-            if (!is_null($isAllPaid) && $isAllPaid > 0) {
-                // Only increase the loan count if the payment schedule is not fully paid
-                $customer_loan_count = Customer::where('id', $payment['customer_id'])->first();
-
-                if ($customer_loan_count && !is_null($customer_loan_count)) {
-
-                    // Step 1: Retrieve the loan release based on the passbook number
-                    $loan_release = Loan_Release::where('passbook_number', $customer_loan_count->passbook_no)->first();
-
-                    if ($loan_release && !is_null($loan_release)) {
-                        // Step 2: Retrieve the loan application associated with the loan release
-                        $loan_application = Loan_Application::where('id', $loan_release->loan_application_id)->first();
-
-                        if ($loan_application) {
-                            // Step 3: Find the maximum loan_count in the database
-                            $maxLoanCount = Loan_Count::max('loan_count');
-
-                            // Step 4: Check if the current customer's loan_count is less than the maximum
-                            if ($customer_loan_count->loan_count < $maxLoanCount) {
-                                // Increment loan count for the customer
-                                $customer_loan_count->increment('loan_count', 1);
-                            }
-
-                            // Step 5: Set datetime fully paid
-                            $loan_application->datetime_fully_paid = now();
-                            $loan_application->save();
-                        }
-                        //throw new \Exception($loan_application);
-                    }
-                }
-            }
         } else {
             // Partial payment case
             $schedule->amount_paid += $totalAmountPaid;
@@ -566,39 +529,71 @@ protected function applyPaymentToSchedules($payment, $totalAmountPaid, Request $
         }
     }
 
-    // // After processing all schedules, apply any remaining balance to the last unpaid schedule
-    // if ($totalAmountPaid > 0 && $lastUnpaidSchedule) {
-    //     if ($totalAmountPaid < $threshold) {
-    //         $totalAmountPaid = 0; // Round off if below the threshold
-    //     } else {
-    //         $lastUnpaidSchedule->amount_paid += $totalAmountPaid;
-    //         $lastUnpaidSchedule->payment_status_code = 'PAID';
-    //         $lastUnpaidSchedule->save();
 
-    //         // Create a final payment line for the remaining balance
-    //         $this->createPaymentLine($request, $payment, $lastUnpaidSchedule, $totalAmountPaid, 'Final Adjustment', $paymentLineService);
-    //     }
+    // After processing all schedules, apply any remaining balance to the last unpaid schedule
+    if ($totalAmountPaid > 0 && $lastUnpaidSchedule) {
+        if ($totalAmountPaid < $threshold) {
+            $totalAmountPaid = 0; // Round off if below the threshold
+        } else {
+            $lastUnpaidSchedule->amount_paid += $totalAmountPaid;
+            $lastUnpaidSchedule->payment_status_code = 'PAID';
+            $lastUnpaidSchedule->save();
 
-    //     $totalAmountPaid = 0;
-
-        
-    // }
+            // Create a final payment line for the remaining balance
+            $this->createPaymentLine($request, $payment, $lastUnpaidSchedule, $totalAmountPaid, 'Final Adjustment', $paymentLineService);
+        }
+        $totalAmountPaid = 0;
+    }
 
 
-    // // After processing all schedules, apply any remaining balance to the last unpaid schedule
-    // if ($totalAmountPaid > 0 && $lastUnpaidSchedule) {
-    //     $lastUnpaidSchedule->amount_paid += $totalAmountPaid;
-    //     $lastUnpaidSchedule->payment_status_code = 'PAID';
-    //     $lastUnpaidSchedule->save();
+    // After processing all schedules, apply any remaining balance to the last unpaid schedule
+    if ($totalAmountPaid > 0 && $lastUnpaidSchedule) {
+        $lastUnpaidSchedule->amount_paid += $totalAmountPaid;
+        $lastUnpaidSchedule->payment_status_code = 'PAID';
+        $lastUnpaidSchedule->save();
 
-    //     // Create a final payment line for the remaining balance
-    //     $this->createPaymentLine($request, $payment, $lastUnpaidSchedule, $totalAmountPaid, 'Final Adjustment', $paymentLineService);
+        // Create a final payment line for the remaining balance
+        $this->createPaymentLine($request, $payment, $lastUnpaidSchedule, $totalAmountPaid, 'Final Adjustment', $paymentLineService);
 
-    //     // Reset totalAmountPaid to zero
-    //     $totalAmountPaid = 0;
-    // }
+        // Reset totalAmountPaid to zero
+        $totalAmountPaid = 0;
+    }
 
-    //throw new \Exception('stop');      
+        $isAllPaid = Payment_Schedule::where('customer_id', $payment['customer_id'])
+            ->whereNotIn('payment_status_code', ['PAID', 'PARTIALLY PAID, FORWARDED'])
+            ->doesntExist(); // If no records with unpaid and partially paid statuses exist, then all payments are paid
+
+            if (!is_null($isAllPaid) && $isAllPaid > 0) {
+                // Only increase the loan count if the payment schedule is not fully paid
+                $customer_loan_count = Customer::where('id', $payment['customer_id'])->first();
+
+                if ($customer_loan_count && !is_null($customer_loan_count)) {
+
+                    // Step 1: Retrieve the loan release based on the passbook number
+                    $loan_release = Loan_Release::where('passbook_number', $customer_loan_count->passbook_no)->first();
+
+                    if ($loan_release && !is_null($loan_release)) {
+                        // Step 2: Retrieve the loan application associated with the loan release
+                        $loan_application = Loan_Application::where('id', $loan_release->loan_application_id)->first();
+
+                        if ($loan_application) {
+                            // Step 3: Find the maximum loan_count in the database
+                            $maxLoanCount = Loan_Count::max('loan_count');
+
+                            // Step 4: Check if the current customer's loan_count is less than the maximum
+                            if ($customer_loan_count->loan_count < $maxLoanCount) {
+                                // Increment loan count for the customer
+                                $customer_loan_count->increment('loan_count', 1);
+                            }
+
+                            // Step 5: Set datetime fully paid
+                            $loan_application->datetime_fully_paid = now();
+                            $loan_application->save();
+                        }
+                        //throw new \Exception($loan_application);
+                    }
+                }
+            }     
 }
 
 protected function createPaymentLine($request, $payment, $schedule, $amountPaid, $remarks, PaymentLineServiceInterface $paymentLineService)

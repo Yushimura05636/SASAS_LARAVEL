@@ -293,6 +293,7 @@ class DatabaseSeeder extends Seeder
             'CUSTOMER_REQUIREMENTS',
             'REQUIREMENTS',
             'DASHBOARD_EMPLOYEES',
+            'REPORTS',
         ];
 
         foreach ($city as $name) {
@@ -433,7 +434,7 @@ class DatabaseSeeder extends Seeder
             'purok_zone'=>'House No. 25, Purok 3, Zone 2, Rizal Street, Barangay Agdao Proper, Davao City, 8000, Philippines',
             'postal_code'=> '8000',
             'telephone_no'=>'',
-            'email_address'=>'zipppycole@gmail.com',
+            'email_address'=>'ericramonesexb@gmail.com',
             'cellphone_no'=> '09606863294',
             'name_type_code'=>1,
             'personality_status_code'=>2,
@@ -460,8 +461,8 @@ class DatabaseSeeder extends Seeder
             'first_name' => 'Adrian',
             'middle_name' => 'Queroa',
             'phone_number' => '09606863294',
-            'password' => Hash::make('Lendcash123'),
-            'email' => 'rosendosastrejr125@gmail.com',
+            'password' => Hash::make('password'),
+            'email' => 'ericramonesexb@gmail.com',
             'employee_id' => 1,
             'customer_id' => null,
             'notes' => 'admin',
@@ -537,9 +538,9 @@ class DatabaseSeeder extends Seeder
 
         Factor_Rate::create([
             'payment_frequency_id' => 1,
-            'payment_duration_id' => 1,
+            'payment_duration_id' => 2,
             'description' => 'weekly payment in 24 weeks',
-            'value' => 30,
+            'value' => 34,
         ]);
 
         Fees::create([

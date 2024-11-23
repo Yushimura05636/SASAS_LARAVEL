@@ -240,14 +240,17 @@ public function store(
             //create dashboard permission
             $document_maps = Document_Map::where(function(Builder $query) {
                 $query->where('description', 'like', '%PAYMENTS%')
+                      ->orWhere('description', 'like', '%LIBRARIES%')
+                      ->orWhere('description', 'like', '%CUSTOMERS%')
                       ->orWhere('description', 'like', '%PAYMENT_SCHEDULES%');
             })->get();
             $document_permission_map = Document_Permission_Map::where(function(Builder $query) {
                 $query->where('description', 'like', '%View%')
                       ->orWhere('description', 'like', '%Create%')
-                      ->orWhere('description', 'like', '%Update%');
+                      ->orWhere('description', 'like', '%Update%')
+                      ->orWhere('description', 'like', '%Approve%')
+                      ->orWhere('description', 'like', '%Reject%');
             })->get();
-            
 
             foreach($document_maps as $map)
             {
@@ -255,15 +258,82 @@ public function store(
                 {
                     foreach($document_permission_map as $permission)
                     {
-                        if(isset($permission) && !is_null($permission))
+                        if($map->description == 'PAYMENT_SCHEDULES')
                         {
-                            //create the map
-                            $document_permission = Document_Permission::create([
-                                'user_id' => $userAccountResponse['id'],
-                                'document_map_code' => $map->id,
-                                'document_permission' => $permission->id,
-                                'datetime_granted' => now()
-                            ]);
+                            if(isset($permission) && !is_null($permission))
+                            {
+                                if($permission->description != 'APPROVED'
+                                    || $permission->description != 'REJECT' ||
+                                    $permission->description != 'CREATE' ||
+                                    $permission->description != 'UPDATE'
+                                ){
+                                    //create the map
+                                    $document_permission = Document_Permission::create([
+                                        'user_id' => $userAccountResponse['id'],
+                                        'document_map_code' => $map->id,
+                                        'document_permission' => $permission->id,
+                                        'datetime_granted' => now()
+                                    ]);
+                                }
+                            }
+                        }
+
+                        if($map->description == 'PAYMENTS')
+                        {
+                            if(isset($permission) && !is_null($permission))
+                            {
+                                if($permission->description != 'APPROVED'
+                                    || $permission->description != 'REJECT'
+                                ){
+                                    //create the map
+                                    $document_permission = Document_Permission::create([
+                                        'user_id' => $userAccountResponse['id'],
+                                        'document_map_code' => $map->id,
+                                        'document_permission' => $permission->id,
+                                        'datetime_granted' => now()
+                                    ]);
+                                }
+                            }
+                        }
+
+                        if($map->description == 'CUSTOMERS')
+                        {
+                            if(isset($permission) && !is_null($permission))
+                            {
+                                if($permission->description != 'APPROVED'
+                                    || $permission->description != 'REJECT' ||
+                                    $permission->description != 'CREATE' ||
+                                    $permission->description != 'UPDATE'
+                                ){
+                                    //create the map
+                                    $document_permission = Document_Permission::create([
+                                        'user_id' => $userAccountResponse['id'],
+                                        'document_map_code' => $map->id,
+                                        'document_permission' => $permission->id,
+                                        'datetime_granted' => now()
+                                    ]);
+                                }
+                            }
+                        }
+
+                        if($map->description == 'LIBRARIES')
+                        {
+                            if(isset($permission) && !is_null($permission))
+                            {
+                                if($permission->description != 'APPROVED'
+                                    || $permission->description != 'REJECT' ||
+                                    $permission->description != 'CREATE' ||
+                                    $permission->description != 'UPDATE'
+                                ){
+                                    //create the map
+                                    $document_permission = Document_Permission::create([
+                                        'user_id' => $userAccountResponse['id'],
+                                        'document_map_code' => $map->id,
+                                        'document_permission' => $permission->id,
+                                        'datetime_granted' => now()
+                                    ]);
+                                }
+                            }
                         }
                     }
                 }

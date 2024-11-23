@@ -40,6 +40,8 @@ class AuthPermission extends Model
 
     private static int $DASHBOARD_EMPLOYEES;
 
+    private static int $REPORTS;
+
 
 
     //unique
@@ -86,6 +88,7 @@ class AuthPermission extends Model
         self::$REQUIREMENTS = self::getPermissionId('REQUIREMENTS', Document_Map::class);
         self::$HOLIDAYS = self::getPermissionId('HOLIDAYS', Document_Map::class);
         self::$DASHBOARD_EMPLOYEES = self::getPermissionId('DASHBOARD_EMPLOYEES', Document_Map::class);
+        self::$REPORTS = self::getPermissionId('REPORTS', Document_Map::class);
 
 
         self::$CREATE = self::getPermissionId('CREATE', Document_Permission_Map::class);
@@ -234,6 +237,11 @@ class AuthPermission extends Model
     public static function DASHBOARD_EMPLOYEES(): int
     {
         return self::$DASHBOARD_EMPLOYEES;
+    }
+
+    public static function REPORTS(): int
+    {
+        return self::$REPORTS;
     }
 
 

@@ -143,12 +143,21 @@ class ReportController extends Controller
 
 public function Balances()
 {
+    // Query for total amounts due and paid, grouped by customer
     $paymentSummary = Payment_Schedule::with('customer.personality:id,first_name,middle_name,family_name')
         ->selectRaw('
             customer_id, 
-            datetime_due, 
             SUM(amount_due) as total_amount_due, 
-            SUM(amount_paid) as total_amount_paid, 
+            SUM(amount_paid) as total_amount_paid
+        ')
+        ->groupBy('customer_id')
+        ->get();
+
+    // Query for unpaid balances only
+    $unpaidBalances = Payment_Schedule::where('payment_status_code', 'UNPAID')
+        ->selectRaw('
+            customer_id, 
+            datetime_due, 
             SUM(amount_due) - SUM(amount_paid) as balance_due
         ')
         ->groupBy('customer_id', 'datetime_due')
@@ -160,45 +169,55 @@ public function Balances()
     $unpaidBalanceByMonth = [];
     $totalBalancePerCustomer = [];
 
-    $paymentSummary->each(function ($payment) use (&$totalAmountToCollect, &$totalAmountPaid, &$totalUnpaidBalance, &$unpaidBalanceByMonth, &$totalBalancePerCustomer) {
-        $totalAmountToCollect += $payment->total_amount_due;
-        $totalAmountPaid += $payment->total_amount_paid;
-        $totalUnpaidBalance += $payment->balance_due;
+    // Calculate total amounts to collect and amounts paid
+    $paymentSummary->each(function ($payment) use (&$totalAmountToCollect, &$totalAmountPaid) {
+        $totalAmountToCollect += round($payment->total_amount_due, 2);
+        $totalAmountPaid += round($payment->total_amount_paid, 2);
+    });
+
+    // Process unpaid balances
+    $unpaidBalances->each(function ($payment) use (&$totalUnpaidBalance, &$unpaidBalanceByMonth, &$totalBalancePerCustomer) {
+        $totalUnpaidBalance += round($payment->balance_due, 2);
 
         $monthKey = Carbon::parse($payment->datetime_due)->format('m-Y');
         if (!isset($unpaidBalanceByMonth[$monthKey])) {
             $unpaidBalanceByMonth[$monthKey] = 0;
         }
-        $unpaidBalanceByMonth[$monthKey] += $payment->balance_due;
+        $unpaidBalanceByMonth[$monthKey] += round($payment->balance_due, 2);
 
-        // Add customer-specific details
-        $customer = $payment->customer;
-        if (!isset($totalBalancePerCustomer[$payment->customer_id])) {
-            $totalBalancePerCustomer[$payment->customer_id] = [
-                'customer_id' => $payment->customer_id,
-                'customer_name' => $customer && $customer->personality
-                    ? "{$customer->personality->first_name} {$customer->personality->middle_name} {$customer->personality->family_name}"
-                    : 'Unknown',
+        $customerId = $payment->customer_id;
+        if (!isset($totalBalancePerCustomer[$customerId])) {
+            $totalBalancePerCustomer[$customerId] = [
+                'customer_id' => $customerId,
+                'customer_name' => 'Unknown', // Will be updated later
                 'total_balance' => 0,
                 'unsettled_balance' => 0,
                 'latest_due_date' => Carbon::parse($payment->datetime_due)->format('d-m-Y H:i:s'),
             ];
         }
 
-        $totalBalancePerCustomer[$payment->customer_id]['total_balance'] += $payment->balance_due;
-
-        // Add to unsettled balance only if the balance_due is greater than zero
+        $totalBalancePerCustomer[$customerId]['total_balance'] += round($payment->balance_due, 2);
         if ($payment->balance_due > 0) {
-            $totalBalancePerCustomer[$payment->customer_id]['unsettled_balance'] += $payment->balance_due;
+            $totalBalancePerCustomer[$customerId]['unsettled_balance'] += round($payment->balance_due, 2);
         }
 
-        // Update the latest_due_date if necessary
-        $existingDate = Carbon::parse($totalBalancePerCustomer[$payment->customer_id]['latest_due_date']);
+        $existingDate = Carbon::parse($totalBalancePerCustomer[$customerId]['latest_due_date']);
         $currentDate = Carbon::parse($payment->datetime_due);
         if ($currentDate->greaterThan($existingDate)) {
-            $totalBalancePerCustomer[$payment->customer_id]['latest_due_date'] = $currentDate->format('d-m-Y H:i:s');
+            $totalBalancePerCustomer[$customerId]['latest_due_date'] = $currentDate->format('d-m-Y H:i:s');
         }
     });
+
+    // Enrich customer details
+    foreach ($totalBalancePerCustomer as $customerId => $data) {
+        $customer = Payment_Schedule::with('customer.personality')
+            ->where('customer_id', $customerId)
+            ->first()
+            ->customer;
+        if ($customer && $customer->personality) {
+            $totalBalancePerCustomer[$customerId]['customer_name'] = "{$customer->personality->first_name} {$customer->personality->middle_name} {$customer->personality->family_name}";
+        }
+    }
 
     $data = [
         'total_amount_to_collect' => number_format($totalAmountToCollect, 2),
@@ -210,6 +229,7 @@ public function Balances()
 
     return response()->json($data);
 }
+
 
 
 public function getLoanDisbursementSummary()
@@ -269,6 +289,52 @@ public function getLoanDisbursementSummary()
         ];
 
         return response()->json($data);
+    }
+
+    public function clientLedger()
+    {
+        $paymentSchedules = Payment_Schedule::with('customer.personality:id,first_name,middle_name,family_name')
+        ->selectRaw('
+            created_at AS date, 
+            customer_id, 
+            amount_due, 
+            amount_interest, 
+            amount_paid, 
+            (amount_due - amount_paid) AS balance,
+            loan_released_id
+        ')
+        ->whereExists(function ($query) {
+            $query->selectRaw(1) // We don't need to select anything, just checking existence
+                ->from('payment_line')
+                ->whereColumn('payment_schedule.id', 'payment_line.payment_schedule_id');
+        })
+        ->get()
+        ->map(function ($payment) {
+            // Construct the full name from the related personality
+            $fullName = $payment->customer->personality 
+                ? "{$payment->customer->personality->first_name} {$payment->customer->personality->middle_name} {$payment->customer->personality->family_name}" 
+                : 'Unknown';
+
+            // Check if loan_released_id exists and determine the type
+            $type = $payment->loan_released_id ? 'Loan Payment' : 'Fees';
+
+            return [
+                'date' => $payment->date,
+                'customer_id' => $payment->customer_id,
+                'amount_due' => $payment->amount_due,
+                'amount_interest' => $payment->amount_interest,
+                'amount_paid' => $payment->amount_paid,
+                'balance' => $payment->balance,
+                'customer_name' => $fullName, // Include only the full name
+                'type' => $type, // Add type field based on loan_released_id
+            ];
+        });
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $paymentSchedules,
+        ]);
+
     }
 
 }

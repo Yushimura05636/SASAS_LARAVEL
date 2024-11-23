@@ -159,6 +159,7 @@ class DatabaseSeeder extends Seeder
             'PAYMENT_LINES',
             'CUSTOMER_REQUIREMENTS',
             'REQUIREMENTS',
+            'REPORTS',
         ];
 
         foreach ($city as $name) {

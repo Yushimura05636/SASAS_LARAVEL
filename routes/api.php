@@ -76,6 +76,7 @@ $REQUIREMENTS = AuthPermission::REQUIREMENTS();
 $HOLIDAYS = AuthPermission::HOLIDAYS();
 
 $DASHBOARD_EMPLOYEES = AuthPermission::DASHBOARD_EMPLOYEES();
+$REPORTS = AuthPermission::REPORTS();
 
 
 $VIEW =   AuthPermission::VIEW_PERM();
@@ -1073,11 +1074,15 @@ Route::get('/NoAUTH/CustomerAPPROVE', [CustomerPersonalityController::class, 'in
 Route::get('/customerWithPending/NoAUTH/{id}', [LoanApplicationController::class, 'seeWithPending']);
 
 
-//REPORTS TEST
-Route::get('REPORTS', [ReportController::class, 'index']);
-Route::get('FEE_ONLY', [ReportController::class, 'feeReports']);
-Route::get('BALANCES', [ReportController::class, 'Balances']);
-Route::get('DISBURSEMENT', [ReportController::class, 'getLoanDisbursementSummary']);
+Route::middleware('auth:sanctum')->prefix('REPORTS')->group(function () use ($REPORTS, $VIEW, $CREATE, $UPDATE, $DELETE) {
+    //REPORTS TEST
+    Route::get('/', [ReportController::class, 'index'])->middleware("document_access:$REPORTS, $VIEW");
+    Route::get('/FEE_ONLY', [ReportController::class, 'feeReports'])->middleware("document_access:$REPORTS, $VIEW");
+    Route::get('/BALANCES', [ReportController::class, 'Balances'])->middleware("document_access:$REPORTS, $VIEW");
+    Route::get('/DISBURSEMENT', [ReportController::class, 'getLoanDisbursementSummary'])->middleware("document_access:$REPORTS, $VIEW");
+    Route::get('/LEDGER', [ReportController::class, 'clientLedger'])->middleware("document_access:$REPORTS, $VIEW");
+});
+
 
 Route::middleware('auth:sanctum')->prefix('DASHBOARD')->group(function () {
     Route::get('/NoAUTH/USER/DETAILS', [UserController::class, 'showUserDetails']);

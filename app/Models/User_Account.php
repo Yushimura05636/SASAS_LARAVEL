@@ -86,6 +86,6 @@ class User_Account extends Authenticatable
 
     public function customerGroup()
     {
-        return $this->hasOne(Customer_Group::class, 'collector_id', 'id');
+        return $this->hasMany(Customer_Group::class, 'collector_id', 'id');
     }
 }
